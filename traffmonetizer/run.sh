@@ -29,7 +29,7 @@ run_traffmonetizer() {
     TOKEN=$1
 
     echo "Running traffmonetizer Docker container..."
-    sudo docker run -d --name tm --restart always traffmonetizer/cli_v2:$VERSION --token $TOKEN
+    sudo docker run -d --name tm --restart always traffmonetizer/cli_v2:$VERSION start accept --token $TOKEN
 }
 
 install_docker
