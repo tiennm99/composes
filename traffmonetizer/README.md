@@ -3,6 +3,5 @@ Shell script to auto install and run traffmonetizer on new VPS
 
 Usage:
 ```
-git clone https://github.com/tiennm99/traffmonetizer && \
-sudo ./traffmonetizer/run.sh YOUR_TRAFFMONETIZER_TOKEN
+curl -O https://raw.githubusercontent.com/tiennm99/traffmonetizer/master/run.sh && sudo bash run.sh YOUR_TRAFFMONETIZER_TOKEN
 ```
