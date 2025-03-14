@@ -89,3 +89,16 @@ If you encounter issues:
 2. Verify database connectivity: `docker-compose exec app php artisan db:monitor`
 3. Check container status: `docker-compose ps`
 4. Ensure proper permissions on the storage directory
+
+### Common Issues
+
+**Missing PHP extensions**
+
+If you see errors about missing PHP extensions like `ext-intl`, the Dockerfile has been updated to include this. However, if you encounter other missing extensions, you can add them to the Dockerfile by:
+
+1. Adding the required dev packages to the `apt-get install` command
+2. Adding the extension to the `docker-php-ext-install` command
+
+**Composer installation failures**
+
+If the composer installation fails, you can modify the entrypoint script to use the `--ignore-platform-req` flag. This is included as a fallback in the updated entrypoint script.
