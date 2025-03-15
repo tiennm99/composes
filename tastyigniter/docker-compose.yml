@@ -41,8 +41,6 @@ services:
     image: nginx:alpine
     container_name: tastyigniter-nginx
     restart: unless-stopped
-    ports:
-      - "80:80"
     volumes:
       - ./:/var/www/html
       - ./docker/nginx:/etc/nginx/conf.d
