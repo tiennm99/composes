@@ -40,6 +40,36 @@ else
     echo "TastyIgniter already installed"
 fi
 
+# Check for TastyIgniter's .nginx.conf file and copy it if needed
+if [ -f /var/www/html/.nginx.conf ]; then
+    echo "TastyIgniter .nginx.conf found"
+else
+    echo "TastyIgniter .nginx.conf not found, creating a default one"
+    cat > /var/www/html/.nginx.conf <<EOF
+# Default TastyIgniter nginx config
+location / {
+    root /var/www/html/public;
+    try_files \$uri \$uri/ /index.php?\$query_string;
+    index index.php;
+}
+
+location ~ \.php$ {
+    root /var/www/html/public;
+    try_files \$uri \$uri/ /index.php?\$query_string;
+    fastcgi_pass app:9000;
+    fastcgi_index index.php;
+    fastcgi_buffers 16 16k;
+    fastcgi_buffer_size 32k;
+    fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
+    include fastcgi_params;
+}
+
+location ~ /\.ht {
+    deny all;
+}
+EOF
+fi
+
 # Set permissions again to ensure proper access
 chown -R www-data:www-data /var/www/html
 chmod -R 755 /var/www/html/storage

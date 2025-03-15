@@ -30,8 +30,8 @@ services:
       # Scheduler and Queue
       - QUEUE_CONNECTION=database
     volumes:
-      - ./:/var/www/html
-      - ./storage:/var/www/html/storage
+      - tastyigniter:/var/www/html
+      - tastyigniter-storage:/var/www/html/storage
     depends_on:
       - db
     networks:
@@ -44,8 +44,8 @@ services:
     # ports:
     #  - "80:80"
     volumes:
-      - ./:/var/www/html
-      - ./docker/nginx:/etc/nginx/conf.d
+      - tastyigniter:/var/www/html
+      - ./docker/nginx/site.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
     networks:
@@ -73,7 +73,7 @@ services:
     restart: unless-stopped
     command: bash -c "while true; do php /var/www/html/artisan schedule:run --verbose --no-interaction; sleep 60; done"
     volumes:
-      - ./:/var/www/html
+      - tastyigniter:/var/www/html
     depends_on:
       - app
     networks:
@@ -87,7 +87,7 @@ services:
     restart: unless-stopped
     command: php /var/www/html/artisan queue:work
     volumes:
-      - ./:/var/www/html
+      - tastyigniter:/var/www/html
     depends_on:
       - app
     networks:
@@ -95,6 +95,8 @@ services:
 
 volumes:
   dbdata:
+  tastyigniter:
+  tastyigniter-storage:
 
 networks:
   tastyigniter-network:
