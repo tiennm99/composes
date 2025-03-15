@@ -13,6 +13,8 @@ services:
       - APP_KEY=
       - APP_DEBUG=false
       - APP_URL=http://localhost
+      - IGNITER_LOCATION_MODE=multiple
+      - IGNITER_CARTE_KEY=
 
       # Database configuration
       - DB_CONNECTION=mysql
@@ -21,14 +23,19 @@ services:
       - DB_DATABASE=tastyigniter
       - DB_USERNAME=tastyigniter
       - DB_PASSWORD=secret_password
+      - DB_PREFIX=ti_
 
-      # Admin account
-      - ADMIN_USER=admin
-      - ADMIN_EMAIL=admin@example.com
-      - ADMIN_PASSWORD=admin123
-
-      # Scheduler and Queue
+      # Cache and Session
+      - BROADCAST_DRIVER=log
+      - CACHE_DRIVER=file
       - QUEUE_CONNECTION=database
+      - SESSION_DRIVER=file
+      - SESSION_LIFETIME=120
+
+      # Mail Configuration
+      - MAIL_MAILER=log
+      - MAIL_FROM_ADDRESS=noreply@tastyigniter.tld
+      - MAIL_FROM_NAME=TastyIgniter
     volumes:
       - tastyigniter:/var/www/html
       - tastyigniter-storage:/var/www/html/storage
@@ -41,8 +48,8 @@ services:
     image: nginx:alpine
     container_name: tastyigniter-nginx
     restart: unless-stopped
-    # ports:
-    #  - "80:80"
+    ports:
+      - "80:80"
     volumes:
       - tastyigniter:/var/www/html
       - ./docker/nginx:/etc/nginx/conf.d
