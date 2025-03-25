@@ -9,10 +9,9 @@ services:
     cap_add:
       - MKNOD
       - NET_ADMIN
-    ports:
-      - 943:943
-      - 443:443
-      - 1194:1194/udp
     volumes:
       - openvpn-as-data:/openvpn
     restart: unless-stopped
+
+volumes:
+  openvpn-as-data:
