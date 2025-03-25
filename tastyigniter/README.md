@@ -1,104 +1,130 @@
-# TastyIgniter Docker Setup
+# TastyIgniter Docker Compose
 
-This repository contains Docker configuration files to quickly set up a TastyIgniter v4.0+ environment. The setup includes:
+This repository contains a Docker Compose setup for TastyIgniter, making it easy to deploy on Coolify or any other Docker-compatible platform.
 
-- PHP 8.3 with all required extensions
-- MySQL 8 database
+## Features
+
+- PHP 8.3 with FPM
 - Nginx web server
-- Automated installation process
-- Properly configured scheduler and queue workers
+- MySQL 8 database
+- Queue worker for background jobs
+- Cron job for scheduled tasks
+- Persistent volumes for data storage
+- Health checks for all services
+- Environment variable configuration
 
 ## Prerequisites
 
-- Docker and Docker Compose installed on your system
-- Basic understanding of Docker concepts
+- Docker
+- Docker Compose
+- Coolify (for deployment)
 
-## Directory Structure
+## Quick Start
 
-```
-tastyigniter-docker/
-├── docker/
-│   ├── entrypoint.sh
-│   └── nginx/
-│       └── default.conf
-├── docker-compose.yml
-├── Dockerfile
-└── README.md
-```
-
-## Setup Instructions
-
-1. Create the directory structure as shown above:
-
+1. Clone this repository:
 ```bash
-mkdir -p tastyigniter-docker/docker/nginx
+git clone https://github.com/yourusername/tastyigniter-docker-compose.git
+cd tastyigniter-docker-compose
 ```
 
-2. Copy all the configuration files into their respective directories.
-
-3. Start the Docker environment:
-
+2. Copy the example environment file:
 ```bash
-cd tastyigniter-docker
+cp .env.example .env
+```
+
+3. Edit the `.env` file with your configuration:
+```bash
+nano .env
+```
+
+4. Start the containers:
+```bash
 docker-compose up -d
 ```
 
-4. The setup will:
-   - Create a new TastyIgniter project
-   - Set up the database connection
-   - Run the non-interactive installation
-   - Configure the proper permissions
-   - Set up scheduled tasks and queue processing
+## Deployment on Coolify
 
-5. Access TastyIgniter:
-   - Frontend: http://localhost
-   - Admin panel: http://localhost/admin
-   - Default admin credentials:
-     - Username: admin
-     - Email: admin@example.com
-     - Password: admin123
+1. Push this repository to your Git provider (GitHub, GitLab, etc.)
 
-## Configuration Options
+2. In Coolify:
+   - Create a new service
+   - Select "Docker Compose" as the deployment method
+   - Connect your Git repository
+   - Set the following environment variables from the `.env.example` file
+   - Deploy the service
 
-You can customize the installation by modifying the environment variables in the `docker-compose.yml` file:
+### Required Environment Variables
 
-- `APP_URL`: Your application URL
-- `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`: Database connection details
-- `ADMIN_USER`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`: Administrator account details
+Make sure to set these environment variables in Coolify:
 
-## Persistent Storage
+- `APP_KEY`: Generate a random 32-character string
+- `APP_URL`: Your domain name
+- `DB_PASSWORD`: Secure database password
+- `MYSQL_ROOT_PASSWORD`: Secure root password
+- `IGNITER_CARTE_KEY`: Your TastyIgniter Carte key (if using)
 
-The setup uses Docker volumes for:
-- MySQL data: Stored in the `dbdata` volume
-- TastyIgniter storage: Mapped to the `./storage` directory on your host
+### Volume Management
 
-## Production Deployment
+The following volumes are automatically managed by Coolify:
+- `dbdata`: MySQL database data
+- `tastyigniter`: Application files
+- `tastyigniter-storage`: Application storage
 
-Before deploying to production, make sure to:
+### Health Checks
 
-1. Change all default passwords
-2. Set `APP_DEBUG=false`
-3. Generate a unique `APP_KEY`
-4. Configure proper SSL/TLS in the Nginx configuration for HTTPS
+The deployment includes health checks for:
+- Application container (PHP-FPM)
+- Nginx web server
+- MySQL database
+
+## Development
+
+To run in development mode:
+
+1. Set `APP_ENV=local` in your `.env` file
+2. Set `APP_DEBUG=true` in your `.env` file
+3. Run `docker-compose up -d`
+
+## Maintenance
+
+### Database Backup
+
+To backup the database:
+```bash
+docker-compose exec db mysqldump -u root -p tastyigniter > backup.sql
+```
+
+### Logs
+
+View logs for all services:
+```bash
+docker-compose logs -f
+```
+
+View logs for a specific service:
+```bash
+docker-compose logs -f app
+docker-compose logs -f nginx
+docker-compose logs -f db
+```
 
 ## Troubleshooting
 
-If you encounter issues:
+1. If the application fails to start:
+   - Check the logs: `docker-compose logs -f app`
+   - Verify environment variables are set correctly
+   - Ensure all required ports are available
 
-1. Check the logs: `docker-compose logs -f app`
-2. Verify database connectivity: `docker-compose exec app php artisan db:monitor`
-3. Check container status: `docker-compose ps`
-4. Ensure proper permissions on the storage directory
+2. If the database connection fails:
+   - Check the database logs: `docker-compose logs -f db`
+   - Verify database credentials in `.env`
+   - Ensure the database container is running: `docker-compose ps`
 
-### Common Issues
+3. If the web server is not accessible:
+   - Check nginx logs: `docker-compose logs -f nginx`
+   - Verify port configuration in `.env`
+   - Check if the domain is properly configured
 
-**Missing PHP extensions**
+## License
 
-If you see errors about missing PHP extensions like `ext-intl`, the Dockerfile has been updated to include this. However, if you encounter other missing extensions, you can add them to the Dockerfile by:
-
-1. Adding the required dev packages to the `apt-get install` command
-2. Adding the extension to the `docker-php-ext-install` command
-
-**Composer installation failures**
-
-If the composer installation fails, you can modify the entrypoint script to use the `--ignore-platform-req` flag. This is included as a fallback in the updated entrypoint script.
+This project is licensed under the MIT License - see the LICENSE file for details.

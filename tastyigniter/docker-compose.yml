@@ -8,22 +8,22 @@ services:
     container_name: tastyigniter-app
     restart: unless-stopped
     environment:
-      - APP_NAME=TastyIgniter
-      - APP_ENV=production
-      - APP_KEY=
-      - APP_DEBUG=false
-      - APP_URL=http://localhost
-      - IGNITER_LOCATION_MODE=multiple
-      - IGNITER_CARTE_KEY=
+      - APP_NAME=${APP_NAME:-TastyIgniter}
+      - APP_ENV=${APP_ENV:-production}
+      - APP_KEY=${APP_KEY}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_URL=${APP_URL}
+      - IGNITER_LOCATION_MODE=${IGNITER_LOCATION_MODE:-multiple}
+      - IGNITER_CARTE_KEY=${IGNITER_CARTE_KEY}
 
       # Database configuration
       - DB_CONNECTION=mysql
       - DB_HOST=db
       - DB_PORT=3306
-      - DB_DATABASE=tastyigniter
-      - DB_USERNAME=tastyigniter
-      - DB_PASSWORD=secret_password
-      - DB_PREFIX=ti_
+      - DB_DATABASE=${DB_DATABASE:-tastyigniter}
+      - DB_USERNAME=${DB_USERNAME:-tastyigniter}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_PREFIX=${DB_PREFIX:-ti_}
 
       # Cache and Session
       - BROADCAST_DRIVER=log
@@ -33,44 +33,61 @@ services:
       - SESSION_LIFETIME=120
 
       # Mail Configuration
-      - MAIL_MAILER=log
-      - MAIL_FROM_ADDRESS=noreply@tastyigniter.tld
-      - MAIL_FROM_NAME=TastyIgniter
+      - MAIL_MAILER=${MAIL_MAILER:-log}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-noreply@tastyigniter.tld}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME:-TastyIgniter}
     volumes:
       - tastyigniter:/var/www/html
       - tastyigniter-storage:/var/www/html/storage
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - tastyigniter-network
+    healthcheck:
+      test: ["CMD", "php", "artisan", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   nginx:
     image: nginx:alpine
     container_name: tastyigniter-nginx
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "${PORT:-80}:80"
     volumes:
       - tastyigniter:/var/www/html
       - ./docker/nginx:/etc/nginx/conf.d
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     networks:
       - tastyigniter-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   db:
     image: mysql:8
     container_name: tastyigniter-db
     restart: unless-stopped
     environment:
-      - MYSQL_DATABASE=tastyigniter
-      - MYSQL_USER=tastyigniter
-      - MYSQL_PASSWORD=secret_password
-      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=${DB_DATABASE:-tastyigniter}
+      - MYSQL_USER=${DB_USERNAME:-tastyigniter}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
     volumes:
       - dbdata:/var/lib/mysql
     networks:
       - tastyigniter-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   cron:
     build:
@@ -82,7 +99,8 @@ services:
     volumes:
       - tastyigniter:/var/www/html
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     networks:
       - tastyigniter-network
 
@@ -96,15 +114,20 @@ services:
     volumes:
       - tastyigniter:/var/www/html
     depends_on:
-      - app
+      app:
+        condition: service_healthy
     networks:
       - tastyigniter-network
 
 volumes:
   dbdata:
+    name: ${STACK_NAME:-tastyigniter}_dbdata
   tastyigniter:
+    name: ${STACK_NAME:-tastyigniter}_app
   tastyigniter-storage:
+    name: ${STACK_NAME:-tastyigniter}_storage
 
 networks:
   tastyigniter-network:
+    name: ${STACK_NAME:-tastyigniter}_network
     driver: bridge
