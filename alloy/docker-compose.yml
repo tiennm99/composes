@@ -17,14 +17,16 @@ services:
       GRAFANA_TOKEN: ${GRAFANA_TOKEN:?required}
     security_opt: [ "no-new-privileges:true" ]
     cap_drop:     [ ALL ]
+    cap_add:      [ DAC_OVERRIDE ]                # root loses all caps; DAC_OVERRIDE is needed to write alloy-owned /var/lib/alloy/data and read root-owned journal/docker dirs
     volumes:
-      - alloy-data:/var/lib/alloy/data
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/lib/docker:/var/lib/docker:ro
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro,rslave
-      - /var/log/journal:/var/log/journal:ro
+      - alloy-data:/var/lib/alloy/data                              # remotecfg + storage state
+      - /var/run/docker.sock:/var/run/docker.sock:ro                # discovery.docker + loki.source.docker (streams log API)
+      - /var/lib/docker:/var/lib/docker:ro                          # cadvisor container metadata
+      - /proc:/host/proc:ro                                         # node-exporter cpu/mem/load/net
+      - /sys:/host/sys:ro                                           # node-exporter + cadvisor cgroups
+      - /:/rootfs:ro,rslave                                         # filesystem collector (rslave picks up new mounts)
+      - /var/log/journal:/var/log/journal:ro                        # loki.source.journal
+      - /etc/machine-id:/etc/machine-id:ro                          # stable host id for journal reader
     configs:
       - { source: alloy_config, target: /etc/alloy/config.alloy }
     command: [ run, --server.http.listen-addr=0.0.0.0:12345, --storage.path=/var/lib/alloy/data, /etc/alloy/config.alloy ]
