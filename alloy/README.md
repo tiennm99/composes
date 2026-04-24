@@ -76,4 +76,4 @@ If you add a third host or scrape extra applications, re-check cardinality befor
 
 ## License
 
-MIT — do whatever you want.
+Apache 2.0 — see [LICENSE](LICENSE).
