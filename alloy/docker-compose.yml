@@ -1,5 +1,6 @@
 # Required shell env vars (export before `docker compose up`):
 #   ALLOY_HOSTNAME  PROM_URL  PROM_USER  LOKI_URL  LOKI_USER  GRAFANA_TOKEN
+# UI reachable only from inside the Docker network: http://alloy:12345
 
 services:
   alloy:
@@ -7,17 +8,13 @@ services:
     container_name: alloy
     restart: unless-stopped
     hostname: ${ALLOY_HOSTNAME:?required}
-    user: "0:0"
+    user: "0:0"                                   # root needed for docker.sock + journal files
     environment:
-      ALLOY_HOSTNAME: ${ALLOY_HOSTNAME}
-      PROM_URL:       ${PROM_URL:?required}
-      PROM_USER:      ${PROM_USER:?required}
-      LOKI_URL:       ${LOKI_URL:?required}
-      LOKI_USER:      ${LOKI_USER:?required}
-      GRAFANA_TOKEN:  ${GRAFANA_TOKEN:?required}
-    # UI reachable only from inside the Docker network: http://alloy:12345
-    # (attach another container to the same network to access it)
-    expose: [ "12345" ]
+      PROM_URL:      ${PROM_URL:?required}
+      PROM_USER:     ${PROM_USER:?required}
+      LOKI_URL:      ${LOKI_URL:?required}
+      LOKI_USER:     ${LOKI_USER:?required}
+      GRAFANA_TOKEN: ${GRAFANA_TOKEN:?required}
     security_opt: [ "no-new-privileges:true" ]
     cap_drop:     [ ALL ]
     volumes:
@@ -50,7 +47,9 @@ configs:
 
       loki.write "gc" {
         endpoint {
-          url = sys.env("LOKI_URL")
+          url        = sys.env("LOKI_URL")
+          batch_wait = "5s"
+          batch_size = "1MiB"
           basic_auth {
             username = sys.env("LOKI_USER")
             password = sys.env("GRAFANA_TOKEN")
@@ -63,7 +62,7 @@ configs:
         procfs_path = "/host/proc"
         sysfs_path  = "/host/sys"
         filesystem  { mount_points_exclude = "^/(dev|proc|sys|run|var/lib/docker)($|/)" }
-        netdev      { device_exclude       = "^(veth|docker|br-|lo).*$" }
+        netdev      { device_exclude       = "^(veth.*|docker.*|br-.*|lo)$" }
       }
 
       prometheus.exporter.cadvisor "containers" {
@@ -84,19 +83,20 @@ configs:
         scrape_interval = "60s"
       }
 
-      // Keep only metrics powering the standard Grafana Cloud dashboards.
-      // Essential for the 10k active-series cap on Cloud Free.
+      // Keep only metrics powering standard dashboards.
+      // Essential for the 10k active-series cap on Grafana Cloud Free.
       prometheus.relabel "filter" {
         forward_to = [prometheus.remote_write.gc.receiver]
         rule {
           source_labels = ["__name__"]
           action        = "keep"
-          regex         = "up|node_(cpu_seconds_total|load(1|5|15)|boot_time_seconds|uname_info|memory_(MemTotal|MemAvailable|Cached|Buffers|SwapTotal|SwapFree)_bytes|filesystem_(size|avail)_bytes|filesystem_readonly|disk_(read|written)_bytes_total|disk_io_time_seconds_total|network_(receive|transmit)_(bytes|errs)_total)|container_(cpu_usage_seconds_total|memory_usage_bytes|fs_(usage|limit)_bytes|network_(receive|transmit)_bytes_total)|machine_memory_bytes"
+          regex         = "up|node_(cpu_seconds_total|load(1|5|15)|boot_time_seconds|uname_info|memory_(MemTotal|MemFree|MemAvailable|Cached|Buffers|SwapTotal|SwapFree)_bytes|filesystem_(size|avail)_bytes|filesystem_(files|files_free|readonly)|disk_(reads|writes)_completed_total|disk_(read|written)_bytes_total|disk_io_time(_weighted)?_seconds_total|network_(receive|transmit)_(bytes|errs|drop)_total)|container_(cpu_usage_seconds_total|memory_(usage|working_set)_bytes|fs_(usage|limit)_bytes|network_(receive|transmit)_bytes_total|last_seen)|machine_(memory_bytes|scrape_error)"
         }
       }
 
       discovery.docker "containers" {
-        host = "unix:///var/run/docker.sock"
+        host             = "unix:///var/run/docker.sock"
+        refresh_interval = "5s"
       }
 
       discovery.relabel "container_logs" {
@@ -109,7 +109,7 @@ configs:
         }
         rule {
           source_labels = ["__meta_docker_container_name"]
-          regex         = "/alloy"
+          regex         = "/alloy.*"
           action        = "drop"
         }
       }
@@ -120,9 +120,16 @@ configs:
         forward_to = [loki.write.gc.receiver]
       }
 
+      loki.relabel "journal" {
+        forward_to = []
+        rule { source_labels = ["__journal__systemd_unit"]    target_label = "unit" }
+        rule { source_labels = ["__journal_priority_keyword"] target_label = "level" }
+      }
+
       loki.source.journal "system" {
-        max_age    = "12h"
-        path       = "/var/log/journal"
-        forward_to = [loki.write.gc.receiver]
-        labels     = { job = "systemd-journal", instance = constants.hostname }
+        max_age       = "12h"
+        path          = "/var/log/journal"
+        forward_to    = [loki.write.gc.receiver]
+        relabel_rules = loki.relabel.journal.rules
+        labels        = { job = "systemd-journal", instance = constants.hostname }
       }
