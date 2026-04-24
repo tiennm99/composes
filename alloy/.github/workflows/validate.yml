@@ -1,0 +1,33 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      # Dummy values so `compose config` doesn't fail on the `:?required` guards.
+      ALLOY_HOSTNAME: ci
+      PROM_URL:       https://example.com
+      PROM_USER:      "1"
+      LOKI_URL:       https://example.com
+      LOKI_USER:      "1"
+      GRAFANA_TOKEN:  x
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate compose YAML + env interpolation
+        run: docker compose config -q
+
+      - name: Extract embedded Alloy config
+        uses: mikefarah/yq@v4
+        with:
+          cmd: yq '.configs.alloy_config.content' docker-compose.yml > config.alloy
+
+      - name: Validate Alloy config syntax
+        run: |
+          docker run --rm -v "$PWD/config.alloy:/config.alloy:ro" \
+            grafana/alloy:v1.10.0 fmt /config.alloy > /dev/null
