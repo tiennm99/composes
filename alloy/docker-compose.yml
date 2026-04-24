@@ -18,6 +18,8 @@ services:
     security_opt: [ "no-new-privileges:true" ]
     cap_drop:     [ ALL ]
     cap_add:      [ DAC_OVERRIDE, SYSLOG ]        # DAC_OVERRIDE: write alloy-owned /var/lib/alloy/data + read root-owned mounts. SYSLOG: read /dev/kmsg when kernel.dmesg_restrict=1.
+    devices:
+      - /dev/kmsg:/dev/kmsg:r                                       # cadvisor OOM detection (needs device-cgroup allow, not just bind-mount)
     volumes:
       - alloy-data:/var/lib/alloy/data                              # remotecfg + storage state
       - /var/run/docker.sock:/var/run/docker.sock:ro                # discovery.docker + loki.source.docker (streams log API)
@@ -27,7 +29,6 @@ services:
       - /:/rootfs:ro,rslave                                         # filesystem collector (rslave picks up new mounts)
       - /var/log/journal:/var/log/journal:ro                        # loki.source.journal
       - /etc/machine-id:/etc/machine-id:ro                          # stable host id for journal reader
-      - /dev/kmsg:/dev/kmsg:ro                                      # cadvisor OOM event detection
       - /run/udev/data:/run/udev/data:ro                            # node-exporter diskstats device labels (model/serial/WWN)
     configs:
       - { source: alloy_config, target: /etc/alloy/config.alloy }
