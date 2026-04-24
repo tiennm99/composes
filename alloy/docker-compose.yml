@@ -83,7 +83,10 @@ configs:
       // keep-filter essential for the 10k active-series cap on Grafana Cloud Free.
       prometheus.relabel "filter" {
         forward_to = [prometheus.remote_write.gc.receiver]
-        rule { target_label = "instance" replacement = constants.hostname }
+        rule {
+          target_label = "instance"
+          replacement  = constants.hostname
+        }
         rule {
           source_labels = ["__name__"]
           action        = "keep"
@@ -117,8 +120,14 @@ configs:
 
       loki.relabel "journal" {
         forward_to = []
-        rule { source_labels = ["__journal__systemd_unit"]    target_label = "unit" }
-        rule { source_labels = ["__journal_priority_keyword"] target_label = "level" }
+        rule {
+          source_labels = ["__journal__systemd_unit"]
+          target_label  = "unit"
+        }
+        rule {
+          source_labels = ["__journal_priority_keyword"]
+          target_label  = "level"
+        }
       }
 
       loki.source.journal "system" {
