@@ -46,6 +46,7 @@ configs:
       }
 
       loki.write "gc" {
+        external_labels = { instance = constants.hostname }
         endpoint {
           url        = sys.env("LOKI_URL")
           batch_wait = "5s"
@@ -69,24 +70,20 @@ configs:
         docker_only = true
       }
 
-      discovery.relabel "metrics" {
+      prometheus.scrape "metrics" {
         targets = array.concat(
           prometheus.exporter.unix.host.targets,
           prometheus.exporter.cadvisor.containers.targets,
         )
-        rule { target_label = "instance" replacement = constants.hostname }
-      }
-
-      prometheus.scrape "metrics" {
-        targets         = discovery.relabel.metrics.output
         forward_to      = [prometheus.relabel.filter.receiver]
         scrape_interval = "60s"
       }
 
-      // Keep only metrics powering standard dashboards.
-      // Essential for the 10k active-series cap on Grafana Cloud Free.
+      // Sets instance label + keeps only metrics used by standard dashboards.
+      // keep-filter essential for the 10k active-series cap on Grafana Cloud Free.
       prometheus.relabel "filter" {
         forward_to = [prometheus.remote_write.gc.receiver]
+        rule { target_label = "instance" replacement = constants.hostname }
         rule {
           source_labels = ["__name__"]
           action        = "keep"
@@ -101,16 +98,14 @@ configs:
 
       discovery.relabel "container_logs" {
         targets = discovery.docker.containers.targets
-        rule { target_label = "instance" replacement = constants.hostname }
         rule {
           source_labels = ["__meta_docker_container_name"]
           regex         = "/(.*)"
           target_label  = "container"
         }
         rule {
-          source_labels = ["__meta_docker_container_name"]
-          regex         = "/alloy.*"
-          action        = "drop"
+          source_labels = ["__meta_docker_container_log_stream"]
+          target_label  = "stream"
         }
       }
 
@@ -131,5 +126,5 @@ configs:
         path          = "/var/log/journal"
         forward_to    = [loki.write.gc.receiver]
         relabel_rules = loki.relabel.journal.rules
-        labels        = { job = "systemd-journal", instance = constants.hostname }
+        labels        = { job = "systemd-journal" }
       }
