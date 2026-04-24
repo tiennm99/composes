@@ -114,10 +114,21 @@ configs:
         }
       }
 
+      // Grafana Cloud Loki rejects entries older than 7 days (HTTP 400).
+      // Long-running containers replay weeks of backlog on first start — drop
+      // anything older than 6 days to stay safely under the cutoff.
+      loki.process "drop_old" {
+        forward_to = [loki.write.gc.receiver]
+        stage.drop {
+          older_than          = "144h"
+          drop_counter_reason = "entry_too_old"
+        }
+      }
+
       loki.source.docker "containers" {
         host       = "unix:///var/run/docker.sock"
         targets    = discovery.relabel.container_logs.output
-        forward_to = [loki.write.gc.receiver]
+        forward_to = [loki.process.drop_old.receiver]
       }
 
       loki.relabel "journal" {
