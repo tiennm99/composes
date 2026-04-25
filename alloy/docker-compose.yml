@@ -9,6 +9,7 @@ services:
     restart: unless-stopped
     hostname: ${ALLOY_HOSTNAME:?required}
     privileged: true
+    pid: host                                 # node_exporter sees host /proc + processes; required for cpu/mem/load metrics
     environment:
       ALLOY_DEPLOY_MODE: docker
       REMOTECFG_URL: ${REMOTECFG_URL:?required}
@@ -28,6 +29,7 @@ services:
       - /dev/disk/:/dev/disk:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /var/log/journal:/var/log/journal:ro
+      - /etc/machine-id:/etc/machine-id:ro    # stable host id for systemd journal reader
     extra_hosts:
       - 'host.docker.internal:host-gateway'
     devices:
@@ -192,13 +194,13 @@ configs:
       }
 
       prometheus.relabel "integrations_cadvisor" {
-        forward_to = [prometheus.remote_write.metrics_service.receiver]
+          forward_to = [prometheus.remote_write.metrics_service.receiver]
 
-        rule {
-          source_labels = ["__name__"]
-          regex         = "up|container_cpu_usage_seconds_total|container_fs_inodes_free|container_fs_inodes_total|container_fs_limit_bytes|container_fs_usage_bytes|container_last_seen|container_memory_usage_bytes|container_network_receive_bytes_total|container_network_tcp_usage_total|container_network_transmit_bytes_total|container_spec_memory_reservation_limit_bytes|machine_memory_bytes|machine_scrape_error"
-          action        = "keep"
-        }
+          rule {
+              source_labels = ["__name__"]
+              regex         = "container_cpu_usage_seconds_total|container_fs_reads_total|container_fs_usage_bytes|container_fs_writes_total|container_last_seen|container_memory_usage_bytes|container_network_receive_bytes_total|container_network_receive_errors_total|container_network_receive_packets_dropped_total|container_network_transmit_bytes_total|container_network_transmit_errors_total|container_network_transmit_packets_dropped_total|container_spec_memory_reservation_limit_bytes|machine_memory_bytes|machine_scrape_error|up"
+              action        = "keep"
+          }
       }
 
       prometheus.scrape "integrations_cadvisor" {
