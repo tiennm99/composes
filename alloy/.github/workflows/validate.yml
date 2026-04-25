@@ -55,7 +55,7 @@ jobs:
             -v /tmp/empty-journal:/var/log/journal:ro \
             -v /etc/machine-id:/etc/machine-id:ro \
             grafana/alloy:v1.10.0 \
-            run --server.http.listen-addr=127.0.0.1:0 /etc/alloy/config.alloy
+            run --server.http.listen-addr=127.0.0.1:12345 --disable-reporting /etc/alloy/config.alloy
           sleep 10
           docker logs alloy-test 2>&1 | tee /tmp/alloy.log
           state=$(docker inspect -f '{{.State.Status}}' alloy-test 2>/dev/null || echo missing)
