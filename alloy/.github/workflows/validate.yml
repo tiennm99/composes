@@ -11,6 +11,9 @@ jobs:
     env:
       # Dummy values so `compose config` doesn't fail on the `:?required` guards.
       ALLOY_HOSTNAME: ci
+      REMOTECFG_URL:  https://example.com
+      REMOTECFG_ID:   ci
+      REMOTECFG_USER: "1"
       PROM_URL:       https://example.com
       PROM_USER:      "1"
       LOKI_URL:       https://example.com
