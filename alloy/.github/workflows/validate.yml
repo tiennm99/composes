@@ -34,3 +34,22 @@ jobs:
         run: |
           docker run --rm -v "$PWD/config.alloy:/config.alloy:ro" \
             grafana/alloy:v1.10.0 fmt /config.alloy > /dev/null
+
+      - name: Validate Alloy config semantics (parse + load components)
+        # `fmt` is syntax-only; this catches bad component refs, wrong arg
+        # types, and unknown component types by actually loading the graph.
+        # Components log scrape errors against the dummy URLs but alloy
+        # itself stays running, so liveness after sleep == config valid.
+        run: |
+          docker run --rm -d --name alloy-test \
+            -e ALLOY_HOSTNAME -e REMOTECFG_URL -e REMOTECFG_ID -e REMOTECFG_USER \
+            -e PROM_URL -e PROM_USER -e LOKI_URL -e LOKI_USER -e GRAFANA_TOKEN \
+            -v "$PWD/config.alloy:/etc/alloy/config.alloy:ro" \
+            grafana/alloy:v1.10.0 \
+            run --server.http.listen-addr=127.0.0.1:0 /etc/alloy/config.alloy
+          sleep 8
+          if [ "$(docker inspect -f '{{.State.Running}}' alloy-test 2>/dev/null)" != "true" ]; then
+            docker logs alloy-test
+            exit 1
+          fi
+          docker stop alloy-test >/dev/null

@@ -45,20 +45,20 @@ Same compose file on every host — change `ALLOY_HOSTNAME` and `REMOTECFG_ID` p
 
 ## Security note
 
-Runs as `privileged: true` (matching the upstream Grafana Cloud docker integration). This is required for cadvisor to read cgroups via `/sys` and for `/dev/kmsg` access. If you need least-privilege, see the upstream Alloy docker integration docs and tighten capabilities.
+Runs `privileged: true` + `network_mode: host`, matching the upstream Grafana Cloud docker integration. `network_mode: host` is required so `prometheus.exporter.unix` reports the host's real network interfaces (eth0…) instead of the alloy container's veth pair. If you need least-privilege, see the upstream Alloy docker integration docs and tighten capabilities.
 
 ## Mounts
 
 | Mount | Why |
 |---|---|
-| `/proc:/rootproc:ro` | node-exporter cpu/mem/load |
+| `/proc:/rootproc:ro` | node-exporter cpu/mem/load (referenced via `procfs_path`) |
 | `/sys:/sys:ro` | node-exporter + cadvisor cgroups |
-| `/:/rootfs:ro` | filesystem collector |
-| `/dev/disk/:/dev/disk:ro` | diskstats device labels |
-| `/var/run/docker.sock` | docker discovery + log streaming |
+| `/:/rootfs:ro` | filesystem collector (referenced via `rootfs_path`) |
+| `/dev/disk/:/dev/disk:ro` | node-exporter diskstats device labels |
+| `/var/run/docker.sock` | `discovery.docker` + `loki.source.docker` |
 | `/var/lib/docker:ro` | cadvisor container metadata |
 | `/var/log/journal:ro` | `loki.source.journal` |
-| `/dev/kmsg` (device) | cadvisor OOM detection |
+| `/etc/machine-id:ro` | stable host id for the journal reader |
 | `alloy-data` (named volume) | WAL + remotecfg cache |
 
 ## License
