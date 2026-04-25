@@ -9,7 +9,6 @@ services:
     restart: unless-stopped
     hostname: ${ALLOY_HOSTNAME:?required}
     privileged: true
-    pid: host                                 # node_exporter sees host /proc + processes; required for cpu/mem/load metrics
     environment:
       ALLOY_DEPLOY_MODE: docker
       REMOTECFG_URL: ${REMOTECFG_URL:?required}
@@ -93,6 +92,10 @@ configs:
 
       prometheus.exporter.unix "integrations_node_exporter" {
         disable_collectors = ["ipvs", "btrfs", "infiniband", "xfs", "zfs"]
+
+        // Read host filesystems via bind mounts instead of the container namespace.
+        rootfs_path = "/rootfs"
+        procfs_path = "/rootproc"
 
         filesystem {
           fs_types_exclude     = "^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|tmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$"
