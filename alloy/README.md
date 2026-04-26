@@ -61,6 +61,10 @@ Runs `privileged: true` + `network_mode: host`, matching the upstream Grafana Cl
 | `/etc/machine-id:ro` | stable host id for the journal reader |
 | `alloy-data` (named volume) | WAL + remotecfg cache |
 
+## Known noise (special cases)
+
+- [Coolify SSH session spam](docs/known-noise-coolify-ssh-sessions.md) — only relevant if Coolify manages the host. Safe to ignore otherwise.
+
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
