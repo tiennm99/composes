@@ -64,6 +64,10 @@ Runs `privileged: true` + `network_mode: host`, matching the upstream Grafana Cl
 | `/etc/machine-id:ro` | stable host id for the journal reader |
 | `alloy-data` (named volume) | WAL + remotecfg cache |
 
+## Design
+
+- [Upstream sources of truth](docs/upstream-sources-of-truth.md) — what we follow, what's in scope, how to audit dashboard metric needs.
+
 ## Known noise (special cases)
 
 - [Coolify SSH session spam](docs/known-noise-coolify-ssh-sessions.md) — only relevant if Coolify manages the host. Safe to ignore otherwise.
