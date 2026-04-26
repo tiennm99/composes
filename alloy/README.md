@@ -11,13 +11,16 @@ One-file [Grafana Alloy](https://grafana.com/docs/alloy/latest/) setup that ship
 
 | Source | Component | Notes |
 |---|---|---|
-| Host metrics | `prometheus.exporter.unix` | CPU, memory, load, disk I/O, filesystem, network, uname, boot time |
+| Host metrics | `prometheus.exporter.unix` | CPU, memory, load, disk I/O, filesystem, network, uname, boot time, systemd, vmstat, sockstat — full default-collector set minus `ipvs/btrfs/infiniband/xfs/zfs` |
 | Container metrics | `prometheus.exporter.cadvisor` | CPU, memory, fs usage/limit, network, `last_seen` |
 | Container logs | `loki.source.docker` | all running containers, labeled with `container`, `stream`, `instance` |
-| System logs | `loki.source.journal` (via `journal_module`) | systemd journal with `unit`, `boot_id`, `transport`, `level` labels |
+| System logs (journal) | `loki.source.journal` (via `journal_module`) | systemd journal with `unit`, `boot_id`, `transport`, `level` labels |
+| System logs (files) | `loki.source.file` | `/var/log/syslog`, `/var/log/messages`, `/var/log/*.log` |
 | Remote config | `remotecfg` | polls Grafana Fleet Management every 60s |
 
-`keep`-filter on metric names trims the firehose down to the standard Grafana Cloud integration dashboards (node-exporter + docker).
+Filtering follows the upstream Grafana Cloud integration configs: node metrics drop only `node_scrape_collector_*` meta-metrics (everything else ships); cadvisor uses the documented allowlist; logs are unfiltered.
+
+> **Log duplication caveat.** On systems where rsyslog mirrors journald to `/var/log/syslog` (e.g. Debian/Ubuntu defaults), enabling both pipelines double-ships the same lines. If that's the case for your hosts, drop one source — typically the file-based one is redundant on systemd-only stacks.
 
 ## Quick start
 
@@ -57,7 +60,7 @@ Runs `privileged: true` + `network_mode: host`, matching the upstream Grafana Cl
 | `/dev/disk/:/dev/disk:ro` | node-exporter diskstats device labels |
 | `/var/run/docker.sock` | `discovery.docker` + `loki.source.docker` |
 | `/var/lib/docker:ro` | cadvisor container metadata |
-| `/var/log/journal:ro` | `loki.source.journal` |
+| `/var/log:/var/log:ro` | `loki.source.journal` (`/var/log/journal`) + `loki.source.file` (syslog/messages/*.log) |
 | `/etc/machine-id:ro` | stable host id for the journal reader |
 | `alloy-data` (named volume) | WAL + remotecfg cache |
 
