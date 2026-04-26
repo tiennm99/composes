@@ -4,7 +4,7 @@
 
 services:
   alloy:
-    image: grafana/alloy:v1.10.0
+    image: grafana/alloy:v1.16.0
     container_name: alloy
     restart: unless-stopped
     hostname: ${ALLOY_HOSTNAME:?required}
@@ -165,7 +165,6 @@ configs:
 
         loki.source.journal "default"  {
             max_age       = "12h0m0s"
-            path          = "/var/log/journal"
             forward_to    = [loki.process.default.receiver]
             relabel_rules = loki.relabel.default.rules
         }

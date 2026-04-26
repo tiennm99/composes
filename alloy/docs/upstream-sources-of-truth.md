@@ -65,6 +65,11 @@ Both keep-lists in `docker-compose.yml` are copied verbatim from the **Metrics**
 - **Linux-Node** — 157 raw metrics (`node_*`, `process_max_fds`, `process_open_fds`, `up`). The list also contains `instance:node_num_cpu:sum`, which is a recording-rule output computed server-side by Grafana Cloud's ruler — it's intentionally **not** in the keep-list because the agent doesn't produce it.
 - **Docker** — 16 metrics (`container_*`, `machine_memory_bytes`, `machine_scrape_error`, `up`).
 
+Re-verification on 2026-04-26 also confirmed:
+
+- **Alloy image** bumped `v1.10.0` → `v1.16.0` (latest stable, released 2026-04-23).
+- **`loki.source.journal` `path`** was previously pinned to `/var/log/journal`; upstream omits the field, letting Alloy default to **both** `/var/log/journal` (persistent) and `/run/log/journal` (volatile). Local now matches — `path` removed.
+
 The Grafana Cloud integration's full dashboard set (the 7 Linux-Node + 2 Docker dashboards) is not publicly hosted. Tier-4 verification (against the live stack via authenticated API) was **not** performed and is the only known gap.
 
 ### Re-running the audit
