@@ -45,11 +45,11 @@ Where official mixin dashboards exist they're tier-2 corroboration:
 | Block in `docker-compose.yml` | Upstream source |
 |---|---|
 | `prometheus.exporter.unix` (collectors, mounts, fs/net excludes) | Linux Node integration page → "Configure Alloy" |
-| `prometheus.relabel "integrations_node_exporter"` (drop `node_scrape_collector_*`) | Linux Node integration page → drop rule snippet |
+| `prometheus.relabel "integrations_node_exporter"` (`keep` allowlist of 157 metrics) | Linux Node integration page → [Metrics](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-linux-node/#metrics) section, verbatim |
 | `loki.source.journal "default"` + relabel rules (`unit`, `boot_id`, `transport`, `level`) | Linux Node integration page → log scraping |
 | `loki.source.file` for `/var/log/{syslog,messages,*.log}` | Linux Node integration page → file log scraping |
 | `prometheus.exporter.cadvisor` (`docker_only = true`) | Docker integration page |
-| `prometheus.relabel "integrations_cadvisor"` keep allowlist | Docker integration page → metric list |
+| `prometheus.relabel "integrations_cadvisor"` (`keep` allowlist of 16 metrics) | Docker integration page → [Metrics](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-docker/#metrics) section, verbatim |
 | `discovery.docker` + `loki.source.docker` (job/instance/container/stream) | Docker integration page → log scraping |
 
 ## What "follow upstream" means in practice
@@ -60,10 +60,12 @@ Where official mixin dashboards exist they're tier-2 corroboration:
 
 ## Audit (2026-04-26)
 
-Verified with tier 1 + tier 2 sources only. The Grafana Cloud integration's full dashboard set (the 7 Linux-Node dashboards + 2 Docker dashboards) is **not** publicly hosted; auditing them requires tier 4 access (an authenticated Grafana Cloud API call against your own stack). That step was not performed and is the only known gap.
+Both keep-lists in `docker-compose.yml` are copied verbatim from the **Metrics** section of each integration page (tier 1):
 
-- **Linux-Node** — tier 1 specifies `drop "node_scrape_collector_.+"`, tier 3 (`prometheus/node_exporter` mixin) confirms that the metrics that mixin's dashboards reference all pass through the drop rule. Config matches. **No action.**
-- **Docker** — tier 1 lists 14 metrics + `up` / `machine_scrape_error` (16 total). Tier 2 (`grafana/jsonnet-libs` `docker.json`) confirms the same 14 panel-referenced metrics. Config matches. **No action.**
+- **Linux-Node** — 157 raw metrics (`node_*`, `process_max_fds`, `process_open_fds`, `up`). The list also contains `instance:node_num_cpu:sum`, which is a recording-rule output computed server-side by Grafana Cloud's ruler — it's intentionally **not** in the keep-list because the agent doesn't produce it.
+- **Docker** — 16 metrics (`container_*`, `machine_memory_bytes`, `machine_scrape_error`, `up`).
+
+The Grafana Cloud integration's full dashboard set (the 7 Linux-Node + 2 Docker dashboards) is not publicly hosted. Tier-4 verification (against the live stack via authenticated API) was **not** performed and is the only known gap.
 
 ### Re-running the audit
 

@@ -18,7 +18,7 @@ One-file [Grafana Alloy](https://grafana.com/docs/alloy/latest/) setup that ship
 | System logs (files) | `loki.source.file` | `/var/log/syslog`, `/var/log/messages`, `/var/log/*.log` |
 | Remote config | `remotecfg` | polls Grafana Fleet Management every 60s |
 
-Filtering follows the upstream Grafana Cloud integration configs: node metrics drop only `node_scrape_collector_*` meta-metrics (everything else ships); cadvisor uses the documented allowlist; logs are unfiltered.
+Filtering follows the upstream Grafana Cloud integration configs verbatim — `keep`-lists copied from each integration's **Metrics** section ([Linux Node](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-linux-node/#metrics), [Docker](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-docker/#metrics)). Logs are unfiltered.
 
 > **Log duplication caveat.** On systems where rsyslog mirrors journald to `/var/log/syslog` (e.g. Debian/Ubuntu defaults), enabling both pipelines double-ships the same lines. If that's the case for your hosts, drop one source — typically the file-based one is redundant on systemd-only stacks.
 
