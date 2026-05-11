@@ -1,6 +1,15 @@
 # netdata-docker-compose
 
-## Credits
+Docker Compose setup to run the [Netdata](https://www.netdata.cloud) monitoring agent.
 
-[Install Netdata with Docker](https://learn.netdata.cloud/docs/netdata-agent/installation/docker)
-<!-- [How to deploy monitoring on your VPS with Coolify and Netdata](https://peturgeorgievv.com/blog/how-to-deploy-monitoring-on-your-vps-with-coolify-and-netdata) -->
+## Quick start
+
+```bash
+docker compose up -d
+```
+
+Access the dashboard at `http://localhost:19999`.
+
+## License
+
+Apache-2.0 — see [LICENSE](LICENSE).
