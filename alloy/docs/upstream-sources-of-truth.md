@@ -67,7 +67,7 @@ Both keep-lists in `docker-compose.yml` are copied verbatim from the **Metrics**
 
 Re-verification on 2026-04-26 also confirmed:
 
-- **Alloy image** bumped `v1.10.0` → `v1.16.0` (latest stable, released 2026-04-23).
+- **Alloy image** bumped `v1.10.0` → `v1.16.1` (latest stable; v1.16.0 released 2026-04-23, patched to v1.16.1 on 2026-05-05).
 - **`loki.source.journal` `path`** was previously pinned to `/var/log/journal`; upstream omits the field, letting Alloy default to **both** `/var/log/journal` (persistent) and `/run/log/journal` (volatile). Local now matches — `path` removed.
 
 The Grafana Cloud integration's full dashboard set (the 7 Linux-Node + 2 Docker dashboards) is not publicly hosted. Tier-4 verification (against the live stack via authenticated API) was **not** performed and is the only known gap.

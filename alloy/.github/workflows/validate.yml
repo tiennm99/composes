@@ -33,7 +33,7 @@ jobs:
       - name: Validate Alloy config syntax
         run: |
           docker run --rm -v "$PWD/config.alloy:/config.alloy:ro" \
-            grafana/alloy:v1.10.0 fmt /config.alloy > /dev/null
+            grafana/alloy:v1.16.1 fmt /config.alloy > /dev/null
 
       - name: Validate Alloy config semantics (parse + load components)
         # `fmt` is syntax-only; this catches bad component refs, wrong arg
@@ -54,7 +54,7 @@ jobs:
             -v /var/lib/docker:/var/lib/docker:ro \
             -v /tmp/empty-journal:/var/log/journal:ro \
             -v /etc/machine-id:/etc/machine-id:ro \
-            grafana/alloy:v1.10.0 \
+            grafana/alloy:v1.16.1 \
             run --server.http.listen-addr=127.0.0.1:12345 --disable-reporting /etc/alloy/config.alloy
           sleep 10
           docker logs alloy-test 2>&1 | tee /tmp/alloy.log
