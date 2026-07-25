@@ -33,6 +33,7 @@ services:
 
   gitea-mirror:
     image: ghcr.io/raylabshq/gitea-mirror:latest
+    pull_policy: always
     volumes:
       - gitea-mirror-data:/app/data
     ports:
