@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: gitea
+      POSTGRES_USER: gitea
+      POSTGRES_PASSWORD: gitea
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gitea -d gitea"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  gitea:
+    image: gitea/gitea:latest
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GITEA__database__DB_TYPE: postgres
+      GITEA__database__HOST: db:5432
+      GITEA__database__NAME: gitea
+      GITEA__database__USER: gitea
+      GITEA__database__PASSWD: gitea
+      GITEA__server__SSH_PORT: 2222
+    volumes:
+      - gitea-data:/data
+    ports:
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:2222:22"
+
+  gitea-mirror:
+    image: ghcr.io/raylabshq/gitea-mirror:latest
+    volumes:
+      - gitea-mirror-data:/app/data
+    ports:
+      - "127.0.0.1:4321:4321"
+
+volumes:
+  db-data:
+  gitea-data:
+  gitea-mirror-data:

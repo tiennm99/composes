@@ -1,0 +1,4 @@
+gitea/
+gitea-mirror/
+.env
+purge.py
