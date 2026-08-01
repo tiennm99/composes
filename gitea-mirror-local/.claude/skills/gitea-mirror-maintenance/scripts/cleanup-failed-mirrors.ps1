@@ -54,8 +54,13 @@ if ($planAge.TotalMinutes -gt 15) {
 if ($targets.Count -eq 0) { "No repos match case(s): $($Case -join ',')"; return }
 
 # tea reads stdin on some paths; run it as a job so it can never hang the script.
+# The job must not start inside a git work tree: tea infers its target from the
+# local remote, and when that remote matches no configured login it discards
+# --login and fails with "remote repository required". Run from a neutral dir.
 function Invoke-Tea([string[]]$TeaArgs, [int]$Timeout) {
-  $j = Start-Job -ArgumentList $TeaArgs { param($a) & tea @a 2>&1; "EXIT:$LASTEXITCODE" }
+  $j = Start-Job -ArgumentList $TeaArgs, $env:TEMP {
+    param($a, $neutral) Set-Location $neutral; & tea @a 2>&1; "EXIT:$LASTEXITCODE"
+  }
   if (Wait-Job $j -Timeout $Timeout) {
     $out  = Receive-Job $j; Remove-Job $j -Force
     $code = ($out | Where-Object { $_ -like 'EXIT:*' }) -replace 'EXIT:', ''
