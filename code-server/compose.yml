@@ -1,0 +1,24 @@
+services:
+  code-server:
+    image: 'lscr.io/linuxserver/code-server:latest'
+    hostname: miti99-cs
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Ho_Chi_Minh
+      - DEFAULT_WORKSPACE=/config/workspace
+      - PWA_APPNAME=code-server
+      - 'DOCKER_MODS=linuxserver/mods:universal-package-install|linuxserver/mods:universal-docker|linuxserver/mods:code-server-golang|linuxserver/mods:code-server-nodejs|linuxserver/mods:code-server-npmglobal|linuxserver/mods:code-server-pnpm|linuxserver/mods:code-server-python3|linuxserver/mods:code-server-zsh'
+      - INSTALL_PACKAGES=apache2-utils|bfs|ffmpeg|gh|git|imagemagick|librsvg2-bin|lsof|psmisc|ugrep|unzip|zip
+      - NODEJS_MOD_VERSION=24
+      - PASSWORD=${PASSWORD}
+      - SUDO_PASSWORD=${PASSWORD}
+      - GIT_AUTHOR_NAME=${GIT_NAME}
+      - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
+      - GIT_COMMITTER_NAME=${GIT_NAME}
+      - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
+      - CODEX_ACCESS_TOKEN=${CODEX_ACCESS_TOKEN}
+    volumes:
+      - 'code-server-config:/config'
+volumes:
+  code-server-config:

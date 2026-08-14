@@ -1,0 +1,23 @@
+# Secrets: every service keeps its own .env next to its compose.yml
+.env
+*.env
+!.env.example
+!*.env.example
+
+# Compose override files are host-specific
+compose.override.yml
+compose.override.yaml
+docker-compose.override.yml
+docker-compose.override.yaml
+
+# Bind-mount data directories, if a service uses one instead of a named volume
+data/
+*/data/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+.idea/
+.vscode/
