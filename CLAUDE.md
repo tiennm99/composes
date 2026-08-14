@@ -1,7 +1,13 @@
 # composes
 
 Personal docker compose collection. One directory per service, each holding
-`compose.yml`, a committed `.env.example`, and a gitignored `.env`.
+`compose.yml`, its own `README.md`, a committed `.env.example`, and a
+gitignored `.env`.
+
+The root `README.md` is an index only — it covers the shared conventions and
+links out to each service. Per-service detail (variables, ports, storage)
+belongs in that service's README, not the root one. Adding a service means
+adding its README and a row to the root table.
 
 ## Deployment target
 
