@@ -53,4 +53,16 @@ Each links to its own README for variables, ports, and storage.
 
 | Service | What it is |
 | --- | --- |
+| [alloy](alloy/README.md) | Grafana Alloy shipping host + Docker metrics/logs to Grafana Cloud |
 | [code-server](code-server/README.md) | VS Code in the browser, as a remote dev box |
+| [couchbase](couchbase/README.md) | Couchbase Server |
+| [gitea-mirror-local](gitea-mirror-local/README.md) | Self-hosted Gitea + PostgreSQL + gitea-mirror for mirroring GitHub repos |
+| [netdata](netdata/README.md) | Netdata monitoring agent |
+| [ollama](ollama/README.md) | Ollama, optionally with a web UI |
+| [openvpn-as](openvpn-as/README.md) | OpenVPN Access Server |
+| [tastyigniter](tastyigniter/README.md) | TastyIgniter restaurant ordering platform |
+| [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
+
+The absorbed services (everything but `code-server`) predate this collection's
+conventions — some still publish ports or set `restart:`; align them as they
+get touched.
