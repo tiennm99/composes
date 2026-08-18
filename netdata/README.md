@@ -27,9 +27,9 @@ Key defaults you may want to override in `docker-compose.yml`:
 
 ## Related
 
-- [alloy-docker-compose](https://github.com/tiennm99/alloy-docker-compose) — Grafana Alloy collector (ships metrics to Grafana Cloud)
+- [alloy](../alloy/README.md) — Grafana Alloy collector (ships metrics to Grafana Cloud)
 - [grafana-git-sync](https://github.com/tiennm99/grafana-git-sync) — sync Grafana dashboards to git
-- [ollama-docker-compose](https://github.com/tiennm99/ollama-docker-compose) — Ollama LLM server compose setup
+- [ollama](../ollama/README.md) — Ollama LLM server compose setup
 
 ## License
 
