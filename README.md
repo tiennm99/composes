@@ -59,9 +59,7 @@ Each links to its own README for variables, ports, and storage.
 | [gitea-mirror-local](gitea-mirror-local/README.md) | Gitea + PostgreSQL + gitea-mirror, mirroring GitHub repos |
 | [netdata](netdata/README.md) | Netdata monitoring agent |
 | [ollama](ollama/README.md) | Ollama LLM server |
-| [openvpn-as](openvpn-as/README.md) | OpenVPN Access Server |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
-| [tastyigniter](tastyigniter/README.md) | TastyIgniter restaurant ordering platform |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
 
 Licensed under Apache 2.0 — see [LICENSE](LICENSE).
