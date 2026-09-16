@@ -31,7 +31,7 @@ the old entry is cached in `localStorage`.
 
 | Variable | Purpose |
 | --- | --- |
-| `PASEO_PASSWORD` | Web UI and API login. Generate with `openssl rand -base64 24`. |
+| `PASEO_PASSWORD` | Web UI and API login, and the `paseo` user's `sudo` password. Generate with `openssl rand -base64 24`. |
 | `PASEO_HOSTNAMES` | Domains allowed to reach the daemon, comma-separated. Your domain must be listed. |
 | `PASEO_TRUSTED_PROXIES` | Set to `uniquelocal`, or the UI loads but never connects. |
 | `PASEO_LABEL` | Container hostname. Paseo shows it as the host label in the UI; without it you get a random container ID. |
@@ -71,7 +71,7 @@ but anything written outside `$HOME` (`chsh`, `apt install`) is lost on rebuild.
 | `gh` | GitHub's signed apt repo | Debian does not package it |
 | Go (`GO_VERSION`) | Official go.dev tarball | Debian 12 ships 1.19 |
 | Python (`PYTHON_VERSION`) | `uv python install` | Debian 12 ships 3.11 |
-| `less jq unzip zip lsof psmisc ugrep bfs zsh` | apt | — |
+| `less jq unzip zip lsof psmisc ugrep bfs zsh sudo` | apt | — |
 
 Bump a language with a build arg, e.g. `--build-arg GO_VERSION=1.27.1`. Add
 other agent providers to the `npm install` line:
@@ -89,6 +89,14 @@ RUN npm install -g @anthropic-ai/claude-code @openai/codex opencode-ai
   a notice at startup. Rebuild to update.
 - The image stays root on purpose: the entrypoint chowns the volumes, then
   drops to the `paseo` user (uid 1000) with `gosu`.
+- `sudo` prompts for `PASEO_PASSWORD`. `entrypoint.sh` wraps the image's own
+  entrypoint to set it — it has to run at start, since baking a password into a
+  layer would commit the secret and `/etc/shadow` is not on a volume, so it
+  reverts on every recreate. Leave `PASEO_PASSWORD` empty and the account stays
+  locked, which means no `sudo`.
+- `sudo` resets `PATH` to its `secure_path`, which does not include
+  `/usr/local/go/bin`. `sudo go ...` therefore fails; use `sudo env PATH="$PATH"
+  go ...` or the full path.
 - Nothing installs into `$HOME`. That is `/home/paseo`, a volume mount that
   hides anything baked in at build time — hence `/opt/python` and
   `/usr/local/go` rather than the defaults.

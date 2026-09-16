@@ -7,11 +7,13 @@
 FROM ghcr.io/getpaseo/paseo:latest
 
 # --- system packages -------------------------------------------------------
-# Everyday shell tooling. git and curl are already in the base image.
+# Everyday shell tooling. git and curl are already in the base image; sudo is
+# not, despite Debian's base-passwd shipping an (empty) sudo group.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      less jq unzip zip lsof psmisc ugrep bfs zsh \
- && rm -rf /var/lib/apt/lists/*
+      less jq unzip zip lsof psmisc ugrep bfs zsh sudo \
+ && rm -rf /var/lib/apt/lists/* \
+ && usermod -aG sudo paseo
 
 # --- python ----------------------------------------------------------------
 # Debian 12 only carries 3.11, so fetch a standalone CPython build with uv
@@ -49,3 +51,10 @@ RUN install -d -m 0755 /etc/apt/keyrings \
 # it is not a Node wrapper. Do not swap it for the `curl | bash` installer,
 # which writes to $HOME/.local. Last because it changes most often.
 RUN npm install -g @anthropic-ai/claude-code
+
+# --- entrypoint ------------------------------------------------------------
+# Wraps the image's entrypoint to set the paseo user's password while still
+# root -- see entrypoint.sh. tini stays in front of it, as in the base image.
+# Last so that editing the script rebuilds only this layer.
+COPY --chmod=0755 entrypoint.sh /usr/local/bin/paseo-sudo-entrypoint
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/paseo-sudo-entrypoint"]
