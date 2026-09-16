@@ -1,36 +1,36 @@
-# netdata-docker-compose
+# netdata
 
-Docker Compose setup to run the [Netdata](https://www.netdata.cloud) monitoring agent.
+[Netdata](https://www.netdata.cloud) monitoring agent.
 
-## Quick start
+Uses `docker-compose.yml`, and sets `restart: unless-stopped` and
+`container_name: netdata` — unlike the platform-managed services described in
+the [root README](../README.md).
 
-```bash
-docker compose up -d
+Runs with `network_mode: host` and `pid: host`, plus `SYS_PTRACE`/`SYS_ADMIN`
+and an unconfined AppArmor profile, so it can read host processes and metrics.
+The dashboard is therefore on the host's own `19999`, not a published port.
+
+## Environment
+
+| Variable | Purpose |
+| --- | --- |
+| `NETDATA_CLAIM_TOKEN` | Netdata Cloud claim token. Without it the agent runs standalone. |
+
+```sh
+NETDATA_CLAIM_TOKEN=<token> docker compose up -d
 ```
 
-Access the dashboard at `http://localhost:19999`.
+## Storage
 
-## Customization
+| Volume | Mount | Holds |
+| --- | --- | --- |
+| `netdataconfig` | `/etc/netdata` | Agent configuration |
+| `netdatalib` | `/var/lib/netdata` | Metrics database, claim state |
+| `netdatacache` | `/var/cache/netdata` | Cache |
 
-Set your Netdata Cloud claim token to link the agent to your cloud account:
-
-```bash
-NETDATA_CLAIM_TOKEN=your-token docker compose up -d
-```
-
-Key defaults you may want to override in `docker-compose.yml`:
-
-| Setting | Default | Notes |
-|---------|---------|-------|
-| Dashboard port | `19999` | Map to a different host port if needed |
-| Volumes | `/proc`, `/sys`, host root | Required for full host metrics |
+Host paths (`/`, `/proc`, `/sys`, `/var/log`, the Docker socket, dbus) are
+mounted read-only for collection.
 
 ## Related
 
-- [alloy](../alloy/README.md) — Grafana Alloy collector (ships metrics to Grafana Cloud)
-- [grafana-git-sync](https://github.com/tiennm99/grafana-git-sync) — sync Grafana dashboards to git
-- [ollama](../ollama/README.md) — Ollama LLM server compose setup
-
-## License
-
-Apache-2.0 — see [LICENSE](LICENSE).
+- [alloy](../alloy/README.md) — ships metrics to Grafana Cloud instead

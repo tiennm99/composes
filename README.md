@@ -1,19 +1,19 @@
 # composes
 
 My docker compose collection — one directory per service, each self-contained.
+Tuned to my own setup rather than written as general-purpose templates.
 
-These are tuned to my own setup, not written as general-purpose templates. They
-are deployed through [Coolify](https://coolify.io) and
-[Dokploy](https://dokploy.com), so they lean on the platform for things a
-standalone compose file would normally declare:
+Services are deployed through [Coolify](https://coolify.io) and
+[Dokploy](https://dokploy.com), which own what a standalone compose file would
+otherwise declare:
 
-- **No published ports.** Both platforms attach the container to their proxy
-  network and map a domain directly to the internal port, so `ports:` is
-  unnecessary — and adding it would expose the host port as well.
+- **No published ports.** The platform attaches the container to its proxy
+  network and maps a domain to the internal port. Publishing one would also
+  expose it on the host.
 - **No `restart:` policy.** The platform manages the container lifecycle.
+- **No `container_name:`.** Compose derives it from the directory.
 
-Treat them as working examples rather than drop-in configs. Running one with
-plain `docker compose` means adding whatever your setup needs.
+Services that do publish ports or set `restart:` say so in their own README.
 
 ## Layout
 
@@ -33,7 +33,7 @@ the `code-server` project with its own network and volumes.
 In Coolify or Dokploy, point a Docker Compose resource at the service directory
 and set the environment variables from its `.env.example`.
 
-Locally, for a quick check:
+Locally:
 
 ```sh
 cd <service>
@@ -43,8 +43,8 @@ docker compose logs -f
 docker compose down
 ```
 
-`.env` is picked up automatically because it sits next to `compose.yml`.
-Never commit it — the root `.gitignore` covers `.env`/`*.env` and re-includes
+`.env` is picked up automatically because it sits next to `compose.yml`. Never
+commit it — the root `.gitignore` covers `.env`/`*.env` and re-includes
 `.env.example`.
 
 ## Services
@@ -53,17 +53,15 @@ Each links to its own README for variables, ports, and storage.
 
 | Service | What it is |
 | --- | --- |
-| [alloy](alloy/README.md) | Grafana Alloy shipping host + Docker metrics/logs to Grafana Cloud |
+| [alloy](alloy/README.md) | Grafana Alloy shipping host and Docker telemetry to Grafana Cloud |
 | [code-server](code-server/README.md) | VS Code in the browser, as a remote dev box |
 | [couchbase](couchbase/README.md) | Couchbase Server |
-| [gitea-mirror-local](gitea-mirror-local/README.md) | Self-hosted Gitea + PostgreSQL + gitea-mirror for mirroring GitHub repos |
+| [gitea-mirror-local](gitea-mirror-local/README.md) | Gitea + PostgreSQL + gitea-mirror, mirroring GitHub repos |
 | [netdata](netdata/README.md) | Netdata monitoring agent |
-| [ollama](ollama/README.md) | Ollama, optionally with a web UI |
+| [ollama](ollama/README.md) | Ollama LLM server |
 | [openvpn-as](openvpn-as/README.md) | OpenVPN Access Server |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
 | [tastyigniter](tastyigniter/README.md) | TastyIgniter restaurant ordering platform |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
 
-The absorbed services (everything but `code-server`) predate this collection's
-conventions — some still publish ports or set `restart:`; align them as they
-get touched.
+Licensed under Apache 2.0 — see [LICENSE](LICENSE).

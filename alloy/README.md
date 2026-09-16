@@ -1,77 +1,90 @@
-# alloy-docker-compose
+# alloy
 
-One-file [Grafana Alloy](https://grafana.com/docs/alloy/latest/) setup that ships host (linux) and container (docker) telemetry to Grafana Cloud, plus pulls remote config from Grafana Fleet Management.
+[Grafana Alloy](https://grafana.com/docs/alloy/latest/) shipping host and
+container telemetry to Grafana Cloud, with remote config from Grafana Fleet
+Management.
 
-- **Single container** running both `node_exporter` (host) and `cadvisor` (containers) collectors.
-- **Config embedded inline** via Compose `configs:` — no sidecar `config.alloy` file on disk.
-- **Env-driven** — nine shell variables, no `.env` file.
-- **Remote config** via `remotecfg` block (Grafana Fleet Management).
+One container runs both the `node_exporter` (host) and `cadvisor` (container)
+collectors. The Alloy config is embedded inline via Compose `configs:`, so
+there is no `config.alloy` on disk, and every setting comes from a shell
+variable rather than a `.env` file.
+
+Uses `docker-compose.yml`, and sets `restart: unless-stopped` and
+`container_name: alloy` — unlike the platform-managed services described in the
+[root README](../README.md).
 
 ## What it collects
 
 | Source | Component | Notes |
 |---|---|---|
-| Host metrics | `prometheus.exporter.unix` | CPU, memory, load, disk I/O, filesystem, network, uname, boot time, systemd, vmstat, sockstat — full default-collector set minus `ipvs/btrfs/infiniband/xfs/zfs` |
+| Host metrics | `prometheus.exporter.unix` | CPU, memory, load, disk I/O, filesystem, network, uname, boot time, systemd, vmstat, sockstat — the default collector set minus `ipvs/btrfs/infiniband/xfs/zfs` |
 | Container metrics | `prometheus.exporter.cadvisor` | CPU, memory, fs usage/limit, network, `last_seen` |
-| Container logs | `loki.source.docker` | all running containers, labeled with `container`, `stream`, `instance` |
-| System logs (journal) | `loki.source.journal` (via `journal_module`) | systemd journal with `unit`, `boot_id`, `transport`, `level` labels |
-| System logs (files) | `loki.source.file` | `/var/log/syslog`, `/var/log/messages`, `/var/log/*.log` |
-| Remote config | `remotecfg` | polls Grafana Fleet Management every 60s |
+| Container logs | `loki.source.docker` | All running containers, labeled `container`, `stream`, `instance` |
+| Journal logs | `loki.source.journal` | systemd journal, labeled `unit`, `boot_id`, `transport`, `level` |
+| File logs | `loki.source.file` | `/var/log/syslog`, `/var/log/messages`, `/var/log/*.log` |
+| Remote config | `remotecfg` | Polls Grafana Fleet Management every 60s |
 
-Filtering follows the upstream Grafana Cloud integration configs verbatim — `keep`-lists copied from each integration's **Metrics** section ([Linux Node](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-linux-node/#metrics), [Docker](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-docker/#metrics)). Logs are unfiltered.
+Metric filtering copies the `keep`-lists from the upstream Grafana Cloud
+integrations verbatim ([Linux Node](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-linux-node/#metrics),
+[Docker](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-docker/#metrics)).
+Logs are unfiltered.
 
-> **Log duplication caveat.** On systems where rsyslog mirrors journald to `/var/log/syslog` (e.g. Debian/Ubuntu defaults), enabling both pipelines double-ships the same lines. If that's the case for your hosts, drop one source — typically the file-based one is redundant on systemd-only stacks.
+Where rsyslog mirrors journald into `/var/log/syslog` — the Debian and Ubuntu
+default — the journal and file pipelines double-ship the same lines. Drop one
+source on those hosts; the file-based one is the redundant one on systemd-only
+stacks.
 
-## Quick start
+## Environment
+
+All nine are required; `docker compose up` fails fast if any is unset.
+
+| Variable | Purpose |
+| --- | --- |
+| `ALLOY_HOSTNAME` | Container hostname, and the Loki/Prometheus `instance` label |
+| `REMOTECFG_URL` | Fleet Management endpoint |
+| `REMOTECFG_ID` | Fleet Management agent id |
+| `REMOTECFG_USER` | Fleet Management user id |
+| `PROM_URL` / `PROM_USER` | Prometheus remote-write endpoint and user id |
+| `LOKI_URL` / `LOKI_USER` | Loki push endpoint and user id |
+| `GRAFANA_TOKEN` | One Cloud Access Policy token, scopes `metrics:write` + `logs:write` + `fleet-management:read` |
+
+Find the values under Grafana Cloud → your stack → **Details** on each data
+source, and under Fleet Management. The same token serves `remotecfg`,
+Prometheus and Loki basic-auth.
 
 ```bash
-export ALLOY_HOSTNAME=miti-jp                                                                      # also used as Loki/Prometheus instance label
-export REMOTECFG_URL=https://fleet-management-prod-013.grafana.net
-export REMOTECFG_ID=miti-jp                                                                        # fleet-management agent id
-export REMOTECFG_USER=1431677                                                                      # fleet-management user id
-export PROM_URL=https://prometheus-prod-XX-<region>.grafana.net/api/prom/push
-export PROM_USER=<prometheus-user-id>
-export LOKI_URL=https://logs-prod-XXX.grafana.net/loki/api/v1/push
-export LOKI_USER=<loki-user-id>
-export GRAFANA_TOKEN=glc_...                                                                       # one Cloud Access Policy token, scopes: metrics:write + logs:write + fleet-management:read
-
+export ALLOY_HOSTNAME=miti-jp REMOTECFG_ID=miti-jp ...
 docker compose up -d
 ```
 
-Find the `PROM_*` / `LOKI_*` / `REMOTECFG_*` values under Grafana Cloud → your stack → **Details** on each data source / Fleet Management. The same token is reused for `remotecfg`, Prometheus, and Loki basic-auth.
+Run the same file on every host, changing `ALLOY_HOSTNAME` and `REMOTECFG_ID`
+per host. Filter in Grafana with `instance=~"..."`.
 
-Any unset required variable makes `docker compose up` fail fast.
+## Privileges
 
-## Multi-host
-
-Same compose file on every host — change `ALLOY_HOSTNAME` and `REMOTECFG_ID` per host. Filter in Grafana with `instance=~"..."`.
-
-## Security note
-
-Runs `privileged: true` + `network_mode: host`, matching the upstream Grafana Cloud docker integration. `network_mode: host` is required so `prometheus.exporter.unix` reports the host's real network interfaces (eth0…) instead of the alloy container's veth pair. If you need least-privilege, see the upstream Alloy docker integration docs and tighten capabilities.
+Runs `privileged: true` with `network_mode: host`, matching the upstream
+Grafana Cloud docker integration. Host networking is what lets
+`prometheus.exporter.unix` report the host's real interfaces (`eth0`…) instead
+of the container's veth pair. To tighten this, see the upstream Alloy docker
+integration docs.
 
 ## Mounts
 
 | Mount | Why |
 |---|---|
-| `/proc:/rootproc:ro` | node-exporter cpu/mem/load (referenced via `procfs_path`) |
-| `/sys:/sys:ro` | node-exporter + cadvisor cgroups |
-| `/:/rootfs:ro` | filesystem collector (referenced via `rootfs_path`) |
+| `/proc:/rootproc:ro` | node-exporter cpu/mem/load, via `procfs_path` |
+| `/sys:/sys:ro` | node-exporter and cadvisor cgroups |
+| `/:/rootfs:ro` | filesystem collector, via `rootfs_path` |
 | `/dev/disk/:/dev/disk:ro` | node-exporter diskstats device labels |
-| `/var/run/docker.sock` | `discovery.docker` + `loki.source.docker` |
+| `/var/run/docker.sock` | `discovery.docker` and `loki.source.docker` |
 | `/var/lib/docker:ro` | cadvisor container metadata |
-| `/var/log:/var/log:ro` | `loki.source.journal` (`/var/log/journal`) + `loki.source.file` (syslog/messages/*.log) |
-| `/etc/machine-id:ro` | stable host id for the journal reader |
-| `alloy-data` (named volume) | WAL + remotecfg cache |
+| `/var/log:/var/log:ro` | `loki.source.journal` and `loki.source.file` |
+| `/etc/machine-id:ro` | Stable host id for the journal reader |
+| `alloy-data` | WAL and remotecfg cache |
 
-## Design
+## Notes
 
-- [Upstream sources of truth](docs/upstream-sources-of-truth.md) — what we follow, what's in scope, how to audit dashboard metric needs.
-
-## Known noise (special cases)
-
-- [Coolify SSH session spam](docs/known-noise-coolify-ssh-sessions.md) — only relevant if Coolify manages the host. Safe to ignore otherwise.
-
-## License
-
-Apache 2.0 — see [LICENSE](LICENSE).
+- [Upstream sources of truth](docs/upstream-sources-of-truth.md) — what this
+  follows, what is in scope, how to audit dashboard metric needs.
+- [Coolify SSH session noise](docs/known-noise-coolify-ssh-sessions.md) — only
+  relevant on Coolify-managed hosts.

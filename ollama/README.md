@@ -1,32 +1,21 @@
-# ollama-docker-compose
+# ollama
 
-Minimal Docker Compose setup for running [Ollama](https://ollama.com) locally — exposes the API on `:11434` with a named volume so pulled models persist across restarts.
+[Ollama](https://ollama.com) LLM server. CPU-only.
 
-> The "optionally with a web UI" phrase from the description is **not yet wired**. Open Web UI sidecar can be added — see [Roadmap](#roadmap).
+Uses `docker-compose.yml`, publishes `11434`, and sets
+`restart: unless-stopped` and `container_name: ollama` — unlike the
+platform-managed services described in the [root README](../README.md).
 
-## Quick start
+## Usage
 
-```bash
-docker compose up -d
-```
-
-Ollama API → `http://localhost:11434`.
-
-Pull a model:
-
-```bash
+```sh
 docker compose exec ollama ollama pull llama3.2
-```
-
-Chat from CLI:
-
-```bash
 docker compose exec ollama ollama run llama3.2
 ```
 
-Smoke test via API:
+The API is on `http://localhost:11434`:
 
-```bash
+```sh
 curl http://localhost:11434/api/generate -d '{
   "model": "llama3.2",
   "prompt": "Why is the sky blue?",
@@ -34,23 +23,9 @@ curl http://localhost:11434/api/generate -d '{
 }'
 ```
 
-## What's inside
+For GPU, add `deploy.resources.reservations.devices` for the NVIDIA runtime —
+see the [Ollama Docker docs](https://hub.docker.com/r/ollama/ollama).
 
-| Field | Value |
-|---|---|
-| Image | `ollama/ollama` (latest) |
-| Port | `11434:11434` |
-| Volume | `ollama:/root/.ollama` (models, manifests) |
-| Restart policy | `unless-stopped` |
+## Storage
 
-## GPU
-
-To enable GPU, add `deploy.resources.reservations.devices` for the NVIDIA runtime — see the [Ollama Docker docs](https://hub.docker.com/r/ollama/ollama). CPU-only by default.
-
-## Roadmap
-
-- Add Open Web UI sidecar (`ghcr.io/open-webui/open-webui:main`) on `:3000` wired to this Ollama instance.
-
-## License
-
-Apache-2.0
+`ollama` at `/root/.ollama` — pulled models and manifests.
