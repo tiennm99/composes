@@ -1,12 +1,13 @@
 # paseo
 
 [Paseo](https://paseo.sh) — self-hosted daemon and web UI for running coding
-agents. Built from a local `Dockerfile` that adds Claude Code and `gh` to the
-[official image](https://paseo.sh/docs/docker), which ships neither.
+agents. Built from a local `Dockerfile` that adds Claude Code, `gh`, Go,
+Python, and shell tooling to the [official image](https://paseo.sh/docs/docker),
+which ships none of it.
 
 ## Setup
 
-1. Set the three variables from `.env.example` in Coolify or Dokploy.
+1. Set the variables from `.env.example` in Coolify or Dokploy.
 2. Point the domain at port `6767` and deploy.
 3. Open the domain. At the pairing screen enter the host **with the port**:
 
@@ -33,6 +34,8 @@ the old entry is cached in `localStorage`.
 | `PASEO_PASSWORD` | Web UI and API login. Generate with `openssl rand -base64 24`. |
 | `PASEO_HOSTNAMES` | Domains allowed to reach the daemon, comma-separated. Your domain must be listed. |
 | `PASEO_TRUSTED_PROXIES` | Set to `uniquelocal`, or the UI loads but never connects. |
+| `PASEO_LABEL` | Container hostname. Paseo shows it as the host label in the UI; without it you get a random container ID. |
+| `TZ` | Timezone for logs and agent shells. |
 
 `PASEO_TRUSTED_PROXIES` matches the *source IP* of the proxy, so hostnames are
 rejected. By default the daemon believes `X-Forwarded-Proto` only from
@@ -60,14 +63,22 @@ a redeploy.
 
 ## Image
 
-Claude Code comes from npm; `gh` from GitHub's signed apt repo, since Debian
-does not package it. Add other agent providers to the `npm install` line:
+| Tool | Source | Why not apt |
+| --- | --- | --- |
+| Claude Code | npm | — |
+| `gh` | GitHub's signed apt repo | Debian does not package it |
+| Go (`GO_VERSION`) | Official go.dev tarball | Debian 12 ships 1.19 |
+| Python (`PYTHON_VERSION`) | `uv python install` | Debian 12 ships 3.11 |
+| `less jq unzip zip lsof psmisc ugrep bfs zsh` | apt | — |
+
+Bump a language with a build arg, e.g. `--build-arg GO_VERSION=1.27.1`. Add
+other agent providers to the `npm install` line:
 
 ```dockerfile
 RUN npm install -g @anthropic-ai/claude-code @openai/codex opencode-ai
 ```
 
-Notes for anyone tempted to change it:
+`uv` itself is installed too. Notes for anyone tempted to change things:
 
 - npm installs the same native binary as Anthropic's standalone installer.
   Don't swap in `curl | bash` — it writes to `$HOME/.local`, and `$HOME` is
@@ -76,3 +87,6 @@ Notes for anyone tempted to change it:
   a notice at startup. Rebuild to update.
 - The image stays root on purpose: the entrypoint chowns the volumes, then
   drops to the `paseo` user (uid 1000) with `gosu`.
+- Nothing installs into `$HOME`. That is `/home/paseo`, a volume mount that
+  hides anything baked in at build time — hence `/opt/python` and
+  `/usr/local/go` rather than the defaults.

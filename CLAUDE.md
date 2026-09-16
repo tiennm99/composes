@@ -11,6 +11,18 @@ shorter one. Existing services that still use `docker-compose.yml` stay as
 they are; do not rename them, not even while touching the file for something
 else.
 
+## Installing software in an image
+
+Follow the upstream project's own documented install method, or the one the
+community has settled on. In order of preference: the vendor's signed package
+repository, the vendor's official tarball or install script, then a well-known
+community installer. Do not hand-roll a download, and do not take a stale
+distro package just because `apt install` is shorter — check what version it
+actually gives you first.
+
+State the reason in a comment when the obvious route is the wrong one, so the
+next person does not "simplify" it back.
+
 The root `README.md` is an index only — it covers the shared conventions and
 links out to each service. Per-service detail (variables, ports, storage)
 belongs in that service's README, not the root one. Adding a service means
