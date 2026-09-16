@@ -36,6 +36,7 @@ the old entry is cached in `localStorage`.
 | `PASEO_TRUSTED_PROXIES` | Set to `uniquelocal`, or the UI loads but never connects. |
 | `PASEO_LABEL` | Container hostname. Paseo shows it as the host label in the UI; without it you get a random container ID. |
 | `TZ` | Timezone for logs and agent shells. |
+| `SHELL` | Shell for Paseo's terminals. Paseo reads `$SHELL` and falls back to `/bin/sh`, ignoring the login shell, so `chsh` has no effect. |
 
 `PASEO_TRUSTED_PROXIES` matches the *source IP* of the proxy, so hostnames are
 rejected. By default the daemon believes `X-Forwarded-Proto` only from
@@ -59,7 +60,8 @@ Listens on `6767`, published nowhere — the platform maps the domain to it, so
 | `paseo-workspace` | `/workspace` | Code the agents work on |
 
 Claude Code and `gh` keep their config in `/home/paseo`, so both logins survive
-a redeploy.
+a redeploy. Dotfiles live there too — a `.zshrc` or oh-my-zsh install persists,
+but anything written outside `$HOME` (`chsh`, `apt install`) is lost on rebuild.
 
 ## Image
 

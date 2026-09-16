@@ -4,6 +4,7 @@ services:
     hostname: ${PASEO_LABEL}
     environment:
       - TZ=${TZ}
+      - SHELL=${SHELL}
       - PASEO_PASSWORD=${PASEO_PASSWORD}
       - PASEO_HOSTNAMES=${PASEO_HOSTNAMES}
       - PASEO_TRUSTED_PROXIES=${PASEO_TRUSTED_PROXIES}
