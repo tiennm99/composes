@@ -1,8 +1,8 @@
 # paseo
 
 [Paseo](https://paseo.sh) — self-hosted daemon and web UI for running coding
-agents. Built from a local `Dockerfile` that adds Claude Code to the
-[official image](https://paseo.sh/docs/docker), which ships no agent CLIs.
+agents. Built from a local `Dockerfile` that adds Claude Code and `gh` to the
+[official image](https://paseo.sh/docs/docker), which ships neither.
 
 ## Setup
 
@@ -15,6 +15,7 @@ agents. Built from a local `Dockerfile` that adds Claude Code to the
    ```
 
    Then the `PASEO_PASSWORD` value.
+4. In a terminal inside Paseo, log in once: `claude` and `gh auth login`.
 
 The port is required — the UI rejects a bare hostname. You must type the
 address yourself: the daemon builds its auto-connect hint from the `Host`
@@ -54,12 +55,13 @@ Listens on `6767`, published nowhere — the platform maps the domain to it, so
 | `paseo-home` | `/home/paseo` | Daemon state, agent configs, credentials (`.claude`, `.codex`) |
 | `paseo-workspace` | `/workspace` | Code the agents work on |
 
-Claude Code's config lives in `/home/paseo/.claude`, so logins survive a
-redeploy.
+Claude Code and `gh` keep their config in `/home/paseo`, so both logins survive
+a redeploy.
 
 ## Image
 
-Add other providers to the `npm install` line in the `Dockerfile`:
+Claude Code comes from npm; `gh` from GitHub's signed apt repo, since Debian
+does not package it. Add other agent providers to the `npm install` line:
 
 ```dockerfile
 RUN npm install -g @anthropic-ai/claude-code @openai/codex opencode-ai
