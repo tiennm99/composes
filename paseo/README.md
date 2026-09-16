@@ -35,6 +35,7 @@ the old entry is cached in `localStorage`.
 | `PASEO_HOSTNAMES` | Domains allowed to reach the daemon, comma-separated. Your domain must be listed. |
 | `PASEO_TRUSTED_PROXIES` | Set to `uniquelocal`, or the UI loads but never connects. |
 | `PASEO_LABEL` | Container hostname. Paseo shows it as the host label in the UI; without it you get a random container ID. |
+| `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity for agents and terminals. |
 | `TZ` | Timezone for logs and agent shells. |
 | `SHELL` | Shell for Paseo's terminals. Paseo reads `$SHELL` and falls back to `/bin/sh`, ignoring the login shell, so `chsh` has no effect. |
 
@@ -71,7 +72,7 @@ but anything written outside `$HOME` (`chsh`, `apt install`) is lost on rebuild.
 | `gh` | GitHub's signed apt repo | Debian does not package it |
 | Go (`GO_VERSION`) | Official go.dev tarball | Debian 12 ships 1.19 |
 | Python (`PYTHON_VERSION`) | `uv python install` | Debian 12 ships 3.11 |
-| `less jq unzip zip lsof psmisc ugrep bfs zsh sudo` | apt | — |
+| `less nano jq unzip zip lsof psmisc ugrep bfs zsh sudo` | apt | — |
 
 Bump a language with a build arg, e.g. `--build-arg GO_VERSION=1.27.1`. Add
 other agent providers to the `npm install` line:

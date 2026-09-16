@@ -11,7 +11,7 @@ FROM ghcr.io/getpaseo/paseo:latest
 # not, despite Debian's base-passwd shipping an (empty) sudo group.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      less jq unzip zip lsof psmisc ugrep bfs zsh sudo \
+      less nano jq unzip zip lsof psmisc ugrep bfs zsh sudo \
  && rm -rf /var/lib/apt/lists/* \
  && usermod -aG sudo paseo
 
