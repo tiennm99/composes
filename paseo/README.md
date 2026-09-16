@@ -28,6 +28,7 @@ stanza; there is nothing to push.
 | --- | --- |
 | `PASEO_PASSWORD` | Auth for the daemon API and WebSocket |
 | `PASEO_HOSTNAMES` | Comma-separated DNS names allowed to reach the daemon, e.g. `paseo.example.com,.lan`. IPs and localhost always pass. |
+| `PASEO_TRUSTED_PROXIES` | Proxy addresses whose `X-Forwarded-*` headers the daemon believes. Required behind a TLS-terminating proxy — see below. |
 
 Generate a password with `openssl rand -base64 24`. The proxied domain must
 appear in `PASEO_HOSTNAMES` or requests are rejected.
@@ -35,7 +36,19 @@ appear in `PASEO_HOSTNAMES` or requests are rejected.
 ## Networking
 
 Listens on `6767`. No ports are published — point the domain at that port in
-Coolify or Dokploy. See the [root README](../README.md) for why.
+Coolify or Dokploy. See the [root README](../README.md) for why. `localhost:6767`
+on the host will refuse connections; reach the daemon through its domain.
+
+`PASEO_TRUSTED_PROXIES` must be set, or the web UI loads but never connects.
+The daemon trusts `X-Forwarded-Proto` from loopback only by default. Coolify's
+Traefik reaches it from the Docker bridge network instead, so the daemon
+concludes the request was plain HTTP and hands the UI `useTls: false`. The UI
+then builds a `ws://` URL from an `https://` page, the browser blocks it as
+mixed content, and the UI falls back to its built-in `localhost:6767` default —
+which in a browser means the viewer's own machine, not the server.
+
+`uniquelocal` covers the private ranges Docker uses. A specific CIDR works too,
+but Coolify assigns a fresh subnet per project, so it will not survive a move.
 
 ## Storage
 

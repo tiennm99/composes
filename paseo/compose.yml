@@ -4,6 +4,7 @@ services:
     environment:
       - PASEO_PASSWORD=${PASEO_PASSWORD}
       - PASEO_HOSTNAMES=${PASEO_HOSTNAMES}
+      - PASEO_TRUSTED_PROXIES=${PASEO_TRUSTED_PROXIES}
     volumes:
       - 'paseo-home:/home/paseo'
       - 'paseo-workspace:/workspace'
