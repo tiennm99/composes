@@ -9,9 +9,14 @@ FROM ghcr.io/getpaseo/paseo:latest
 # --- system packages -------------------------------------------------------
 # Everyday shell tooling. git and curl are already in the base image; sudo is
 # not, despite Debian's base-passwd shipping an (empty) sudo group.
+#
+# build-essential is the C toolchain the language layers below assume but do
+# not ship: cgo, npm's node-gyp addons and Python C extensions all shell out to
+# gcc and make. Kept in this layer so there is only one apt-get update.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       less nano jq unzip zip lsof psmisc ugrep bfs zsh sudo \
+      build-essential \
  && rm -rf /var/lib/apt/lists/* \
  && usermod -aG sudo paseo
 

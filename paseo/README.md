@@ -2,7 +2,7 @@
 
 [Paseo](https://paseo.sh) — self-hosted daemon and web UI for running coding
 agents. Built from a local `Dockerfile` that adds six agent CLIs, `gh`, Go,
-Python, and shell tooling to the
+Python, a C toolchain, and shell tooling to the
 [official image](https://paseo.sh/docs/docker), which ships none of it.
 
 ## Setup
@@ -92,6 +92,7 @@ oh-my-zsh install persists. Anything written outside `$HOME` (`chsh`,
 | Go (`GO_VERSION`) | Official go.dev tarball | Debian 12 ships 1.19 |
 | Python (`PYTHON_VERSION`) | `uv python install` | Debian 12 ships 3.11 |
 | `less nano jq unzip zip lsof psmisc ugrep bfs zsh sudo` | apt | — |
+| `build-essential` | apt | — |
 
 Bump a language with a build arg, e.g. `--build-arg GO_VERSION=1.27.1`. `uv`
 itself is installed too.
