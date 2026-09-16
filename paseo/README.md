@@ -1,8 +1,8 @@
 # paseo
 
 [Paseo](https://paseo.sh) — self-hosted daemon and web UI for running coding
-agents. Built from a local `Dockerfile` that adds Claude Code, Codex, opencode,
-`gh`, Go, Python, and shell tooling to the
+agents. Built from a local `Dockerfile` that adds six agent CLIs, `gh`, Go,
+Python, and shell tooling to the
 [official image](https://paseo.sh/docs/docker), which ships none of it.
 
 ## Setup
@@ -16,8 +16,8 @@ agents. Built from a local `Dockerfile` that adds Claude Code, Codex, opencode,
    ```
 
    Then the `PASEO_PASSWORD` value.
-4. In a terminal inside Paseo, log in once per tool you use: `claude`,
-   `codex login`, `opencode auth login`, `gh auth login`.
+4. In a terminal inside Paseo, log in once per tool you use — see the
+   [agents](#agents) table — plus `gh auth login`.
 
 The port is required — the UI rejects a bare hostname. You must type the
 address yourself: the daemon builds its auto-connect hint from the `Host`
@@ -54,16 +54,33 @@ Listens on `6767`, published nowhere — the platform maps the domain to it, so
 `localhost:6767` on the host refuses connections. See the
 [root README](../README.md) for why.
 
+## Agents
+
+All six come from npm, so new providers are one more entry on the `npm
+install` line.
+
+| Agent | Command | Package | Log in with |
+| --- | --- | --- | --- |
+| Claude Code | `claude` | `@anthropic-ai/claude-code` | `claude` |
+| Codex | `codex` | `@openai/codex` | `codex login` |
+| opencode | `opencode` | `opencode-ai` | `opencode auth login` |
+| Copilot CLI | `copilot` | `@github/copilot` | `/login` inside `copilot` |
+| Pi | `pi` | `@earendil-works/pi-coding-agent` | `pi` |
+| Oh My Pi | `omp` | `@oh-my-pi/pi-coding-agent` | `omp` |
+
+Pi and Oh My Pi are separate projects sharing an ancestor, so they install side
+by side and their commands do not collide.
+
 ## Storage
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `paseo-home` | `/home/paseo` | Daemon state, agent configs, credentials (`.claude`, `.codex`, `.config/opencode`) |
+| `paseo-home` | `/home/paseo` | Daemon state, agent configs, credentials (`.claude`, `.codex`, `.config/*`) |
 | `paseo-workspace` | `/workspace` | Code the agents work on |
 
 Every agent CLI and `gh` keep their config under `/home/paseo`, so all logins
 survive a redeploy. The base image already points `CLAUDE_CONFIG_DIR`,
-`CODEX_HOME` and the `XDG_*` variables (which opencode follows) into it.
+`CODEX_HOME` and the `XDG_*` variables (which the rest follow) into it.
 Dotfiles live there too — a `.zshrc` or oh-my-zsh install persists, but
 anything written outside `$HOME` (`chsh`, `apt install`) is lost on rebuild.
 
@@ -71,21 +88,24 @@ anything written outside `$HOME` (`chsh`, `apt install`) is lost on rebuild.
 
 | Tool | Source | Why not apt |
 | --- | --- | --- |
-| Claude Code, Codex, opencode | npm | — |
+| Agent CLIs (see [above](#agents)) | npm | — |
+| Bun | Official `bun.sh` install script | Debian does not package it |
 | `gh` | GitHub's signed apt repo | Debian does not package it |
 | Go (`GO_VERSION`) | Official go.dev tarball | Debian 12 ships 1.19 |
 | Python (`PYTHON_VERSION`) | `uv python install` | Debian 12 ships 3.11 |
 | `less nano jq unzip zip lsof psmisc ugrep bfs zsh sudo` | apt | — |
 
-Bump a language with a build arg, e.g. `--build-arg GO_VERSION=1.27.1`. Add
-further agent providers to the `npm install` line. `uv` itself is installed
-too. Notes for anyone tempted to change things:
+Bump a language with a build arg, e.g. `--build-arg GO_VERSION=1.27.1`. `uv`
+itself is installed too. Notes for anyone tempted to change things:
 
 - npm installs the same native binaries the vendors' own installers do — each
   package is a thin launcher with the real binary as a per-platform optional
   dependency. Don't swap in `curl | bash`: those write to `$HOME/.local`, and
   `$HOME` is `/home/paseo`, a volume mount that hides anything baked in at
   build time.
+- Bun is there for `omp` alone. That package is Bun-compiled and its bin opens
+  with `#!/usr/bin/env bun`, so dropping Bun leaves an `omp` that won't start.
+  Nothing else in the image uses it — Node still runs the other five.
 - The agent CLIs can't auto-update (`paseo` can't write `/usr/local`), so
   Claude Code shows a notice at startup. Rebuild to update.
 - The image stays root on purpose: the entrypoint chowns the volumes, then

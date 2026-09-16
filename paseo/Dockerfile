@@ -46,10 +46,18 @@ RUN install -d -m 0755 /etc/apt/keyrings \
  && apt-get install -y --no-install-recommends gh \
  && rm -rf /var/lib/apt/lists/*
 
+# --- bun -------------------------------------------------------------------
+# Only omp needs it: @oh-my-pi/pi-coding-agent is Bun-compiled and its bin
+# opens with `#!/usr/bin/env bun`, so without Bun on PATH npm installs an omp
+# that cannot start. BUN_INSTALL lands it in /usr/local, not the $HOME/.bun
+# default that the paseo-home volume would mask.
+ENV BUN_INSTALL=/usr/local
+RUN curl -fsSL https://bun.sh/install | bash
+
 # --- agent CLIs ------------------------------------------------------------
-# All three publish the same way: a thin npm launcher plus the real native
-# binary as a per-platform optional dependency. npm therefore installs exactly
-# what each vendor's own installer would, and is not a Node wrapper.
+# These all publish the same way: a thin launcher plus the real binary as a
+# per-platform optional dependency. npm therefore installs exactly what each
+# vendor's own installer would, and is not a Node wrapper.
 #
 # Do not swap any of them for their `curl | bash` installer -- those write to
 # $HOME/.local, and $HOME is /home/paseo, a volume that masks whatever the
@@ -57,7 +65,10 @@ RUN install -d -m 0755 /etc/apt/keyrings \
 RUN npm install -g \
       @anthropic-ai/claude-code \
       @openai/codex \
-      opencode-ai
+      opencode-ai \
+      @github/copilot \
+      @earendil-works/pi-coding-agent \
+      @oh-my-pi/pi-coding-agent
 
 # --- entrypoint ------------------------------------------------------------
 # Wraps the image's entrypoint to set the paseo user's password while still
