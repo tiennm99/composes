@@ -4,6 +4,13 @@ Personal docker compose collection. One directory per service, each holding
 `compose.yml`, its own `README.md`, a committed `.env.example`, and a
 gitignored `.env`.
 
+## File naming
+
+New services use `compose.yml` — the current Compose spec name, and the
+shorter one. Existing services that still use `docker-compose.yml` stay as
+they are; do not rename them, not even while touching the file for something
+else.
+
 The root `README.md` is an index only — it covers the shared conventions and
 links out to each service. Per-service detail (variables, ports, storage)
 belongs in that service's README, not the root one. Adding a service means
