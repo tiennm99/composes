@@ -1,0 +1,12 @@
+services:
+  paseo:
+    build: .
+    environment:
+      - PASEO_PASSWORD=${PASEO_PASSWORD}
+      - PASEO_HOSTNAMES=${PASEO_HOSTNAMES}
+    volumes:
+      - 'paseo-home:/home/paseo'
+      - 'paseo-workspace:/workspace'
+volumes:
+  paseo-home:
+  paseo-workspace:

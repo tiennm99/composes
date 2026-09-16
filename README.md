@@ -60,6 +60,7 @@ Each links to its own README for variables, ports, and storage.
 | [netdata](netdata/README.md) | Netdata monitoring agent |
 | [ollama](ollama/README.md) | Ollama, optionally with a web UI |
 | [openvpn-as](openvpn-as/README.md) | OpenVPN Access Server |
+| [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
 | [tastyigniter](tastyigniter/README.md) | TastyIgniter restaurant ordering platform |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
 
