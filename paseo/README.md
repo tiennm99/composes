@@ -1,9 +1,9 @@
 # paseo
 
 [Paseo](https://paseo.sh) — self-hosted daemon and web UI for running coding
-agents. Built from a local `Dockerfile` that adds Claude Code, `gh`, Go,
-Python, and shell tooling to the [official image](https://paseo.sh/docs/docker),
-which ships none of it.
+agents. Built from a local `Dockerfile` that adds Claude Code, Codex, opencode,
+`gh`, Go, Python, and shell tooling to the
+[official image](https://paseo.sh/docs/docker), which ships none of it.
 
 ## Setup
 
@@ -16,7 +16,8 @@ which ships none of it.
    ```
 
    Then the `PASEO_PASSWORD` value.
-4. In a terminal inside Paseo, log in once: `claude` and `gh auth login`.
+4. In a terminal inside Paseo, log in once per tool you use: `claude`,
+   `codex login`, `opencode auth login`, `gh auth login`.
 
 The port is required — the UI rejects a bare hostname. You must type the
 address yourself: the daemon builds its auto-connect hint from the `Host`
@@ -57,37 +58,36 @@ Listens on `6767`, published nowhere — the platform maps the domain to it, so
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `paseo-home` | `/home/paseo` | Daemon state, agent configs, credentials (`.claude`, `.codex`) |
+| `paseo-home` | `/home/paseo` | Daemon state, agent configs, credentials (`.claude`, `.codex`, `.config/opencode`) |
 | `paseo-workspace` | `/workspace` | Code the agents work on |
 
-Claude Code and `gh` keep their config in `/home/paseo`, so both logins survive
-a redeploy. Dotfiles live there too — a `.zshrc` or oh-my-zsh install persists,
-but anything written outside `$HOME` (`chsh`, `apt install`) is lost on rebuild.
+Every agent CLI and `gh` keep their config under `/home/paseo`, so all logins
+survive a redeploy. The base image already points `CLAUDE_CONFIG_DIR`,
+`CODEX_HOME` and the `XDG_*` variables (which opencode follows) into it.
+Dotfiles live there too — a `.zshrc` or oh-my-zsh install persists, but
+anything written outside `$HOME` (`chsh`, `apt install`) is lost on rebuild.
 
 ## Image
 
 | Tool | Source | Why not apt |
 | --- | --- | --- |
-| Claude Code | npm | — |
+| Claude Code, Codex, opencode | npm | — |
 | `gh` | GitHub's signed apt repo | Debian does not package it |
 | Go (`GO_VERSION`) | Official go.dev tarball | Debian 12 ships 1.19 |
 | Python (`PYTHON_VERSION`) | `uv python install` | Debian 12 ships 3.11 |
 | `less nano jq unzip zip lsof psmisc ugrep bfs zsh sudo` | apt | — |
 
 Bump a language with a build arg, e.g. `--build-arg GO_VERSION=1.27.1`. Add
-other agent providers to the `npm install` line:
+further agent providers to the `npm install` line. `uv` itself is installed
+too. Notes for anyone tempted to change things:
 
-```dockerfile
-RUN npm install -g @anthropic-ai/claude-code @openai/codex opencode-ai
-```
-
-`uv` itself is installed too. Notes for anyone tempted to change things:
-
-- npm installs the same native binary as Anthropic's standalone installer.
-  Don't swap in `curl | bash` — it writes to `$HOME/.local`, and `$HOME` is
-  `/home/paseo`, a volume mount that hides anything baked in at build time.
-- Claude Code can't auto-update (`paseo` can't write `/usr/local`), so it shows
-  a notice at startup. Rebuild to update.
+- npm installs the same native binaries the vendors' own installers do — each
+  package is a thin launcher with the real binary as a per-platform optional
+  dependency. Don't swap in `curl | bash`: those write to `$HOME/.local`, and
+  `$HOME` is `/home/paseo`, a volume mount that hides anything baked in at
+  build time.
+- The agent CLIs can't auto-update (`paseo` can't write `/usr/local`), so
+  Claude Code shows a notice at startup. Rebuild to update.
 - The image stays root on purpose: the entrypoint chowns the volumes, then
   drops to the `paseo` user (uid 1000) with `gosu`.
 - `sudo` prompts for `PASEO_PASSWORD`. `entrypoint.sh` wraps the image's own

@@ -47,10 +47,17 @@ RUN install -d -m 0755 /etc/apt/keyrings \
  && rm -rf /var/lib/apt/lists/*
 
 # --- agent CLIs ------------------------------------------------------------
-# npm here delivers the same native binary as Anthropic's standalone installer;
-# it is not a Node wrapper. Do not swap it for the `curl | bash` installer,
-# which writes to $HOME/.local. Last because it changes most often.
-RUN npm install -g @anthropic-ai/claude-code
+# All three publish the same way: a thin npm launcher plus the real native
+# binary as a per-platform optional dependency. npm therefore installs exactly
+# what each vendor's own installer would, and is not a Node wrapper.
+#
+# Do not swap any of them for their `curl | bash` installer -- those write to
+# $HOME/.local, and $HOME is /home/paseo, a volume that masks whatever the
+# build put there. Last because these change most often.
+RUN npm install -g \
+      @anthropic-ai/claude-code \
+      @openai/codex \
+      opencode-ai
 
 # --- entrypoint ------------------------------------------------------------
 # Wraps the image's entrypoint to set the paseo user's password while still
