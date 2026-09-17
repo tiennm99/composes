@@ -20,13 +20,16 @@ community installer. Do not hand-roll a download, and do not take a stale
 distro package just because `apt install` is shorter — check what version it
 actually gives you first.
 
-## Comments in compose files and Dockerfiles
+## Comments in compose files, Dockerfiles and scripts
 
-A comment says *what* a section installs or configures, in a line or two. It
-does not explain *why*. Reasons — why not the distro package, why that
-directory, why a version is pinned, what would break if it were simplified —
-go in the service's `README.md`, where they can be read in full and where
-someone deciding whether to change something will actually look.
+This holds for every file in a service directory, not just the compose file.
+
+A comment says *what* a section installs, configures or does, in a line or
+two. It does not explain *why*. Reasons — why not the distro package, why that
+directory, why a version is pinned, why a step runs here and not there, what
+would break if it were simplified — go in the service's `README.md`, where
+they can be read in full and where someone deciding whether to change
+something will actually look.
 
 So: no rationale, no trade-offs, no cautionary notes in the file itself. When a
 choice needs defending, write the defence in the README and let the header
