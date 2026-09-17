@@ -75,6 +75,12 @@ opencode — and appends that directory to your shell rc, so open a new terminal
 afterwards. `$HOME` is the `paseo-home` volume, so both the binaries and the
 logins survive a redeploy.
 
+Both directories are on the image's `PATH`, so Paseo picks an agent up as soon
+as its installer finishes — no redeploy, no daemon restart. The shell rc entry
+the installers add only reaches interactive terminals; the daemon looks the
+binary up in its own environment, and without these entries it reports every
+self-installed agent as unavailable while a terminal runs it fine.
+
 The installers pull in any runtime they need, into `$HOME` as well. `omp` is
 the one to know about: it is Bun-compiled, and with no Bun on `PATH` its
 installer takes the prebuilt binary. Ask for the source build (`--source`) and
@@ -148,3 +154,8 @@ all here:
   unusable.
 - `sudo` resets `PATH` to its `secure_path`, which excludes
   `/usr/local/go/bin`. Use `sudo env PATH="$PATH" go ...` or the full path.
+- The agent `PATH` entries belong in the image, not in a shell rc: the daemon
+  probes for each provider's binary with `which` in its own environment, which
+  comes from the image and never sources an rc file. They are spelled
+  `/home/paseo/...` because `ENV` only expands variables the `Dockerfile` itself
+  set earlier.

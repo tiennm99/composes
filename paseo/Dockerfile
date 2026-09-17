@@ -44,6 +44,10 @@ RUN install -d -m 0755 /etc/apt/keyrings \
  && rm -f /tmp/glab.deb \
  && rm -rf /var/lib/apt/lists/*
 
+# --- agent cli path --------------------------------------------------------
+# Puts the $HOME directories the agent installers write to on PATH.
+ENV PATH=/home/paseo/.local/bin:/home/paseo/.opencode/bin:$PATH
+
 # --- entrypoint ------------------------------------------------------------
 # Wraps the image's entrypoint to set the paseo user's password while still
 # root -- see entrypoint.sh.
