@@ -18,8 +18,9 @@ agent CLIs are not baked in — install them into `$HOME` yourself, see
    paseo.example.com:443
    ```
 
-4. In a terminal inside Paseo, install and log in to the agents you use — see
-   [Agents](#agents) — plus `gh auth login` and `glab auth login`.
+4. List the agents you want in `AGENT_CLIS`; the first start installs them.
+   Log in to each — see [Agents](#agents) — plus `gh auth login` and
+   `glab auth login`.
 
 The port must be typed by hand. The UI rejects a bare hostname, and the
 auto-connect hint does not help: the daemon builds it from the `Host` header,
@@ -37,6 +38,7 @@ the old entry is cached in `localStorage`.
 | `PASEO_PASSWORD` | Web UI and API login, and the `paseo` user's `sudo` password. Generate with `openssl rand -base64 24`. |
 | `PASEO_HOSTNAMES` | Domains allowed to reach the daemon, comma-separated. Your domain must be listed. |
 | `PASEO_TRUSTED_PROXIES` | Set to `uniquelocal`, or the UI loads but never connects. |
+| `AGENT_CLIS` | Agent CLIs to install on start if missing, space- or comma-separated. Empty installs none. See [Agents](#agents). |
 | `PASEO_LABEL` | Container hostname, shown as the host label in the UI. Without it the label is a random container ID. |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity for agents and terminals. |
 | `TZ` | Timezone for logs and agent shells. |
@@ -58,22 +60,42 @@ Listens on `6767`, published nowhere — the platform maps the domain to it, so
 
 ## Agents
 
-The image installs none of them. Run each vendor's own installer once, in a
-terminal inside Paseo, as the `paseo` user — never with `sudo`:
+The image installs none of them. `entrypoint.sh` does, on start, for every name
+in `AGENT_CLIS` whose command is not already on `PATH`:
 
-| Agent | Command | Install with | Log in with |
+```
+AGENT_CLIS=claude codex
+```
+
+That is the default in `.env.example`. The other four are opt-in — add their
+names to install them too.
+
+| Agent | Name in `AGENT_CLIS` | Installer it runs | Log in with |
 | --- | --- | --- | --- |
-| Claude Code | `claude` | `curl -fsSL https://claude.ai/install.sh \| bash` | `claude` |
-| Codex | `codex` | `curl -fsSL https://chatgpt.com/codex/install.sh \| sh` | `codex login` |
-| opencode | `opencode` | `curl -fsSL https://opencode.ai/install \| bash` | `opencode auth login` |
-| Copilot CLI | `copilot` | `curl -fsSL https://gh.io/copilot-install \| bash` | `/login` inside `copilot` |
-| Oh My Pi | `omp` | `curl -fsSL https://omp.sh/install \| sh` | `omp` |
-| Pi | `pi` | `curl -fsSL https://pi.dev/install.sh \| sh` | `pi` |
+| Claude Code | `claude` | `claude.ai/install.sh` | `claude` |
+| Codex | `codex` | `chatgpt.com/codex/install.sh` | `codex login` |
+| opencode | `opencode` | `opencode.ai/install` | `opencode auth login` |
+| Copilot CLI | `copilot` | `gh.io/copilot-install` | `/login` inside `copilot` |
+| Oh My Pi | `omp` | `omp.sh/install` | `omp` |
+| Pi | `pi` | `pi.dev/install.sh` | `pi` |
 
-Each lands in `$HOME` — `~/.local/bin` for most, `~/.opencode/bin` for
-opencode — and appends that directory to your shell rc, so open a new terminal
-afterwards. `$HOME` is the `paseo-home` volume, so both the binaries and the
-logins survive a redeploy.
+Each vendor's own installer, run as `paseo` through `gosu`, landing in `$HOME`
+— `~/.local/bin` for most, `~/.opencode/bin` for opencode. `$HOME` is the
+`paseo-home` volume, so the binaries and the logins both survive a redeploy,
+and the check at the top of each start is all that runs from then on.
+
+Budget for the first start with a fresh volume: these are fat static binaries,
+a few hundred MB each — Claude Code is around 216 MB, `omp` around 208 MB — so
+even the default two hold the daemon back by a minute or more, and all six by
+several. Nothing is wrong; it is downloading. Later starts skip everything
+already present. An agent that fails to install is logged and skipped rather
+than taking the container with it, so a bad release or a network blip cannot
+leave you without a shell.
+
+An unrecognised name is logged and skipped too. To install one by hand instead,
+run its installer in a terminal inside Paseo as `paseo` — never under `sudo`,
+where they target root's home and land outside the volume, and where Claude
+Code's refuses outright.
 
 Both directories are on the image's `PATH`, so Paseo picks an agent up as soon
 as its installer finishes — no redeploy, no daemon restart. The shell rc entry
@@ -86,16 +108,16 @@ the one to know about: it is Bun-compiled, and with no Bun on `PATH` its
 installer takes the prebuilt binary. Ask for the source build (`--source`) and
 it installs Bun to `~/.bun` first.
 
-Why not bake them into the image: `paseo` cannot write `/usr/local`, so a
-preinstalled CLI can never apply its own update. Every one of these ships an
-updater (`claude update`, `codex update`, `omp update`, …) that expects to
-rewrite its own binary, and under `/usr/local` it fails on permissions — Claude
-Code nags about it at startup. Installed in `$HOME` they update themselves, and
-you are never waiting on an image rebuild for a release that shipped that
-morning.
-
-Run the installers unprivileged. Under `sudo` they target root's home and land
-outside the volume; Claude Code's refuses outright.
+Why on start and not in the `Dockerfile`. Two reasons. `paseo` cannot write
+`/usr/local`, so a CLI installed there can never apply its own update — every
+one of these ships an updater (`claude update`, `codex update`, `omp update`,
+…) that expects to rewrite its own binary, and it fails on permissions; Claude
+Code nags about it at startup. And a build-time install into `/home/paseo`
+would only ever reach a *new* volume: Docker seeds a named volume from the
+image once, at creation, and never again. Rebuild with a seventh agent added
+and nobody with an existing `paseo-home` would get it. The start-time check has
+neither problem — it fires on every fresh volume, and the agents update
+themselves in place afterwards.
 
 Pi and Oh My Pi are separate projects sharing an ancestor; their commands do
 not collide.
@@ -148,10 +170,18 @@ all here:
   it and puts `paseo` in the group.
 - The image stays root: the entrypoint chowns the volumes, then drops to the
   `paseo` user (uid 1000) with `gosu`.
-- `entrypoint.sh` sets the `paseo` password from `PASEO_PASSWORD` on every
-  start, while still root. `/etc/shadow` is not on a volume, so it reverts on
-  each recreate. An empty `PASEO_PASSWORD` leaves the account locked and `sudo`
-  unusable.
+- `entrypoint.sh` runs before the base entrypoint, not after: that one ends in
+  `exec gosu paseo` and never returns, and by then is no longer root. Both of
+  its jobs need root — `chpasswd`, and `gosu paseo` for the agent installs.
+- It sets the `paseo` password on every start rather than at build, so the
+  password never lands in an image layer, and because `/etc/shadow` is in the
+  image rather than on a volume and reverts on each recreate. The password is
+  piped, not passed as an argument, since arguments are visible in `ps`;
+  `chpasswd` splits on the first colon, so a colon in the password is fine. An
+  empty `PASEO_PASSWORD` leaves the account locked and `sudo` unusable.
+- It also `chown`s `/home/paseo` before installing anything. A freshly created
+  volume can arrive owned by root, and the base entrypoint's own `chown` has
+  not run yet at that point.
 - `sudo` resets `PATH` to its `secure_path`, which excludes
   `/usr/local/go/bin`. Use `sudo env PATH="$PATH" go ...` or the full path.
 - The agent `PATH` entries belong in the image, not in a shell rc: the daemon

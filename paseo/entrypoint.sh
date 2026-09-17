@@ -1,20 +1,43 @@
 #!/usr/bin/env bash
-# Sets the paseo user's login password from PASEO_PASSWORD, then hands off to
-# the image's own entrypoint.
-#
-# At start rather than at build, so the password never lands in a layer. Here
-# rather than after the base entrypoint, which ends in `exec gosu paseo` and so
-# never returns, and by then is no longer root. Every start, because
-# /etc/shadow is in the image, not the /home/paseo volume, and reverts on each
-# container recreate.
+# Runs as root ahead of the image's own entrypoint: sets the paseo user's
+# login password, then installs any agent CLI named in AGENT_CLIS that is not
+# already on PATH. See README.md.
 set -euo pipefail
 
 if [[ "$(id -u)" == "0" && -n "${PASEO_PASSWORD:-}" ]]; then
-  # Piped rather than passed as an argument: arguments are visible in ps.
-  # chpasswd splits on the first colon, so a colon in the password is fine.
   printf 'paseo:%s\n' "$PASEO_PASSWORD" | chpasswd
 fi
 
-# With PASEO_PASSWORD unset the account keeps its locked password and sudo just
-# refuses. The base entrypoint already warns about the missing variable.
+agent_installer() {
+  case "$1" in
+    claude)   echo 'curl -fsSL https://claude.ai/install.sh | bash' ;;
+    codex)    echo 'curl -fsSL https://chatgpt.com/codex/install.sh | sh' ;;
+    opencode) echo 'curl -fsSL https://opencode.ai/install | bash' ;;
+    copilot)  echo 'curl -fsSL https://gh.io/copilot-install | bash' ;;
+    omp)      echo 'curl -fsSL https://omp.sh/install | sh' ;;
+    pi)       echo 'curl -fsSL https://pi.dev/install.sh | sh' ;;
+  esac
+}
+
+if [[ "$(id -u)" == "0" && -n "${AGENT_CLIS:-}" ]]; then
+  chown paseo:paseo /home/paseo
+
+  for agent in ${AGENT_CLIS//,/ }; do
+    installer="$(agent_installer "$agent")"
+
+    if [[ -z "$installer" ]]; then
+      echo "entrypoint: no such agent CLI: $agent" >&2
+      continue
+    fi
+
+    if command -v "$agent" >/dev/null 2>&1; then
+      continue
+    fi
+
+    echo "entrypoint: installing $agent"
+    gosu paseo bash -c "$installer" \
+      || echo "entrypoint: $agent failed to install, continuing" >&2
+  done
+fi
+
 exec /usr/local/bin/paseo-docker-entrypoint "$@"
