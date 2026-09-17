@@ -20,8 +20,18 @@ community installer. Do not hand-roll a download, and do not take a stale
 distro package just because `apt install` is shorter — check what version it
 actually gives you first.
 
-State the reason in a comment when the obvious route is the wrong one, so the
-next person does not "simplify" it back.
+## Comments in compose files and Dockerfiles
+
+A comment says *what* a section installs or configures, in a line or two. It
+does not explain *why*. Reasons — why not the distro package, why that
+directory, why a version is pinned, what would break if it were simplified —
+go in the service's `README.md`, where they can be read in full and where
+someone deciding whether to change something will actually look.
+
+So: no rationale, no trade-offs, no cautionary notes in the file itself. When a
+choice needs defending, write the defence in the README and let the header
+comment point at it. Keep the README current whenever a file changes, otherwise
+the reasoning is simply lost rather than relocated.
 
 The root `README.md` is an index only — it covers the shared conventions and
 links out to each service. Per-service detail (variables, ports, storage)
