@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs as root ahead of the image's own entrypoint: sets the paseo user's
-# login password, then installs any agent CLI named in AGENT_CLIS that is not
-# already on PATH. See README.md.
+# login password, installs SDKMAN, then installs any agent CLI named in
+# AGENT_CLIS that is not already on PATH. See README.md.
 set -euo pipefail
 
 if [[ "$(id -u)" == "0" && -n "${PASEO_PASSWORD:-}" ]]; then
@@ -19,10 +19,18 @@ agent_installer() {
   esac
 }
 
-if [[ "$(id -u)" == "0" && -n "${AGENT_CLIS:-}" ]]; then
+if [[ "$(id -u)" == "0" ]]; then
   chown paseo:paseo /home/paseo
 
-  for agent in ${AGENT_CLIS//,/ }; do
+  if [[ ! -d "${SDKMAN_DIR:-/home/paseo/.sdkman}" ]]; then
+    echo "entrypoint: installing sdkman"
+    gosu paseo bash -c 'curl -fsSL https://get.sdkman.io | bash' \
+      || echo "entrypoint: sdkman failed to install, continuing" >&2
+  fi
+
+  agents="${AGENT_CLIS:-}"
+
+  for agent in ${agents//,/ }; do
     installer="$(agent_installer "$agent")"
 
     if [[ -z "$installer" ]]; then

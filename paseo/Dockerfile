@@ -44,12 +44,17 @@ RUN install -d -m 0755 /etc/apt/keyrings \
  && rm -f /tmp/glab.deb \
  && rm -rf /var/lib/apt/lists/*
 
-# --- agent cli path --------------------------------------------------------
-# Puts the $HOME directories the agent installers write to on PATH.
-ENV PATH=/home/paseo/.local/bin:/home/paseo/.opencode/bin:$PATH
+# --- agent cli and sdkman path ---------------------------------------------
+# Puts the $HOME directories the agent installers and SDKMAN write to on PATH.
+ENV SDKMAN_DIR=/home/paseo/.sdkman
+ENV PATH=/home/paseo/.local/bin:/home/paseo/.opencode/bin:\
+$SDKMAN_DIR/candidates/java/current/bin:\
+$SDKMAN_DIR/candidates/scala/current/bin:\
+$SDKMAN_DIR/candidates/gradle/current/bin:\
+$SDKMAN_DIR/candidates/maven/current/bin:\
+$SDKMAN_DIR/candidates/sbt/current/bin:$PATH
 
 # --- entrypoint ------------------------------------------------------------
-# Wraps the image's entrypoint to set the paseo user's password while still
-# root -- see entrypoint.sh.
-COPY --chmod=0755 entrypoint.sh /usr/local/bin/paseo-sudo-entrypoint
-ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/paseo-sudo-entrypoint"]
+# Wraps the image's entrypoint with the root-stage setup -- see entrypoint.sh.
+COPY --chmod=0755 entrypoint.sh /usr/local/bin/entrypoint
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/entrypoint"]

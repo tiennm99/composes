@@ -4,8 +4,8 @@
 agents. Built from a local `Dockerfile` that adds `gh`, `glab`, Go, Python,
 a C toolchain, and shell tooling to the
 [official image](https://paseo.sh/docs/docker), which ships none of it. The
-agent CLIs are not baked in — install them into `$HOME` yourself, see
-[Agents](#agents).
+agent CLIs and [SDKMAN](#sdkman) are not baked in; `entrypoint.sh` installs
+them into `$HOME` on start, see [Agents](#agents).
 
 ## Setup
 
@@ -122,11 +122,37 @@ themselves in place afterwards.
 Pi and Oh My Pi are separate projects sharing an ancestor; their commands do
 not collide.
 
+## SDKMAN
+
+`entrypoint.sh` installs [SDKMAN](https://sdkman.io) on start too, into
+`~/.sdkman`, whenever that directory is missing. No variable gates it — the
+JVM toolchain is small next to an agent CLI and the image ships no Java at all.
+
+Install what you need from a terminal:
+
+```
+sdk install java
+sdk install gradle
+```
+
+`sdk` is a shell function, defined by the hook the installer appends to
+`.bashrc` and `.zshrc`, so it exists in terminals only. The `current/bin`
+directory of five candidates — `java`, `scala`, `gradle`, `maven`, `sbt` — is
+on the image's `PATH` regardless, so the binaries themselves resolve for the
+daemon and for commands an agent runs non-interactively, where no rc file is
+read. Install a candidate outside that five and you get the `sdk` function in a
+terminal but not the binary elsewhere; add its `current/bin` to the `PATH` line
+in the `Dockerfile` if you want it there.
+
+`SDKMAN_DIR` is set in the image, to the same `~/.sdkman` the installer would
+have picked on its own. It is what puts the candidate paths above and the
+install location in one place.
+
 ## Storage
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `paseo-home` | `/home/paseo` | Daemon state, agent configs, credentials (`.claude`, `.codex`, `.config/*`) |
+| `paseo-home` | `/home/paseo` | Daemon state, agent CLIs and their configs and credentials (`.claude`, `.codex`, `.config/*`), SDKMAN and its candidates |
 | `paseo-workspace` | `/workspace` | Code the agents work on |
 
 The agent CLIs, `gh` and `glab` all keep their config under `/home/paseo`, so
@@ -170,18 +196,22 @@ all here:
   it and puts `paseo` in the group.
 - The image stays root: the entrypoint chowns the volumes, then drops to the
   `paseo` user (uid 1000) with `gosu`.
+- `entrypoint.sh` is installed as `/usr/local/bin/entrypoint`, next to the
+  base image's `paseo-docker-entrypoint`, which it wraps. It was
+  `paseo-sudo-entrypoint` when setting the `sudo` password was all it did.
 - `entrypoint.sh` runs before the base entrypoint, not after: that one ends in
-  `exec gosu paseo` and never returns, and by then is no longer root. Both of
-  its jobs need root — `chpasswd`, and `gosu paseo` for the agent installs.
+  `exec gosu paseo` and never returns, and by then is no longer root. Every
+  job it has needs root — `chpasswd`, the `chown`, and `gosu paseo` for the
+  SDKMAN and agent installs.
 - It sets the `paseo` password on every start rather than at build, so the
   password never lands in an image layer, and because `/etc/shadow` is in the
   image rather than on a volume and reverts on each recreate. The password is
   piped, not passed as an argument, since arguments are visible in `ps`;
   `chpasswd` splits on the first colon, so a colon in the password is fine. An
   empty `PASEO_PASSWORD` leaves the account locked and `sudo` unusable.
-- It also `chown`s `/home/paseo` before installing anything. A freshly created
-  volume can arrive owned by root, and the base entrypoint's own `chown` has
-  not run yet at that point.
+- It also `chown`s `/home/paseo` before installing anything, agent CLI or
+  SDKMAN. A freshly created volume can arrive owned by root, and the base
+  entrypoint's own `chown` has not run yet at that point.
 - `sudo` resets `PATH` to its `secure_path`, which excludes
   `/usr/local/go/bin`. Use `sudo env PATH="$PATH" go ...` or the full path.
 - The agent `PATH` entries belong in the image, not in a shell rc: the daemon
