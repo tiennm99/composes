@@ -19,5 +19,6 @@ services:
       - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
     volumes:
       - 'code-server-config:/config'
+      - '/var/run/docker.sock:/var/run/docker.sock'
 volumes:
   code-server-config:
