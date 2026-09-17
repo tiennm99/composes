@@ -55,6 +55,7 @@ Each links to its own README for variables, ports, and storage.
 | --- | --- |
 | [alloy](alloy/README.md) | Grafana Alloy shipping host and Docker telemetry to Grafana Cloud |
 | [code-server](code-server/README.md) | VS Code in the browser, as a remote dev box |
+| [code-server-base](code-server-base/README.md) | VS Code in the browser, stock image with no mods |
 | [couchbase](couchbase/README.md) | Couchbase Server |
 | [gitea-mirror-local](gitea-mirror-local/README.md) | Gitea + PostgreSQL + gitea-mirror, mirroring GitHub repos |
 | [netdata](netdata/README.md) | Netdata monitoring agent |

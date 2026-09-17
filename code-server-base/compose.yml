@@ -1,0 +1,15 @@
+services:
+  code-server:
+    image: 'lscr.io/linuxserver/code-server:latest'
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Ho_Chi_Minh
+      - DEFAULT_WORKSPACE=/config/workspace
+      - PWA_APPNAME=code-server
+      - PASSWORD=${PASSWORD}
+      - SUDO_PASSWORD=${PASSWORD}
+    volumes:
+      - 'code-server-config:/config'
+volumes:
+  code-server-config:
