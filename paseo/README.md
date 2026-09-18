@@ -1,11 +1,11 @@
 # paseo
 
 [Paseo](https://paseo.sh) — self-hosted daemon and web UI for running coding
-agents. Built from a local `Dockerfile` that adds `gh`, `glab`, Go, Python,
-a C toolchain, and shell tooling to the
+agents. Built from a local `Dockerfile` that adds `gh`, `glab`, Python, a C
+toolchain, `zsh` and `nano` to the
 [official image](https://paseo.sh/docs/docker), which ships none of it. The
-agent CLIs and [SDKMAN](#sdkman) are not baked in; `entrypoint.sh` installs
-them into `$HOME` on start, see [Agents](#agents).
+agent CLIs are not baked in; `entrypoint.sh` installs them into `$HOME` on
+start, see [Agents](#agents).
 
 ## Setup
 
@@ -18,7 +18,7 @@ them into `$HOME` on start, see [Agents](#agents).
    paseo.example.com:443
    ```
 
-4. List the agents you want in `AGENT_CLIS`; the first start installs them.
+4. List the agents you want in `AGENTS`; the first start installs them.
    Log in to each — see [Agents](#agents) — plus `gh auth login` and
    `glab auth login`.
 
@@ -38,11 +38,9 @@ the old entry is cached in `localStorage`.
 | `PASEO_PASSWORD` | Web UI and API login, and the `paseo` user's `sudo` password. Generate with `openssl rand -base64 24`. |
 | `PASEO_HOSTNAMES` | Domains allowed to reach the daemon, comma-separated. Your domain must be listed. |
 | `PASEO_TRUSTED_PROXIES` | Set to `uniquelocal`, or the UI loads but never connects. |
-| `AGENT_CLIS` | Agent CLIs to install on start if missing, space- or comma-separated. Empty installs none. See [Agents](#agents). |
+| `AGENTS` | Agent CLIs to install on start if missing, space- or comma-separated. Empty installs none. See [Agents](#agents). |
 | `SERVICE_HOSTNAME` | Container hostname, shown as the host label in the UI and in the shell prompt. Without it the label is a random container ID. |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity for agents and terminals. |
-| `TZ` | Timezone for logs and agent shells. |
-| `SHELL` | Shell for Paseo's terminals. Paseo reads `$SHELL` and falls back to `/bin/sh`, ignoring the login shell, so `chsh` has no effect. |
 
 `SERVICE_HOSTNAME` is used twice: as the container's `hostname:` and as the
 `HOST` variable inside it. Coolify injects `HOST=0.0.0.0` into every compose
@@ -57,9 +55,22 @@ lets the deploying shell's environment win over the `.env` file, and `HOSTNAME`
 is set in every container -- including the one Coolify itself runs in. The
 container would silently take Coolify's hostname instead of this value.
 
-`PASEO_LABEL` was this variable's old name. It was never a Paseo variable,
-only ours -- the daemon reads none of `PASEO_LABEL`, `SERVICE_HOSTNAME` or
-`HOST`, and takes the host label from the container hostname.
+Neither name is a Paseo variable: the daemon reads neither `SERVICE_HOSTNAME`
+nor `HOST`, and takes the host label from the container hostname.
+
+`SHELL` and `TZ` hit the same trap, which is why neither is in the table above
+or in `.env.example`: they are written into `compose.yml` directly, the way the
+`code-server` services do it. `SHELL` is the worse of the two, since every
+interactive shell exports it -- a `docker compose up` from a terminal, the way
+you would test this locally, would hand Paseo's terminals the *host's* shell.
+Harmless when that is bash, which the image has; fatal to every terminal when
+it is a path the image lacks. A UTC host would override `TZ` the same way. Both
+are properties of this setup rather than of whoever deploys it, so there is
+nothing to fill in per deployment.
+
+Paseo reads `$SHELL` for its terminals and falls back to `/bin/sh` (dash)
+otherwise; it ignores the user's login shell, so `chsh` has no effect. That is
+what pins it to `/bin/zsh` here.
 
 `PASEO_TRUSTED_PROXIES` matches the proxy's *source IP*, so hostnames are
 rejected. The daemon trusts `X-Forwarded-Proto` from loopback only, but
@@ -78,16 +89,16 @@ Listens on `6767`, published nowhere — the platform maps the domain to it, so
 ## Agents
 
 The image installs none of them. `entrypoint.sh` does, on start, for every name
-in `AGENT_CLIS` whose command is not already on `PATH`:
+in `AGENTS` whose command does not already run:
 
 ```
-AGENT_CLIS=claude codex
+AGENTS=claude codex
 ```
 
 That is the default in `.env.example`. The other four are opt-in — add their
 names to install them too.
 
-| Agent | Name in `AGENT_CLIS` | Installer it runs | Log in with |
+| Agent | Name in `AGENTS` | Installer it runs | Log in with |
 | --- | --- | --- | --- |
 | Claude Code | `claude` | `claude.ai/install.sh` | `claude` |
 | Codex | `codex` | `chatgpt.com/codex/install.sh` | `codex login` |
@@ -108,6 +119,16 @@ several. Nothing is wrong; it is downloading. Later starts skip everything
 already present. An agent that fails to install is logged and skipped rather
 than taking the container with it, so a bad release or a network blip cannot
 leave you without a shell.
+
+The check is whether the command *runs*, not whether the file exists: the start
+asks it for `--version` and reinstalls only on the two exit codes a shell uses
+for a binary it could not execute. A `curl | bash` cut short — by a network
+drop, or by the platform stopping the container mid-download — leaves a
+truncated binary on the volume, and a file-existence check would then skip the
+reinstall on every later start while the daemon advertised an agent that fails
+on every invocation. An agent that runs but does not understand `--version`
+exits with some other code and counts as present, so nothing assumes all six
+support the flag.
 
 An unrecognised name is logged and skipped too. To install one by hand instead,
 run its installer in a terminal inside Paseo as `paseo` — never under `sudo`,
@@ -139,37 +160,11 @@ themselves in place afterwards.
 Pi and Oh My Pi are separate projects sharing an ancestor; their commands do
 not collide.
 
-## SDKMAN
-
-`entrypoint.sh` installs [SDKMAN](https://sdkman.io) on start too, into
-`~/.sdkman`, whenever that directory is missing. No variable gates it — the
-JVM toolchain is small next to an agent CLI and the image ships no Java at all.
-
-Install what you need from a terminal:
-
-```
-sdk install java
-sdk install gradle
-```
-
-`sdk` is a shell function, defined by the hook the installer appends to
-`.bashrc` and `.zshrc`, so it exists in terminals only. The `current/bin`
-directory of five candidates — `java`, `scala`, `gradle`, `maven`, `sbt` — is
-on the image's `PATH` regardless, so the binaries themselves resolve for the
-daemon and for commands an agent runs non-interactively, where no rc file is
-read. Install a candidate outside that five and you get the `sdk` function in a
-terminal but not the binary elsewhere; add its `current/bin` to the `PATH` line
-in the `Dockerfile` if you want it there.
-
-`SDKMAN_DIR` is set in the image, to the same `~/.sdkman` the installer would
-have picked on its own. It is what puts the candidate paths above and the
-install location in one place.
-
 ## Storage
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `paseo-home` | `/home/paseo` | Daemon state, agent CLIs and their configs and credentials (`.claude`, `.codex`, `.config/*`), SDKMAN and its candidates |
+| `paseo-home` | `/home/paseo` | Daemon state, agent CLIs and their configs and credentials (`.claude`, `.codex`, `.config/*`) |
 | `paseo-workspace` | `/workspace` | Code the agents work on |
 
 The agent CLIs, `gh` and `glab` all keep their config under `/home/paseo`, so
@@ -185,52 +180,65 @@ oh-my-zsh install persists. Anything written outside `$HOME` (`chsh`,
 | --- | --- | --- |
 | `gh` | GitHub's signed apt repo | Debian does not package it |
 | `glab` (`GLAB_VERSION`) | The `.deb` on GitLab's releases page | Debian does not package it, and GitLab runs no apt repo |
-| Go (`GO_VERSION`) | Official go.dev tarball | Debian 12 ships 1.19 |
 | Python (`PYTHON_VERSION`) | `uv python install` | Debian 12 ships 3.11 |
-| `less nano jq unzip zip lsof psmisc ugrep bfs zsh sudo` | apt | — |
-| `build-essential` | apt | — |
+| `build-essential`, `sudo` | apt | — |
+| `zsh`, `nano` | apt | — |
 
-Bump a pinned version with a build arg, e.g. `--build-arg GO_VERSION=1.27.1`.
-`uv` itself is installed too. `GLAB_VERSION` is pinned rather than tracking the
-latest because GitLab's download URL carries the version in the path.
+Bump a pinned version with a build arg, e.g.
+`--build-arg PYTHON_VERSION=3.13`. `uv` itself is installed too.
+`GLAB_VERSION` is pinned rather than tracking the latest because GitLab's
+download URL carries the version in the path.
 
 The `Dockerfile` itself only says what each layer installs. The reasoning is
 all here:
 
 - `$HOME` is `/home/paseo`, a volume that masks anything the build writes
-  there. Hence `/opt/python` and `/usr/local/go` rather than the defaults.
+  there. Hence `/opt/python` rather than the default.
 - Do not add agent CLIs here, or a runtime only they need. Under `/usr/local`
-  they cannot self-update; in `$HOME` they can, and they persist anyway. Bun
-  used to be here for `omp` and went the same way. See [Agents](#agents).
+  they cannot self-update; in `$HOME` they can, and they persist anyway. `omp`
+  needs Bun for its source build, and that belongs in `$HOME` for the same
+  reason. See [Agents](#agents).
 - One concern per layer, cheapest and least-changing first, so bumping a
   version rebuilds as little as possible.
 - `build-essential` is the C toolchain the language layers assume but do not
-  ship: cgo, npm's node-gyp addons and Python C extensions all shell out to
-  `gcc` and `make`. It rides along in the apt layer so there is one
-  `apt-get update`.
+  ship: npm's node-gyp addons and Python C extensions both shell out to `gcc`
+  and `make`. It rides along in the apt layer so there is one `apt-get update`.
+- No other language toolchain is in the image, because none is wanted often
+  enough to pay for a rebuild. Install Go, a JVM or anything else into `$HOME`
+  from a terminal, where it persists on the `paseo-home` volume like the agent
+  CLIs do.
 - `git` and `curl` are already in the base image. `sudo` is not, despite
   Debian's `base-passwd` shipping an empty `sudo` group, so the apt layer adds
   it and puts `paseo` in the group.
-- The image stays root: the entrypoint chowns the volumes, then drops to the
-  `paseo` user (uid 1000) with `gosu`.
+- The image stays root: `entrypoint.sh` chowns `/home/paseo`, then hands over
+  to the base entrypoint, which drops to the `paseo` user (uid 1000) with
+  `gosu`.
 - `entrypoint.sh` is installed as `/usr/local/bin/entrypoint`, next to the
-  base image's `paseo-docker-entrypoint`, which it wraps. It was
-  `paseo-sudo-entrypoint` when setting the `sudo` password was all it did.
+  base image's `paseo-docker-entrypoint`, which it wraps.
 - `entrypoint.sh` runs before the base entrypoint, not after: that one ends in
   `exec gosu paseo` and never returns, and by then is no longer root. Every
   job it has needs root — `chpasswd`, the `chown`, and `gosu paseo` for the
-  SDKMAN and agent installs.
+  agent installs.
 - It sets the `paseo` password on every start rather than at build, so the
   password never lands in an image layer, and because `/etc/shadow` is in the
   image rather than on a volume and reverts on each recreate. The password is
   piped, not passed as an argument, since arguments are visible in `ps`;
-  `chpasswd` splits on the first colon, so a colon in the password is fine. An
-  empty `PASEO_PASSWORD` leaves the account locked and `sudo` unusable.
-- It also `chown`s `/home/paseo` before installing anything, agent CLI or
-  SDKMAN. A freshly created volume can arrive owned by root, and the base
-  entrypoint's own `chown` has not run yet at that point.
-- `sudo` resets `PATH` to its `secure_path`, which excludes
-  `/usr/local/go/bin`. Use `sudo env PATH="$PATH" go ...` or the full path.
+  `chpasswd` splits on the first colon, so a colon in the password is fine. A
+  failure there is logged and the start continues, because `chpasswd` rejects a
+  multi-line value and under `set -e` that would otherwise take the whole
+  service down rather than just the password. An empty `PASEO_PASSWORD` leaves
+  the account locked and `sudo` unusable.
+- It also `chown`s `/home/paseo` before installing any agent CLI. A freshly
+  created volume can arrive owned by root, and the base entrypoint's own
+  `chown` has not run yet at that point.
+- `chpasswd`, `chown` and `gosu` are called by absolute path. The agent `PATH`
+  entries come first in the image's `PATH`, including root's, and they live on
+  a volume that anything running as `paseo` — an agent, by design — can write
+  to; a file planted there under one of those names would otherwise run as root
+  on the next start.
+- Globbing is off around the `AGENTS` loop. The list is split unquoted, so
+  a `*` in it would otherwise expand against `/workspace`, the working
+  directory, and report every file in it as an unknown agent.
 - The agent `PATH` entries belong in the image, not in a shell rc: the daemon
   probes for each provider's binary with `which` in its own environment, which
   comes from the image and never sources an rc file. They are spelled

@@ -1,4 +1,4 @@
-# Adds language toolchains and CLI tooling to the official image, which ships
+# Adds Python, a C toolchain and CLI tooling to the official image, which ships
 # none of it. Agent CLIs are not among them -- see README.md, which carries the
 # reasoning for everything here.
 FROM ghcr.io/getpaseo/paseo:latest
@@ -6,8 +6,8 @@ FROM ghcr.io/getpaseo/paseo:latest
 # --- system packages -------------------------------------------------------
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      less nano jq unzip zip lsof psmisc ugrep bfs zsh sudo \
-      build-essential \
+      build-essential sudo \
+      zsh nano \
  && rm -rf /var/lib/apt/lists/* \
  && usermod -aG sudo paseo
 
@@ -18,14 +18,6 @@ ENV UV_INSTALL_DIR=/usr/local/bin \
     UV_PYTHON_BIN_DIR=/usr/local/bin
 RUN curl -fsSL https://astral.sh/uv/install.sh | sh \
  && uv python install "${PYTHON_VERSION}" --default
-
-# --- go --------------------------------------------------------------------
-ARG GO_VERSION=1.26.8
-ENV PATH=/usr/local/go/bin:$PATH
-RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-$(dpkg --print-architecture).tar.gz" \
-      -o /tmp/go.tar.gz \
- && tar -C /usr/local -xzf /tmp/go.tar.gz \
- && rm /tmp/go.tar.gz
 
 # --- gh and glab -----------------------------------------------------------
 # gh from GitHub's signed apt repository, glab from the .deb on its releases
@@ -44,15 +36,9 @@ RUN install -d -m 0755 /etc/apt/keyrings \
  && rm -f /tmp/glab.deb \
  && rm -rf /var/lib/apt/lists/*
 
-# --- agent cli and sdkman path ---------------------------------------------
-# Puts the $HOME directories the agent installers and SDKMAN write to on PATH.
-ENV SDKMAN_DIR=/home/paseo/.sdkman
-ENV PATH=/home/paseo/.local/bin:/home/paseo/.opencode/bin:\
-$SDKMAN_DIR/candidates/java/current/bin:\
-$SDKMAN_DIR/candidates/scala/current/bin:\
-$SDKMAN_DIR/candidates/gradle/current/bin:\
-$SDKMAN_DIR/candidates/maven/current/bin:\
-$SDKMAN_DIR/candidates/sbt/current/bin:$PATH
+# --- agent cli path --------------------------------------------------------
+# Puts the $HOME directories the agent installers write to on PATH.
+ENV PATH=/home/paseo/.local/bin:/home/paseo/.opencode/bin:$PATH
 
 # --- entrypoint ------------------------------------------------------------
 # Wraps the image's entrypoint with the root-stage setup -- see entrypoint.sh.

@@ -6,9 +6,9 @@ services:
       - PASEO_PASSWORD=${PASEO_PASSWORD}
       - PASEO_HOSTNAMES=${PASEO_HOSTNAMES}
       - PASEO_TRUSTED_PROXIES=${PASEO_TRUSTED_PROXIES}
-      - SHELL=${SHELL}
-      - AGENT_CLIS=${AGENT_CLIS}
-      - TZ=${TZ}
+      - SHELL=/bin/zsh
+      - AGENTS=${AGENTS}
+      - TZ=Asia/Ho_Chi_Minh
       - GIT_AUTHOR_NAME=${GIT_NAME}
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
       - GIT_COMMITTER_NAME=${GIT_NAME}
