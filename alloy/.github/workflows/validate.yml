@@ -35,31 +35,50 @@ jobs:
           docker run --rm -v "$PWD/config.alloy:/config.alloy:ro" \
             grafana/alloy:v1.16.1 fmt /config.alloy > /dev/null
 
+      - name: Validate Alloy config arguments
+        run: |
+          docker run --rm \
+            -e ALLOY_HOSTNAME -e REMOTECFG_URL -e REMOTECFG_ID -e REMOTECFG_USER \
+            -e PROM_URL -e PROM_USER -e LOKI_URL -e LOKI_USER -e GRAFANA_TOKEN \
+            -v "$PWD/config.alloy:/config.alloy:ro" \
+            grafana/alloy:v1.16.1 validate /config.alloy
+
       - name: Validate Alloy config semantics (parse + load components)
-        # `fmt` is syntax-only; this catches bad component refs, wrong arg
-        # types, and unknown component types by booting alloy and reading
-        # the load log. Component runtime errors against dummy paths /
+        # `fmt` and `validate` are static; this boots alloy with the same
+        # capability set, read-only rootfs and socket proxy the compose file
+        # uses, and reads the load log. Component runtime errors against dummy paths /
         # endpoints are tolerated (level=error, level=warn) — only fail on
         # config-level errors that prevent the graph from being built.
         run: |
           # /var/log/journal may not exist on the GHA runner; create empty
           # dir so loki.source.journal can at least open it.
           mkdir -p /tmp/empty-journal
-          docker run -d --name alloy-test --privileged \
+          docker volume create alloy-test-data >/dev/null
+          docker run -d --name alloy-test-proxy \
+            --security-opt no-new-privileges:true \
+            -e CONTAINERS=1 -e NETWORKS=1 -e IMAGES=1 -e INFO=1 -e VERSION=1 -e EVENTS=1 \
+            -p 127.0.0.1:2375:2375 \
+            -v /var/run/docker.sock:/var/run/docker.sock:ro \
+            tecnativa/docker-socket-proxy:v0.5.0
+          docker run -d --name alloy-test --network host \
+            --cap-drop ALL --cap-add DAC_OVERRIDE \
+            --security-opt no-new-privileges:true --read-only --tmpfs /tmp \
             -e ALLOY_HOSTNAME -e REMOTECFG_URL -e REMOTECFG_ID -e REMOTECFG_USER \
             -e PROM_URL -e PROM_USER -e LOKI_URL -e LOKI_USER -e GRAFANA_TOKEN \
+            -v alloy-test-data:/var/lib/alloy/data \
             -v "$PWD/config.alloy:/etc/alloy/config.alloy:ro" \
             -v /proc:/rootproc:ro -v /sys:/sys:ro -v /:/rootfs:ro \
-            -v /var/run/docker.sock:/var/run/docker.sock \
             -v /var/lib/docker:/var/lib/docker:ro \
             -v /tmp/empty-journal:/var/log/journal:ro \
             -v /etc/machine-id:/etc/machine-id:ro \
             grafana/alloy:v1.16.1 \
-            run --server.http.listen-addr=127.0.0.1:12345 --disable-reporting /etc/alloy/config.alloy
+            run --server.http.listen-addr=127.0.0.1:12346 --disable-reporting \
+                --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
           sleep 10
           docker logs alloy-test 2>&1 | tee /tmp/alloy.log
           state=$(docker inspect -f '{{.State.Status}}' alloy-test 2>/dev/null || echo missing)
-          docker rm -f alloy-test >/dev/null 2>&1 || true
+          docker rm -f alloy-test alloy-test-proxy >/dev/null 2>&1 || true
+          docker volume rm alloy-test-data >/dev/null 2>&1 || true
           if grep -Eq "could not (parse|load|build)|unknown component|component .* not registered|undefined reference|syntax error|expected .* found|cannot evaluate" /tmp/alloy.log; then
             echo "::error::config-level error detected in alloy logs"
             exit 1

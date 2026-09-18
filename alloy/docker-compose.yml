@@ -8,8 +8,18 @@ services:
     container_name: alloy
     restart: unless-stopped
     hostname: ${ALLOY_HOSTNAME:?required}
-    privileged: true
     network_mode: host                        # node_exporter netdev/netstat sees real host interfaces (eth0…) not veth
+    cap_drop: [ALL]
+    cap_add: [DAC_OVERRIDE]                   # read host files owned by other uids: journal, /rootfs, /var/log
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    mem_limit: 2g
+    pids_limit: 512
+    depends_on:
+      - dockerproxy
     environment:
       ALLOY_DEPLOY_MODE: docker
       REMOTECFG_URL: ${REMOTECFG_URL:?required}
@@ -23,7 +33,6 @@ services:
     volumes:
       - alloy-data:/var/lib/alloy/data
       - /proc:/rootproc:ro
-      - /var/run/docker.sock:/var/run/docker.sock
       - /sys:/sys:ro
       - /:/rootfs:ro
       - /dev/disk/:/dev/disk:ro
@@ -33,6 +42,26 @@ services:
     configs:
       - { source: alloy_config, target: /etc/alloy/config.alloy }
     command: 'run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy'
+
+  dockerproxy:
+    image: tecnativa/docker-socket-proxy:v0.5.0
+    container_name: alloy-dockerproxy
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 64m
+    pids_limit: 64
+    environment:                              # the API sections cadvisor and the log tailer read; POST stays revoked
+      CONTAINERS: 1
+      NETWORKS: 1
+      IMAGES: 1
+      INFO: 1
+      VERSION: 1
+      EVENTS: 1
+    ports:
+      - 127.0.0.1:2375:2375
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
 volumes:
   alloy-data:
@@ -195,6 +224,7 @@ configs:
 
       prometheus.exporter.cadvisor "integrations_cadvisor" {
           docker_only = true
+          docker_host = "tcp://127.0.0.1:2375"
       }
       discovery.relabel "integrations_cadvisor" {
           targets = prometheus.exporter.cadvisor.integrations_cadvisor.targets
@@ -226,7 +256,7 @@ configs:
       }
 
       discovery.docker "logs_integrations_docker" {
-          host             = "unix:///var/run/docker.sock"
+          host             = "tcp://127.0.0.1:2375"
           refresh_interval = "5s"
       }
       discovery.relabel "logs_integrations_docker" {
@@ -254,7 +284,7 @@ configs:
           }
       }
       loki.source.docker "logs_integrations_docker" {
-          host             = "unix:///var/run/docker.sock"
+          host             = "tcp://127.0.0.1:2375"
           targets          = discovery.docker.logs_integrations_docker.targets
           forward_to       = [loki.write.grafana_cloud_loki.receiver]
           relabel_rules    = discovery.relabel.logs_integrations_docker.rules

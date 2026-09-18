@@ -5,7 +5,8 @@ container telemetry to Grafana Cloud, with remote config from Grafana Fleet
 Management.
 
 One container runs both the `node_exporter` (host) and `cadvisor` (container)
-collectors. The Alloy config is embedded inline via Compose `configs:`, so
+collectors. A second, tiny container proxies a read-only slice of the Docker
+API to it. The Alloy config is embedded inline via Compose `configs:`, so
 there is no `config.alloy` on disk, and every setting comes from a shell
 variable rather than a `.env` file.
 
@@ -62,11 +63,59 @@ per host. Filter in Grafana with `instance=~"..."`.
 
 ## Privileges
 
-Runs `privileged: true` with `network_mode: host`, matching the upstream
-Grafana Cloud docker integration. Host networking is what lets
-`prometheus.exporter.unix` report the host's real interfaces (`eth0`…) instead
-of the container's veth pair. To tighten this, see the upstream Alloy docker
-integration docs.
+The upstream Grafana Cloud docker integration runs `privileged: true` with the
+raw Docker socket mounted read-write. Nothing in this config needs that, and
+the combination is host-root-equivalent: `privileged` grants every capability
+and unmasks `/proc` and `/sys`, and a container that can talk to the Docker
+socket can start another container that mounts `/` writable. The socket's `:ro`
+flag does not help — it stops the socket *file* being replaced, not the API
+being used.
+
+What it runs instead:
+
+| Setting | Reason |
+| --- | --- |
+| `cap_drop: [ALL]` + `cap_add: [DAC_OVERRIDE]` | The image's entrypoint runs as uid 0 and reads host files owned by other users — the journal, paths under `/rootfs`, `/var/log`. Dropping every capability leaves it unable to open them, and unable to create its own storage directory. `DAC_OVERRIDE` restores exactly that and nothing else; `SYS_ADMIN`, `NET_ADMIN`, `SYS_PTRACE`, `MKNOD` and the rest stay dropped. |
+| `no-new-privileges:true` | No setuid binary in the image can regain what was dropped. |
+| `read_only: true` with `tmpfs: /tmp` | Only the `alloy-data` volume is writable. |
+| `mem_limit: 2g`, `pids_limit: 512` | Steady state is around 900 MB; the limit stops a leak taking the host down with it. |
+| `dockerproxy` instead of `/var/run/docker.sock` | See below. |
+
+`network_mode: host` stays. `/proc/net` is a symlink to `/proc/self/net` and
+resolves against the reading process's network namespace, so bind-mounting the
+host's `/proc` to `/rootproc` is not enough — without host networking the
+netdev, netstat, sockstat and conntrack families would describe the container's
+veth pair instead of `eth0`. That is roughly 45 of the 157 kept metrics.
+
+`/:/rootfs:ro` also stays, and is the widest remaining exposure: the container
+can read every file on the host. The filesystem collector needs to `statfs()`
+each mount point, and a bind mount cannot grant that without granting reads.
+Dropping it would cost disk-space monitoring. Treat the container as
+secret-bearing — it holds `GRAFANA_TOKEN` regardless.
+
+## Docker API access
+
+`prometheus.exporter.cadvisor` and `loki.source.docker` both need the Docker
+API, so it cannot simply be removed. `dockerproxy` runs
+[tecnativa/docker-socket-proxy](https://github.com/Tecnativa/docker-socket-proxy)
+with the socket mounted read-only and exposes it on `127.0.0.1:2375`, which
+Alloy reaches over host networking.
+
+`POST` is revoked by default in that image, which is the point: container
+create, `exec`, start and kill are all refused with 403, so a compromise of
+Alloy can no longer become root on the host. The granted sections are the ones
+the two components actually call:
+
+| Variable | Called by |
+| --- | --- |
+| `CONTAINERS` | `discovery.docker` listing, `loki.source.docker` inspect and log read, cadvisor metadata |
+| `NETWORKS` | `discovery.docker` — Prometheus' Docker SD resolves network names per container, and returns **zero targets** without it |
+| `IMAGES`, `INFO`, `VERSION` | cadvisor |
+| `EVENTS` | cadvisor container watch (granted by default) |
+
+What this does not do: `GET /containers/{id}/json` still returns every
+container's environment variables. The proxy closes the escalation path, not
+the disclosure one.
 
 ## Mounts
 
@@ -76,11 +125,12 @@ integration docs.
 | `/sys:/sys:ro` | node-exporter and cadvisor cgroups |
 | `/:/rootfs:ro` | filesystem collector, via `rootfs_path` |
 | `/dev/disk/:/dev/disk:ro` | node-exporter diskstats device labels |
-| `/var/run/docker.sock` | `discovery.docker` and `loki.source.docker` |
 | `/var/lib/docker:ro` | cadvisor container metadata |
 | `/var/log:/var/log:ro` | `loki.source.journal` and `loki.source.file` |
 | `/etc/machine-id:ro` | Stable host id for the journal reader |
-| `alloy-data` | WAL and remotecfg cache |
+| `alloy-data` | WAL and remotecfg cache — the only writable path |
+
+`dockerproxy` mounts `/var/run/docker.sock:ro` and nothing else.
 
 ## Notes
 
