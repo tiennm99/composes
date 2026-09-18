@@ -67,3 +67,15 @@ adding hardening or convention that the platform already provides.
 Every service reads secrets from a sibling `.env`. Never commit one — the root
 `.gitignore` covers `.env`/`*.env` and re-includes `.env.example`. Keep
 `.env.example` in sync whenever a compose file gains or drops a variable.
+
+`.env.example` is a template for anyone, so every value in it stays generic —
+the service's own name, a placeholder domain, or an empty string. Never a real
+hostname, git identity, email, domain or account name. Personal values are set
+per deployment, in the Coolify or Dokploy environment for that app, and live
+only in the gitignored `.env`.
+
+Compose interpolation reads the deploying shell's environment before the
+`.env` file, so a variable must not share a name with anything the shell
+already exports. `HOSTNAME` is the trap: it is set inside every container,
+including the one Coolify itself runs in, and would silently win. Hence
+`SERVICE_HOSTNAME` in `code-server` and `paseo`.

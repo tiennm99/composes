@@ -53,7 +53,7 @@ source, and under Fleet Management. The same token serves `remotecfg`,
 Prometheus and Loki basic-auth.
 
 ```bash
-export ALLOY_HOSTNAME=miti-jp REMOTECFG_ID=miti-jp ...
+export ALLOY_HOSTNAME=example-host REMOTECFG_ID=example-host ...
 docker compose up -d
 ```
 
