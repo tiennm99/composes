@@ -77,9 +77,15 @@ What it runs instead:
 | --- | --- |
 | `cap_drop: [ALL]` + `cap_add: [DAC_OVERRIDE]` | The image's entrypoint runs as uid 0 and reads host files owned by other users — the journal, paths under `/rootfs`, `/var/log`. Dropping every capability leaves it unable to open them, and unable to create its own storage directory. `DAC_OVERRIDE` restores exactly that and nothing else; `SYS_ADMIN`, `NET_ADMIN`, `SYS_PTRACE`, `MKNOD` and the rest stay dropped. |
 | `no-new-privileges:true` | No setuid binary in the image can regain what was dropped. |
-| `read_only: true` with `tmpfs: /tmp` | Only the `alloy-data` volume is writable. |
 | `mem_limit: 2g`, `pids_limit: 512` | Steady state is around 900 MB; the limit stops a leak taking the host down with it. |
 | `dockerproxy` instead of `/var/run/docker.sock` | See below. |
+
+`read_only: true` is deliberately absent. Compose materialises an inline
+`configs:` entry by writing it into the container, and refuses to do that on a
+read-only service — `cannot create config ... : \`file\` is the sole supported
+option`. Keeping the config inline is worth more than the read-only rootfs
+here; adding it back means moving the config to a `config.alloy` file on disk
+and switching the `configs:` entry to `file:`.
 
 `network_mode: host` stays. `/proc/net` is a symlink to `/proc/self/net` and
 resolves against the reading process's network namespace, so bind-mounting the
