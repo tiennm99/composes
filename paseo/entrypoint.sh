@@ -24,8 +24,6 @@ agent_installer() {
   esac
 }
 
-/usr/bin/chown paseo:paseo /home/paseo
-
 agents="${AGENTS:-}"
 
 set -f

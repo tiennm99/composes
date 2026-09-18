@@ -210,15 +210,14 @@ all here:
 - `git` and `curl` are already in the base image. `sudo` is not, despite
   Debian's `base-passwd` shipping an empty `sudo` group, so the apt layer adds
   it and puts `paseo` in the group.
-- The image stays root: `entrypoint.sh` chowns `/home/paseo`, then hands over
-  to the base entrypoint, which drops to the `paseo` user (uid 1000) with
-  `gosu`.
+- The image stays root: `entrypoint.sh` does its work, then hands over to the
+  base entrypoint, which drops to the `paseo` user (uid 1000) with `gosu`.
 - `entrypoint.sh` is installed as `/usr/local/bin/entrypoint`, next to the
   base image's `paseo-docker-entrypoint`, which it wraps.
 - `entrypoint.sh` runs before the base entrypoint, not after: that one ends in
   `exec gosu paseo` and never returns, and by then is no longer root. Every
-  job it has needs root — `chpasswd`, the `chown`, and `gosu paseo` for the
-  agent installs.
+  job it has needs root — `chpasswd`, and `gosu paseo` for the agent
+  installs.
 - It sets the `paseo` password on every start rather than at build, so the
   password never lands in an image layer, and because `/etc/shadow` is in the
   image rather than on a volume and reverts on each recreate. The password is
@@ -228,10 +227,12 @@ all here:
   multi-line value and under `set -e` that would otherwise take the whole
   service down rather than just the password. An empty `PASEO_PASSWORD` leaves
   the account locked and `sudo` unusable.
-- It also `chown`s `/home/paseo` before installing any agent CLI. A freshly
-  created volume can arrive owned by root, and the base entrypoint's own
-  `chown` has not run yet at that point.
-- `chpasswd`, `chown` and `gosu` are called by absolute path. The agent `PATH`
+- It does not `chown` `/home/paseo` before the agent installs. The base image
+  declares `/home/paseo` a volume and ships it owned by uid 1000, so a fresh
+  named volume is seeded with that ownership; the base entrypoint also chowns
+  it, along with `PASEO_HOME`, `CLAUDE_CONFIG_DIR`, `CODEX_HOME` and the XDG
+  directories, whenever one of them is owned by root.
+- `chpasswd` and `gosu` are called by absolute path. The agent `PATH`
   entries come first in the image's `PATH`, including root's, and they live on
   a volume that anything running as `paseo` — an agent, by design — can write
   to; a file planted there under one of those names would otherwise run as root
