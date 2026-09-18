@@ -1,9 +1,11 @@
 services:
   paseo:
     build: .
-    hostname: ${PASEO_LABEL}
+    hostname: ${SERVICE_HOSTNAME}
     environment:
       - TZ=${TZ}
+      # Hostname zsh's prompt reads, overriding the one Coolify injects.
+      - HOST=${SERVICE_HOSTNAME}
       - SHELL=${SHELL}
       - PASEO_PASSWORD=${PASEO_PASSWORD}
       - PASEO_HOSTNAMES=${PASEO_HOSTNAMES}

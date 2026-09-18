@@ -39,10 +39,27 @@ the old entry is cached in `localStorage`.
 | `PASEO_HOSTNAMES` | Domains allowed to reach the daemon, comma-separated. Your domain must be listed. |
 | `PASEO_TRUSTED_PROXIES` | Set to `uniquelocal`, or the UI loads but never connects. |
 | `AGENT_CLIS` | Agent CLIs to install on start if missing, space- or comma-separated. Empty installs none. See [Agents](#agents). |
-| `PASEO_LABEL` | Container hostname, shown as the host label in the UI. Without it the label is a random container ID. |
+| `SERVICE_HOSTNAME` | Container hostname, shown as the host label in the UI and in the shell prompt. Without it the label is a random container ID. |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity for agents and terminals. |
 | `TZ` | Timezone for logs and agent shells. |
 | `SHELL` | Shell for Paseo's terminals. Paseo reads `$SHELL` and falls back to `/bin/sh`, ignoring the login shell, so `chsh` has no effect. |
+
+`SERVICE_HOSTNAME` is used twice: as the container's `hostname:` and as the
+`HOST` variable inside it. Coolify injects `HOST=0.0.0.0` into every compose
+app, and zsh seeds `$HOST` and the `%m`/`%M` prompt escapes from that variable
+rather than calling `gethostname()` -- so the prompt reads `0`, the first
+dot-separated field of `0.0.0.0`. Paseo itself never reads `HOST` -- it binds
+`PASEO_LISTEN` -- so overriding it only affects the prompt. bash is
+unaffected; its `\h` uses the real hostname.
+
+It is not called `HOSTNAME`, the obvious name, because Compose interpolation
+lets the deploying shell's environment win over the `.env` file, and `HOSTNAME`
+is set in every container -- including the one Coolify itself runs in. The
+container would silently take Coolify's hostname instead of this value.
+
+`PASEO_LABEL` was this variable's old name. It was never a Paseo variable,
+only ours -- the daemon reads none of `PASEO_LABEL`, `SERVICE_HOSTNAME` or
+`HOST`, and takes the host label from the container hostname.
 
 `PASEO_TRUSTED_PROXIES` matches the proxy's *source IP*, so hostnames are
 rejected. The daemon trusts `X-Forwarded-Proto` from loopback only, but

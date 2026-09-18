@@ -1,11 +1,13 @@
 services:
   code-server:
     image: 'lscr.io/linuxserver/code-server:latest'
-    hostname: miti99-cs
+    hostname: ${SERVICE_HOSTNAME}
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Asia/Ho_Chi_Minh
+      # Hostname zsh's prompt reads, overriding the one Coolify injects.
+      - HOST=${SERVICE_HOSTNAME}
       - DEFAULT_WORKSPACE=/config/workspace
       - PWA_APPNAME=code-server
       - 'DOCKER_MODS=linuxserver/mods:universal-package-install|linuxserver/mods:universal-docker|linuxserver/mods:code-server-golang|linuxserver/mods:code-server-nodejs|linuxserver/mods:code-server-npmglobal|linuxserver/mods:code-server-pnpm|linuxserver/mods:code-server-python3|linuxserver/mods:code-server-zsh'

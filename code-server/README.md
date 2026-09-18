@@ -25,10 +25,24 @@ because this is a single-user dev box.
 
 | Variable | Purpose |
 | --- | --- |
+| `SERVICE_HOSTNAME` | Container hostname, and the name the shell prompt shows. |
 | `PASSWORD` | Web UI login, also the in-container sudo password. **A blank value disables authentication entirely.** |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity |
 
 Generate a password with `openssl rand -base64 24`.
+
+`SERVICE_HOSTNAME` is used twice: as the container's `hostname:` and as the
+`HOST` variable inside it. Coolify injects `HOST=0.0.0.0` into every compose
+app, and zsh seeds `$HOST` and the `%m`/`%M` prompt escapes from that variable
+rather than calling `gethostname()` -- so the prompt reads `0`, the first
+dot-separated field of `0.0.0.0`. code-server itself never reads `HOST` -- it
+binds `[::]:8443` -- so overriding it only affects the prompt. bash is
+unaffected; its `\h` uses the real hostname.
+
+It is not called `HOSTNAME`, the obvious name, because Compose interpolation
+lets the deploying shell's environment win over the `.env` file, and `HOSTNAME`
+is set in every container -- including the one Coolify itself runs in. The
+container would silently take Coolify's hostname instead of this value.
 
 ## Networking
 
