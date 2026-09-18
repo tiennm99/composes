@@ -1,0 +1,23 @@
+services:
+  opencode-web:
+    build: .
+    command:
+      - web
+      - '--hostname'
+      - 0.0.0.0
+      - '--port'
+      - '4096'
+    environment:
+      - OPENCODE_SERVER_PASSWORD=${OPENCODE_SERVER_PASSWORD}
+      - OPENCODE_SERVER_USERNAME=${OPENCODE_SERVER_USERNAME}
+      - TZ=Asia/Ho_Chi_Minh
+      - GIT_AUTHOR_NAME=${GIT_NAME}
+      - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
+      - GIT_COMMITTER_NAME=${GIT_NAME}
+      - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
+    volumes:
+      - 'opencode-home:/root'
+      - 'opencode-workspace:/workspace'
+volumes:
+  opencode-home:
+  opencode-workspace:

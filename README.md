@@ -60,6 +60,8 @@ Each links to its own README for variables, ports, and storage.
 | [gitea-mirror-local](gitea-mirror-local/README.md) | Gitea + PostgreSQL + gitea-mirror, mirroring GitHub repos |
 | [netdata](netdata/README.md) | Netdata monitoring agent |
 | [ollama](ollama/README.md) | Ollama LLM server |
+| [opencode-web](opencode-web/README.md) | opencode coding agent, served as a browser UI |
+| [openhands](openhands/README.md) | OpenHands coding agent, running each session in a container it spawns |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
 
