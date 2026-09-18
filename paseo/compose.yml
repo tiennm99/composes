@@ -3,18 +3,17 @@ services:
     build: .
     hostname: ${SERVICE_HOSTNAME}
     environment:
-      - TZ=${TZ}
-      # Hostname zsh's prompt reads, overriding the one Coolify injects.
-      - HOST=${SERVICE_HOSTNAME}
-      - SHELL=${SHELL}
       - PASEO_PASSWORD=${PASEO_PASSWORD}
       - PASEO_HOSTNAMES=${PASEO_HOSTNAMES}
       - PASEO_TRUSTED_PROXIES=${PASEO_TRUSTED_PROXIES}
+      - SHELL=${SHELL}
       - AGENT_CLIS=${AGENT_CLIS}
+      - TZ=${TZ}
       - GIT_AUTHOR_NAME=${GIT_NAME}
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
       - GIT_COMMITTER_NAME=${GIT_NAME}
       - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
+      - HOST=${SERVICE_HOSTNAME}
     volumes:
       - 'paseo-home:/home/paseo'
       - 'paseo-workspace:/workspace'

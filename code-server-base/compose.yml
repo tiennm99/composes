@@ -4,11 +4,11 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
+      - PASSWORD=${PASSWORD}
+      - SUDO_PASSWORD=${PASSWORD}
       - TZ=Asia/Ho_Chi_Minh
       - DEFAULT_WORKSPACE=/config/workspace
       - PWA_APPNAME=code-server
-      - PASSWORD=${PASSWORD}
-      - SUDO_PASSWORD=${PASSWORD}
     volumes:
       - 'code-server-config:/config'
 volumes:

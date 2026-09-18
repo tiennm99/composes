@@ -5,20 +5,19 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Asia/Ho_Chi_Minh
-      # Hostname zsh's prompt reads, overriding the one Coolify injects.
-      - HOST=${SERVICE_HOSTNAME}
-      - DEFAULT_WORKSPACE=/config/workspace
-      - PWA_APPNAME=code-server
+      - PASSWORD=${PASSWORD}
+      - SUDO_PASSWORD=${PASSWORD}
       - 'DOCKER_MODS=linuxserver/mods:universal-package-install|linuxserver/mods:universal-docker|linuxserver/mods:code-server-golang|linuxserver/mods:code-server-nodejs|linuxserver/mods:code-server-npmglobal|linuxserver/mods:code-server-python3|linuxserver/mods:code-server-zsh'
       - INSTALL_PACKAGES=gh|git|glab|unzip|zip
       - NODEJS_MOD_VERSION=24
-      - PASSWORD=${PASSWORD}
-      - SUDO_PASSWORD=${PASSWORD}
+      - TZ=Asia/Ho_Chi_Minh
+      - DEFAULT_WORKSPACE=/config/workspace
       - GIT_AUTHOR_NAME=${GIT_NAME}
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
       - GIT_COMMITTER_NAME=${GIT_NAME}
       - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
+      - HOST=${SERVICE_HOSTNAME}
+      - PWA_APPNAME=code-server
     volumes:
       - 'code-server-config:/config'
       - '/var/run/docker.sock:/var/run/docker.sock'
