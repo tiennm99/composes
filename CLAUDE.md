@@ -41,6 +41,27 @@ links out to each service. Per-service detail (variables, ports, storage)
 belongs in that service's README, not the root one. Adding a service means
 adding its README and a row to the root table.
 
+## Workspace services
+
+A service someone works *inside* — an editor, a coding agent, anything with a
+shell — gets exactly two named volumes: one for the container user's home
+directory, one mounted at `/workspace`. The home volume holds settings,
+credentials and CLI logins; `/workspace` holds the code. Point whatever
+variable selects the working directory at `/workspace`.
+
+`code-server`, `paseo` and `opencode-web` all follow this.
+A service with no human inside it does not: `openhands` keeps only its state
+volume, because each agent session gets a container of its own.
+
+The split is so that wiping one does not take the other. Reinstalling an editor
+should not cost you a repository, and deleting a repository should not cost you
+your extensions and logins.
+
+Check who owns `/workspace` on a fresh volume. Docker creates it `root:root`
+unless the image ships the directory, and an image that drops to a non-root
+user will not be able to write there. `code-server` needs an explicit `chown`
+for this reason; `paseo` and `opencode-web` do not.
+
 ## Environment variable order
 
 `environment:` entries are ordered by how badly the service needs them — not

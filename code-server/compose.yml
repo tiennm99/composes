@@ -1,6 +1,6 @@
 services:
   code-server:
-    image: 'lscr.io/linuxserver/code-server:latest'
+    build: .
     hostname: ${SERVICE_HOSTNAME}
     environment:
       - PUID=1000
@@ -11,7 +11,7 @@ services:
       - INSTALL_PACKAGES=gh|git|glab|unzip|zip
       - NODEJS_MOD_VERSION=24
       - TZ=Asia/Ho_Chi_Minh
-      - DEFAULT_WORKSPACE=/config/workspace
+      - DEFAULT_WORKSPACE=/workspace
       - GIT_AUTHOR_NAME=${GIT_NAME}
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
       - GIT_COMMITTER_NAME=${GIT_NAME}
@@ -20,6 +20,8 @@ services:
       - PWA_APPNAME=code-server
     volumes:
       - 'code-server-config:/config'
+      - 'code-server-workspace:/workspace'
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
 volumes:
   code-server-config:
+  code-server-workspace:

@@ -57,6 +57,36 @@ Coolify or Dokploy. See the [root README](../README.md) for why.
 
 ## Storage
 
-Everything lives in the `code-server-config` named volume mounted at `/config`;
-the default workspace is `/config/workspace`. Removing the volume wipes your
-files, settings, and extensions.
+| Volume | Mount | Holds |
+| --- | --- | --- |
+| `code-server-config` | `/config` | Home directory: settings, extensions, shell history, CLI logins |
+| `code-server-workspace` | `/workspace` | Code you work on |
+
+Two volumes, the same split [paseo](../paseo/README.md) and
+[opencode-web](../opencode-web/README.md) use: home in one, the workspace in
+the other. Code survives a wipe of the editor's state, and the editor's state
+survives a wipe of the code.
+
+`DEFAULT_WORKSPACE` points at `/workspace` to match. It only chooses the folder
+code-server opens; it does not move anything.
+
+The `Dockerfile` exists only because of that move. The image hard-codes what it
+hands to the `abc` user — `init-adduser` takes `/app`, `/config` and
+`/defaults`, `init-code-server` takes `/config/workspace` by literal path — and
+reads `DEFAULT_WORKSPACE` only to decide which folder to open. A named volume
+on `/workspace` is therefore never chowned, comes up `root:root`, and the
+editor cannot write a single file into it.
+
+Creating the directory in the image fixes it without any runtime step: Docker
+seeds an empty named volume from the image directory, ownership included, so
+`/workspace` arrives owned by `abc`. It is the same reason `paseo` needs no
+fixup — its upstream image ships `/workspace` already owned.
+
+The alternative was a `chown` script in `/custom-cont-init.d`, the image's own
+init hook. It was rejected because it needs a bind mount from the repository
+into the container, and because the hook silently skips any script that has
+lost its executable bit — a read-only workspace with nothing obvious to blame.
+Baking `1000:1000` into the image costs the ability to change `PUID` at
+runtime, which is free here: both services pin it to `1000`.
+
+Anything outside these two volumes is lost on redeploy.
