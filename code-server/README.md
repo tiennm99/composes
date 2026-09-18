@@ -21,6 +21,12 @@ is the same `PASSWORD`) or add the group by hand. Handing a container the
 socket is equivalent to giving it root on the host -- that is accepted here
 because this is a single-user dev box.
 
+The mount carries `:ro`, which is not a security boundary: it only marks the
+socket file read-only, while the Docker API is reached by connecting to the
+socket, which a read-only mount does not stop. Full API access, and with it
+root on the host, remains. Restricting that would need a socket proxy or a
+separate rootless daemon.
+
 ## Environment
 
 | Variable | Purpose |

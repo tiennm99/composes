@@ -20,6 +20,6 @@ services:
       - PWA_APPNAME=code-server
     volumes:
       - 'code-server-config:/config'
-      - '/var/run/docker.sock:/var/run/docker.sock'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
 volumes:
   code-server-config:
