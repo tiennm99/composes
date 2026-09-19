@@ -1,4 +1,4 @@
-# gitea-mirror-local
+# gitea-mirror
 
 Self-hosted [Gitea](https://about.gitea.com/) backed by PostgreSQL, with
 [gitea-mirror](https://github.com/RayLabsHQ/gitea-mirror) mirroring GitHub
