@@ -104,5 +104,4 @@ is just the subcommand and its flags.
 
 ## Related
 
-- [openhands](../openhands/README.md) — a coding agent that runs each session in a container it spawns
 - [paseo](../paseo/README.md) — runs the opencode CLI, among others, in a terminal

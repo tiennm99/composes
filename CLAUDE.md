@@ -49,9 +49,9 @@ directory, one mounted at `/workspace`. The home volume holds settings,
 credentials and CLI logins; `/workspace` holds the code. Point whatever
 variable selects the working directory at `/workspace`.
 
-`code-server`, `paseo` and `opencode-web` all follow this.
-A service with no human inside it does not: `openhands` keeps only its state
-volume, because each agent session gets a container of its own.
+`code-server`, `paseo` and `opencode-web` all follow this. A service with no
+human inside it does not — one that spawns a container per session keeps only
+its own state volume.
 
 The split is so that wiping one does not take the other. Reinstalling an editor
 should not cost you a repository, and deleting a repository should not cost you
