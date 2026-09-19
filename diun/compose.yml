@@ -1,0 +1,38 @@
+# Required env vars (set in Coolify/Dokploy, or a sibling .env):
+#   DIUN_NOTIF_TELEGRAM_TOKEN, DIUN_NOTIF_TELEGRAM_CHATIDS
+
+services:
+  diun:
+    image: crazymax/diun:4.33
+    command: serve
+    environment:
+      DIUN_PROVIDERS_DOCKER: "true"
+      DIUN_PROVIDERS_DOCKER_ENDPOINT: tcp://dockerproxy:2375
+      DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT: "${DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT:-true}"
+      DIUN_NOTIF_TELEGRAM_TOKEN: ${DIUN_NOTIF_TELEGRAM_TOKEN:?required}
+      DIUN_NOTIF_TELEGRAM_CHATIDS: ${DIUN_NOTIF_TELEGRAM_CHATIDS:?required}
+      DIUN_DB_PATH: /data/diun.db
+      DIUN_WATCH_SCHEDULE: "${DIUN_WATCH_SCHEDULE:-0 */6 * * *}"
+      DIUN_WATCH_WORKERS: "${DIUN_WATCH_WORKERS:-10}"
+      DIUN_WATCH_JITTER: "${DIUN_WATCH_JITTER:-30s}"
+      TZ: "${TZ:-UTC}"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      LOG_JSON: "${LOG_JSON:-false}"
+    volumes:
+      - diun-data:/data
+    depends_on:
+      - dockerproxy
+
+  # Read-only slice of the Docker API. POST is revoked by default in this image.
+  dockerproxy:
+    image: tecnativa/docker-socket-proxy:v0.5.0
+    environment:
+      CONTAINERS: 1
+      IMAGES: 1
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+volumes:
+  diun-data:
