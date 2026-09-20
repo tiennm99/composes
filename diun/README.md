@@ -56,7 +56,18 @@ notifications for everything currently running.
 
 ## Version pinning
 
-`crazymax/diun:4.33` rather than `:latest`. Diun holds Docker API access, so an
-unreviewed image change is the highest-leverage supply-chain step on the host;
-the proxy bounds what a bad image could do, and the pin means an image only
-changes when this file does.
+`crazymax/diun:4` — the moving major tag, so patch and minor releases arrive on
+the next pull without an edit here, while a breaking `5.x` never does. The
+upstream project publishes `4` alongside every `4.x.y`, so the tag always
+resolves to the newest release of that line.
+
+`tecnativa/docker-socket-proxy:latest`. That project only publishes exact tags
+(`v0.5.0`, `v0.4.2`, …) for its current scheme — the bare `0` and `0.3` tags
+are stale leftovers from an older one — so there is no moving major tag to
+follow and `latest` is the closest equivalent.
+
+Moving tags mean an image can change under a redeploy without this file
+changing. That is the accepted trade-off: Diun is the one service here holding
+Docker API access, and the proxy is what bounds the damage a bad image could do
+— `POST` is revoked, so no image pulled through either tag can create a
+privileged container.
