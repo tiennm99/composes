@@ -62,6 +62,7 @@ Each links to its own README for variables, ports, and storage.
 | [couchbase](couchbase/README.md) | Couchbase Server |
 | [diun](diun/README.md) | Image-update notifier, reading the Docker API through a read-only proxy |
 | [gitea-mirror](gitea-mirror/README.md) | Gitea + PostgreSQL + gitea-mirror, mirroring GitHub repos |
+| [goclaw](goclaw/README.md) | Multi-tenant AI agent gateway, with pgvector PostgreSQL |
 | [opencode-web](opencode-web/README.md) | opencode coding agent, served as a browser UI |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
