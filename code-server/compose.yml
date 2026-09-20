@@ -1,6 +1,7 @@
 services:
   code-server:
     build: .
+    restart: unless-stopped
     hostname: ${SERVICE_HOSTNAME}
     environment:
       - PUID=1000

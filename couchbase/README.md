@@ -2,9 +2,9 @@
 
 [Couchbase Server](https://www.couchbase.com), single node.
 
-Uses `docker-compose.yml`, publishes ports, and sets `restart: unless-stopped`
-and `container_name: db` — unlike the platform-managed services described in
-the [root README](../README.md).
+Uses `docker-compose.yml`, publishes ports, and sets `container_name: db` —
+unlike the platform-managed services described in the
+[root README](../README.md).
 
 ## Networking
 

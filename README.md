@@ -10,10 +10,14 @@ otherwise declare:
 - **No published ports.** The platform attaches the container to its proxy
   network and maps a domain to the internal port. Publishing one would also
   expose it on the host.
-- **No `restart:` policy.** The platform manages the container lifecycle.
 - **No `container_name:`.** Compose derives it from the directory.
 
-Services that do publish ports or set `restart:` say so in their own README.
+Every container does set `restart: unless-stopped`. Coolify would inject the
+same value on its own, but Dokploy leaves an omitted policy alone, which in its
+default compose mode means the container stays down after a reboot.
+
+Services that publish ports or set `container_name:` say so in their own
+README.
 
 ## Layout
 

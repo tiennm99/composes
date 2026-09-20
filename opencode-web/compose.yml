@@ -1,6 +1,7 @@
 services:
   opencode-web:
     build: .
+    restart: unless-stopped
     command:
       - web
       - '--hostname'

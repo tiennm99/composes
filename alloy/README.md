@@ -10,9 +10,8 @@ API to it. The Alloy config is embedded inline via Compose `configs:`, so
 there is no `config.alloy` on disk, and every setting comes from a shell
 variable rather than a `.env` file.
 
-Uses `docker-compose.yml`, and sets `restart: unless-stopped` and
-`container_name: alloy` — unlike the platform-managed services described in the
-[root README](../README.md).
+Uses `docker-compose.yml`, and sets `container_name: alloy` — unlike the
+platform-managed services described in the [root README](../README.md).
 
 ## What it collects
 

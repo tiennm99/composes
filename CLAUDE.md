@@ -106,12 +106,18 @@ unprompted:
 - **No `ports:`.** Coolify and Dokploy attach the container to their proxy
   network and map a domain to the internal port. Publishing a port is redundant
   and would additionally expose it on the host.
-- **No `restart:` policy.** The platform manages the container lifecycle.
 - **No `container_name:`.** Let Compose derive it from the directory.
 
 More generally: these files are tuned to one person's setup and are not meant
 to be portable, standard, or turnkey. Prefer leaving a service minimal over
 adding hardening or convention that the platform already provides.
+
+`restart:` is the exception that is *not* omitted. Every service sets
+`restart: unless-stopped`, on every container. Coolify injects that exact value
+when a service does not declare one, and keeps the declared value when it does;
+Dokploy does not inject anything, so in its default compose mode an omitted
+policy leaves the container down after a crash or a host reboot. Setting it is
+correct on both.
 
 ## Secrets
 

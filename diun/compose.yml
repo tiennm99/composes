@@ -4,6 +4,7 @@
 services:
   diun:
     image: crazymax/diun:4
+    restart: unless-stopped
     command: serve
     environment:
       DIUN_PROVIDERS_DOCKER: "true"
@@ -26,6 +27,7 @@ services:
   # Read-only slice of the Docker API. POST is revoked by default in this image.
   dockerproxy:
     image: tecnativa/docker-socket-proxy:latest
+    restart: unless-stopped
     environment:
       CONTAINERS: 1
       IMAGES: 1

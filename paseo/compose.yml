@@ -1,6 +1,7 @@
 services:
   paseo:
     build: .
+    restart: unless-stopped
     hostname: ${SERVICE_HOSTNAME}
     environment:
       - PASEO_PASSWORD=${PASEO_PASSWORD}
