@@ -44,7 +44,7 @@ fail fast if unset. Everything else has a working default.
 | `DIUN_NOTIF_TELEGRAM_TOKEN` | — | Bot token from @BotFather |
 | `DIUN_NOTIF_TELEGRAM_CHATIDS` | — | Comma-separated chat ids to notify |
 | `DIUN_PROVIDERS_DOCKER_WATCHBYDEFAULT` | `true` | Watch every container without per-container labels |
-| `DIUN_WATCH_SCHEDULE` | `0 */6 * * *` | Cron for the watch cycle |
+| `DIUN_WATCH_SCHEDULE` | `0 0 * * *` | Cron for the watch cycle — once a day at midnight `TZ` |
 | `DIUN_WATCH_WORKERS` | `10` | Parallel registry lookups |
 | `DIUN_WATCH_JITTER` | `30s` | Random delay before each job |
 | `TZ` | `UTC` | Timezone for the schedule and log timestamps |
