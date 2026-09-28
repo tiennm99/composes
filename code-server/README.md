@@ -3,8 +3,9 @@
 [VS Code in the browser](https://github.com/linuxserver/docker-code-server),
 from the LinuxServer image, set up as a full remote dev box.
 
-Comes with Go, Node.js 24, Python 3, and zsh via LinuxServer mods, plus `gh`,
-`git`, `glab`, `unzip` and `zip` through `INSTALL_PACKAGES`. Git
+Comes with Go, Node.js 24, Python 3, and zsh via LinuxServer mods, plus
+`bubblewrap`, `gh`, `git`, `glab`, `unzip` and `zip` through
+`INSTALL_PACKAGES`. Git
 author/committer identity is injected from `.env`.
 
 ## Docker access
