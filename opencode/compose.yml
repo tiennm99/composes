@@ -1,5 +1,5 @@
 services:
-  opencode-web:
+  opencode:
     build: .
     restart: unless-stopped
     command:

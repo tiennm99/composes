@@ -64,7 +64,7 @@ Coolify or Dokploy. See the [root README](../README.md) for why.
 | `code-server-workspace` | `/workspace` | Code you work on |
 
 Two volumes, the same split [paseo](../paseo/README.md) and
-[opencode-web](../opencode-web/README.md) use: home in one, the workspace in
+[opencode](../opencode/README.md) use: home in one, the workspace in
 the other. Code survives a wipe of the editor's state, and the editor's state
 survives a wipe of the code.
 

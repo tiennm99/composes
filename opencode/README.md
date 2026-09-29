@@ -1,4 +1,4 @@
-# opencode-web
+# opencode
 
 [opencode](https://opencode.ai) served as a browser UI by `opencode web`, which
 starts the headless server and its web interface together. The agent runs in
@@ -16,7 +16,7 @@ apk layer puts them back.
 3. Log in to a model provider — the UI cannot do it, so use a shell:
 
    ```sh
-   docker compose exec opencode-web opencode auth login
+   docker compose exec opencode opencode auth login
    ```
 
    It is interactive, which is why it is not an environment variable; `exec`
