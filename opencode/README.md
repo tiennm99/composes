@@ -11,20 +11,19 @@ apk layer puts them back.
 
 ## Setup
 
-1. Set the variables from `.env.example` in Coolify or Dokploy.
-2. Point the domain at port `4096` and deploy.
-3. Log in to a model provider — the UI cannot do it, so use a shell:
+Logging in to a model provider is the one step the UI cannot do. After the
+first deploy, from a shell:
 
-   ```sh
-   docker compose exec opencode opencode auth login
-   ```
+```sh
+docker compose exec opencode opencode auth login
+```
 
-   It is interactive, which is why it is not an environment variable; `exec`
-   gives it the TTY it needs. The credentials land on the `opencode-home`
-   volume and survive a redeploy.
+It is interactive, which is why it is not an environment variable; `exec`
+gives it the TTY it needs. The credentials land on the `opencode-home` volume
+and survive a redeploy.
 
-4. Open the domain and sign in with `OPENCODE_SERVER_USERNAME` and
-   `OPENCODE_SERVER_PASSWORD`.
+Then open the domain and sign in with `OPENCODE_SERVER_USERNAME` and
+`OPENCODE_SERVER_PASSWORD`.
 
 The container logs a Bun stack trace ending in
 `Executable not found in $PATH: "xdg-open"` on every start. `opencode web`
@@ -41,14 +40,6 @@ set, the server will be unsecured."* Unset, every request is served — and ever
 request can ask the agent to run a command. Treat a blank value as publishing a
 root terminal.
 
-`--hostname 0.0.0.0` in `command:` is what makes the service reachable at all;
-both `web` and `serve` bind `127.0.0.1` by default. `--port 4096` is there
-because the default is `0`, a random port, which the platform cannot map a
-domain to.
-
-If the UI is loaded from a different origin than it is served from, add
-`--cors <url>` to `command:`. The default setup does not need it.
-
 ## Environment
 
 | Variable | Purpose |
@@ -56,10 +47,6 @@ If the UI is loaded from a different origin than it is served from, add
 | `OPENCODE_SERVER_PASSWORD` | Web UI and API login. Blank means no authentication at all. Generate with `openssl rand -base64 24`. |
 | `OPENCODE_SERVER_USERNAME` | Username to go with it. opencode falls back to `opencode`. |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity for the agent's commits. |
-
-`TZ` is set in `compose.yml` rather than here: it is a property of this setup,
-not of whoever deploys it, and Compose interpolation would let a `TZ` exported
-by the deploying shell win over the `.env` file anyway.
 
 Model provider credentials are not variables — see [Setup](#setup).
 
@@ -79,13 +66,20 @@ anything else installed into `$HOME` persist as a side effect.
 The container runs as root, which is what the upstream image does; `$HOME` is
 `/root` because of it.
 
-Anything written outside those two volumes — an `apk add` from the agent's own
-terminal — is lost on the next deploy. Add it to the `Dockerfile` instead.
+`WORKDIR /workspace` in the `Dockerfile` is what makes the agent start in the
+workspace volume.
 
 ## Networking
 
-Listens on `4096`, published nowhere — the platform maps the domain to it. See
-the [root README](../README.md) for why.
+Listens on `4096`; point the domain at it.
+
+`--hostname 0.0.0.0` in `command:` is what makes the service reachable at all;
+both `web` and `serve` bind `127.0.0.1` by default. `--port 4096` is there
+because the default is `0`, a random port, which the platform cannot map a
+domain to.
+
+If the UI is loaded from a different origin than it is served from, add
+`--cors <url>` to `command:`. The default setup does not need it.
 
 ## Image
 
@@ -96,12 +90,9 @@ longer serves anonymous pulls, so it is not the one to use.
 The apk layer adds `bash`, `git`, `curl` and `openssh-client` — the floor for
 an agent that clones, commits and fetches. It carries no language toolchain:
 none is wanted often enough to justify rebuilding the image for everybody, and
-`apk add` from a terminal covers a one-off. Something needed on every deploy
-belongs in the `Dockerfile`, since `/usr` is not on a volume.
+`apk add` from the agent's own terminal covers a one-off — but `/usr` is not on
+a volume, so it is gone on the next deploy. Something needed every time belongs
+in the `Dockerfile`.
 
 `ENTRYPOINT` stays the image's own `opencode`, so `command:` in `compose.yml`
 is just the subcommand and its flags.
-
-## Related
-
-- [paseo](../paseo/README.md) — runs the opencode CLI, among others, in a terminal

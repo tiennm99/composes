@@ -7,11 +7,13 @@ Management.
 One container runs both the `node_exporter` (host) and `cadvisor` (container)
 collectors. A second, tiny container proxies a read-only slice of the Docker
 API to it. The Alloy config is embedded inline via Compose `configs:`, so
-there is no `config.alloy` on disk, and every setting comes from a shell
-variable rather than a `.env` file.
+there is no `config.alloy` on disk. There is no `.env.example` either: the
+nine variables are exported before `docker compose up`.
 
-Uses `docker-compose.yml`, and sets `container_name: alloy` — unlike the
-platform-managed services described in the [root README](../README.md).
+The compose file is `docker-compose.yml`. Both containers have fixed names,
+`container_name: alloy` and `alloy-dockerproxy`, and `dockerproxy` publishes
+`127.0.0.1:2375` — Alloy runs with host networking, so it has no compose
+network to reach the proxy over.
 
 ## What it collects
 
@@ -103,7 +105,7 @@ secret-bearing — it holds `GRAFANA_TOKEN` regardless.
 `prometheus.exporter.cadvisor` and `loki.source.docker` both need the Docker
 API, so it cannot simply be removed. `dockerproxy` runs
 [tecnativa/docker-socket-proxy](https://github.com/Tecnativa/docker-socket-proxy)
-with the socket mounted read-only and exposes it on `127.0.0.1:2375`, which
+with the socket mounted read-only and publishes it on `127.0.0.1:2375`, which
 Alloy reaches over host networking.
 
 `POST` is revoked by default in that image, which is the point: container

@@ -10,15 +10,14 @@ sessions, encrypted provider keys and the semantic memory.
 
 ## Setup
 
-1. Generate the two secrets and set them, with the rest of `.env.example`, in
-   Coolify or Dokploy:
+1. Generate the two secrets:
 
    ```sh
    openssl rand -hex 16   # GOCLAW_GATEWAY_TOKEN
    openssl rand -hex 32   # GOCLAW_ENCRYPTION_KEY
    ```
 
-2. Point the domain at port `18790` and deploy. Migrations run on start.
+2. Map the domain to port `18790` and deploy. Migrations run on start.
 3. Open the domain and use the setup wizard to add an LLM provider key.
 
 Health check: `GET /health`.
@@ -35,8 +34,8 @@ domain would publish the gateway.
 (AES-256-GCM). It is required for the same reason, and it must not change once
 keys are stored — every one of them becomes unreadable.
 
-Both are 1:1 with what `prepare-env.sh` generates upstream; that script is not
-used here because the platform owns the environment.
+Both are the two values upstream's `prepare-env.sh` generates; the script
+itself is not used here.
 
 ## Environment
 
@@ -79,8 +78,7 @@ credentials survive a recreate.
 
 ## Networking
 
-Listens on `18790`, published nowhere — the platform maps the domain to it. See
-the [root README](../README.md) for why.
+Listens on `18790`.
 
 `extra_hosts` maps `host.docker.internal` to the host gateway, so an agent can
 reach a service running on the host itself.
@@ -106,4 +104,4 @@ ships them. The three capabilities are what the entrypoint needs to install
 persisted packages as root and then drop to the `goclaw` user via `su-exec`.
 
 This is a service whose whole purpose is running model-chosen tools, so the
-limits are worth keeping even though nothing else here sets them.
+limits are worth keeping.

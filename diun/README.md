@@ -21,8 +21,8 @@ So the socket is mounted into
 instead, and Diun reaches it over the compose network at
 `tcp://dockerproxy:2375`. `POST` is revoked by default in that image, so
 container create, `exec`, start and kill return 403. A compromised Diun image
-can no longer become root on the host — which matters because Diun is the one
-service here whose whole job is to talk to the daemon.
+can no longer become root on the host — which matters because Diun's whole job
+is to talk to the daemon.
 
 Exactly two API sections are granted, both verified against a live watch cycle:
 
@@ -67,7 +67,6 @@ are stale leftovers from an older one — so there is no moving major tag to
 follow and `latest` is the closest equivalent.
 
 Moving tags mean an image can change under a redeploy without this file
-changing. That is the accepted trade-off: Diun is the one service here holding
-Docker API access, and the proxy is what bounds the damage a bad image could do
-— `POST` is revoked, so no image pulled through either tag can create a
-privileged container.
+changing. That is the accepted trade-off: the proxy is what bounds the damage a
+bad image could do — `POST` is revoked, so no image pulled through either tag
+can create a privileged container.

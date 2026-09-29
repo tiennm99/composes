@@ -3,10 +3,10 @@
 [VS Code in the browser](https://github.com/linuxserver/docker-code-server),
 from the LinuxServer image, set up as a full remote dev box.
 
-Comes with Go, Node.js 24, Python 3, and zsh via LinuxServer mods, plus
-`bubblewrap`, `gh`, `git`, `glab`, `unzip` and `zip` through
-`INSTALL_PACKAGES`. Git
-author/committer identity is injected from `.env`.
+Comes with Go, Node.js 24, Python 3 and zsh via LinuxServer mods, the
+`code-server-npmglobal` mod so `npm install -g` lands under `/config` and persists,
+plus `bubblewrap`, `gh`, `git`, `glab`, `unzip` and `zip` through
+`INSTALL_PACKAGES`. Git author/committer identity is injected from `.env`.
 
 ## Docker access
 
@@ -19,7 +19,7 @@ not exist unless the same path exists on the host.
 The socket is owned by the host's `docker` group, which the `abc` user inside
 the container is not a member of; run `docker` under `sudo` (the `SUDO_PASSWORD`
 is the same `PASSWORD`) or add the group by hand. Handing a container the
-socket is equivalent to giving it root on the host -- that is accepted here
+socket is equivalent to giving it root on the host — that is accepted here
 because this is a single-user dev box.
 
 The mount carries `:ro`, which is not a security boundary: it only marks the
@@ -41,20 +41,17 @@ Generate a password with `openssl rand -base64 24`.
 `SERVICE_HOSTNAME` is used twice: as the container's `hostname:` and as the
 `HOST` variable inside it. Coolify injects `HOST=0.0.0.0` into every compose
 app, and zsh seeds `$HOST` and the `%m`/`%M` prompt escapes from that variable
-rather than calling `gethostname()` -- so the prompt reads `0`, the first
-dot-separated field of `0.0.0.0`. code-server itself never reads `HOST` -- it
-binds `[::]:8443` -- so overriding it only affects the prompt. bash is
+rather than calling `gethostname()` — so the prompt reads `0`, the first
+dot-separated field of `0.0.0.0`. code-server itself never reads `HOST` — it
+binds `[::]:8443` — so overriding it only affects the prompt. bash is
 unaffected; its `\h` uses the real hostname.
 
-It is not called `HOSTNAME`, the obvious name, because Compose interpolation
-lets the deploying shell's environment win over the `.env` file, and `HOSTNAME`
-is set in every container -- including the one Coolify itself runs in. The
-container would silently take Coolify's hostname instead of this value.
+`PUID`/`PGID` are pinned to `1000` in `compose.yml`; the `Dockerfile` depends
+on that (see [Storage](#storage)).
 
 ## Networking
 
-Listens on `8443`. No ports are published — point the domain at that port in
-Coolify or Dokploy. See the [root README](../README.md) for why.
+Listens on `8443`; point the domain at it.
 
 ## Storage
 
@@ -63,31 +60,23 @@ Coolify or Dokploy. See the [root README](../README.md) for why.
 | `code-server-config` | `/config` | Home directory: settings, extensions, shell history, CLI logins |
 | `code-server-workspace` | `/workspace` | Code you work on |
 
-Two volumes, the same split [paseo](../paseo/README.md) and
-[opencode](../opencode/README.md) use: home in one, the workspace in
-the other. Code survives a wipe of the editor's state, and the editor's state
-survives a wipe of the code.
-
-`DEFAULT_WORKSPACE` points at `/workspace` to match. It only chooses the folder
+`DEFAULT_WORKSPACE` points at `/workspace`. It only chooses the folder
 code-server opens; it does not move anything.
 
-The `Dockerfile` exists only because of that move. The image hard-codes what it
-hands to the `abc` user — `init-adduser` takes `/app`, `/config` and
-`/defaults`, `init-code-server` takes `/config/workspace` by literal path — and
-reads `DEFAULT_WORKSPACE` only to decide which folder to open. A named volume
-on `/workspace` is therefore never chowned, comes up `root:root`, and the
-editor cannot write a single file into it.
+The `Dockerfile` exists only to make `/workspace` writable. The image
+hard-codes what it hands to the `abc` user — `init-adduser` takes `/app`,
+`/config` and `/defaults`, `init-code-server` takes `/config/workspace` by
+literal path — and reads `DEFAULT_WORKSPACE` only to decide which folder to
+open. A named volume on `/workspace` is therefore never chowned, comes up
+`root:root`, and the editor cannot write a single file into it.
 
-Creating the directory in the image fixes it without any runtime step: Docker
-seeds an empty named volume from the image directory, ownership included, so
-`/workspace` arrives owned by `abc`. It is the same reason `paseo` needs no
-fixup — its upstream image ships `/workspace` already owned.
+Creating the directory in the image, owned by `1000:1000`, fixes it without any
+runtime step: Docker seeds an empty named volume from the image directory,
+ownership included, so `/workspace` arrives owned by `abc`.
 
 The alternative was a `chown` script in `/custom-cont-init.d`, the image's own
 init hook. It was rejected because it needs a bind mount from the repository
 into the container, and because the hook silently skips any script that has
 lost its executable bit — a read-only workspace with nothing obvious to blame.
 Baking `1000:1000` into the image costs the ability to change `PUID` at
-runtime, which is free here: both services pin it to `1000`.
-
-Anything outside these two volumes is lost on redeploy.
+runtime, which is free here because `compose.yml` pins it.

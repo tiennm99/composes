@@ -171,7 +171,7 @@ configs:
       }
 
       // File-based logs from the Linux-Node integration: syslog/messages/*.log.
-      // On systemd hosts, rsyslog often mirrors journald — see README "Caveats".
+      // On systemd hosts, rsyslog often mirrors journald — see README "What it collects".
       local.file_match "integrations_node_exporter_files" {
         path_targets = [{
           __address__ = "localhost",

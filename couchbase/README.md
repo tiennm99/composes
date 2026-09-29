@@ -1,12 +1,11 @@
 # couchbase
 
-[Couchbase Server](https://www.couchbase.com), single node.
-
-Uses `docker-compose.yml`, publishes ports, and sets `container_name: db` —
-unlike the platform-managed services described in the
-[root README](../README.md).
+[Couchbase Server](https://www.couchbase.com), single node, defined in
+`docker-compose.yml` with `container_name: db`.
 
 ## Networking
+
+Publishes its ports on the host:
 
 | Ports | Purpose |
 | --- | --- |

@@ -32,6 +32,11 @@ README.
 Compose names the project after its directory, so `code-server/` comes up as
 the `code-server` project with its own network and volumes.
 
+Each service README covers only its own service. Shared conventions live here
+and are not repeated or linked from a service, so editing one service never
+touches another's directory — each is a separate Coolify app deploying on a
+`<service>/**` watch path.
+
 ## Usage
 
 In Coolify or Dokploy, point a Docker Compose resource at the service directory

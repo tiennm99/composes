@@ -41,6 +41,27 @@ links out to each service. Per-service detail (variables, ports, storage)
 belongs in that service's README, not the root one. Adding a service means
 adding its README and a row to the root table.
 
+## Service READMEs stay inside their directory
+
+A service's `README.md` describes that service and nothing else. It does not
+name, link to, or compare itself with another service, and it does not link up
+to the root README or CLAUDE.md. Shared conventions — the workspace volume
+split, no published ports, the restart policy, secrets, variable order — are
+written once at the root and are not restated or "see the root for why"-linked
+from a service. A service README says what the service is, its variables,
+storage and wiring, and the reasons behind choices specific to that service.
+Keep it concise and minimal.
+
+This is a deployment rule, not a style preference. Each service is a separate
+Coolify app whose webhook watch path is `<service>/**`. A cross-link means
+renaming or editing one service touches another's directory and redeploys it.
+Cross-cutting changes to every compose file (a new restart policy, say) are the
+one legitimate case where a push redeploys several services.
+
+Every Coolify app created from this repo sets its watch path to `<service>/**`.
+An app with no watch path deploys on every push to the repository —
+`traffmonetizer` leaves it unset on purpose, to get restarted that often.
+
 ## Workspace services
 
 A service someone works *inside* — an editor, a coding agent, anything with a
