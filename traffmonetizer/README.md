@@ -1,7 +1,7 @@
 # traffmonetizer
 
 [TraffMonetizer](https://traffmonetizer.com) bandwidth-sharing client, defined
-in `docker-compose.yml` with `container_name: tm` and `restart: always`. It
+in `compose.yml` with `container_name: tm` and `restart: always`. It
 only makes outbound connections, so there is no port to map a domain to.
 
 The image tag is `arm64v8`. Change it to match the host architecture.

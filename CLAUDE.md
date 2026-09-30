@@ -6,10 +6,8 @@ gitignored `.env`.
 
 ## File naming
 
-New services use `compose.yml` — the current Compose spec name, and the
-shorter one. Existing services that still use `docker-compose.yml` stay as
-they are; do not rename them, not even while touching the file for something
-else.
+Every service uses `compose.yml` — the current Compose spec name, and the
+shorter one. Not `docker-compose.yml`.
 
 ## Installing software in an image
 

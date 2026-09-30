@@ -28,7 +28,7 @@ jobs:
       - name: Extract embedded Alloy config
         uses: mikefarah/yq@v4
         with:
-          cmd: yq '.configs.alloy_config.content' docker-compose.yml > config.alloy
+          cmd: yq '.configs.alloy_config.content' compose.yml > config.alloy
 
       - name: Validate Alloy config syntax
         run: |

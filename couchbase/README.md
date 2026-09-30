@@ -1,7 +1,7 @@
 # couchbase
 
 [Couchbase Server](https://www.couchbase.com), single node, defined in
-`docker-compose.yml` with `container_name: db`.
+`compose.yml` with `container_name: db`.
 
 ## Networking
 

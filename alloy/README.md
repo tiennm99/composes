@@ -10,7 +10,7 @@ API to it. The Alloy config is embedded inline via Compose `configs:`, so
 there is no `config.alloy` on disk. There is no `.env.example` either: the
 nine variables are exported before `docker compose up`.
 
-The compose file is `docker-compose.yml`. Both containers have fixed names,
+Both containers have fixed names,
 `container_name: alloy` and `alloy-dockerproxy`, and `dockerproxy` publishes
 `127.0.0.1:2375` — Alloy runs with host networking, so it has no compose
 network to reach the proxy over.
