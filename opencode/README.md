@@ -11,7 +11,13 @@ apk layer puts them back.
 
 ## Setup
 
-Logging in to a model provider is the one step the UI cannot do. After the
+For OpenCode Go (or Zen), set `OPENCODE_API_KEY` to the key from the OpenCode
+Console and skip the login below. opencode picks the key up from the
+environment for both the `opencode-go` and `opencode` providers — models.dev,
+where opencode gets its provider list, names `OPENCODE_API_KEY` as their
+variable — so no `auth.json` entry or config file is needed.
+
+Any other provider needs a login, the one step the UI cannot do. After the
 first deploy, from a shell:
 
 ```sh
@@ -46,9 +52,10 @@ root terminal.
 | --- | --- |
 | `OPENCODE_SERVER_PASSWORD` | Web UI and API login. Blank means no authentication at all. Generate with `openssl rand -base64 24`. |
 | `OPENCODE_SERVER_USERNAME` | Username to go with it. opencode falls back to `opencode`. |
+| `OPENCODE_API_KEY` | OpenCode Go / Zen API key. Optional; blank means log in instead. |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity for the agent's commits. |
 
-Model provider credentials are not variables — see [Setup](#setup).
+Other model provider credentials are not variables — see [Setup](#setup).
 
 ## Storage
 
