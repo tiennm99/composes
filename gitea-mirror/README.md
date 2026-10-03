@@ -24,6 +24,8 @@ port, matching the two URL variables.
 | --- | --- | --- |
 | `POSTGRES_PASSWORD` | `db`, `gitea` | Defaults to `gitea`. |
 | `GITEA_ROOT_URL` | Gitea `server.ROOT_URL` | Public URL, with trailing slash. Gitea builds clone URLs and redirects from it. |
+| `BETTER_AUTH_SECRET` | gitea-mirror | Signs sessions and encrypts its login keys. Generate with `openssl rand -base64 32`. |
+| `ENCRYPTION_SECRET` | gitea-mirror | Encrypts the stored GitHub and Gitea tokens. Generate with `openssl rand -base64 48`. |
 | `GITEA_MIRROR_URL` | `BETTER_AUTH_URL`, `PUBLIC_BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS` | Public URL of the mirror UI, no trailing slash. |
 
 Postgres sets the password only when it first initialises `db-data`. Changing
@@ -36,9 +38,13 @@ docker compose exec db psql -U gitea -c "ALTER USER gitea PASSWORD '<new>';"
 
 Behind a reverse proxy, gitea-mirror rejects sign-in with "invalid origin"
 unless all three Better Auth variables hold the external URL, so one variable
-feeds them all. Its `BETTER_AUTH_SECRET` and `ENCRYPTION_SECRET` are left
-unset: the image generates both on first start and keeps them in
-`gitea-mirror-data`.
+feeds them all.
+
+Both secrets are set explicitly rather than left to the image, which would
+otherwise generate its own into `gitea-mirror-data`. Data encrypted under one
+secret is unreadable under another, so moving the data to a new deployment
+means carrying the secrets with it. Never change either on an existing
+install.
 
 ## Choices
 
