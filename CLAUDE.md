@@ -113,9 +113,13 @@ Reordering a compose file means reordering the `.env.example` with it.
 
 ## Deployment target
 
-Services are deployed through Coolify and Dokploy, not plain `docker compose`
-on a host. The platform owns the parts a standalone compose file would declare
-itself.
+Services are deployed through Coolify, not plain `docker compose` on a host.
+The platform owns the parts a standalone compose file would declare itself.
+
+Coolify is the primary target: design, test and debug against it first.
+Dokploy is optional — keep a service working there when it costs nothing
+(the `restart:` policy below), but never trade Coolify behaviour for Dokploy
+compatibility, and do not block on Dokploy-only issues.
 
 ## Intentional omissions — do not "fix" these
 
@@ -155,3 +159,11 @@ Compose interpolation reads the deploying shell's environment before the
 already exports. `HOSTNAME` is the trap: it is set inside every container,
 including the one Coolify itself runs in, and would silently win. Hence
 `SERVICE_HOSTNAME` in `code-server` and `paseo`.
+
+## Upstream sources
+
+`sources/` is for upstream source checkouts used while debugging, cloned as
+`sources/<owner>/<repo>` at the version the service runs. Its contents are
+gitignored; only `sources/.gitkeep` is tracked. Never commit a checkout or fix
+a service by editing code there. Use the `debug-service` skill
+(`.claude/skills/debug-service/SKILL.md`) for service issues.

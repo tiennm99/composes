@@ -21,3 +21,7 @@ desktop.ini
 *.swp
 .idea/
 .vscode/
+
+# Upstream source checkouts for debugging; only the directory itself is kept
+sources/*
+!sources/.gitkeep

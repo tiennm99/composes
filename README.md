@@ -3,9 +3,9 @@
 My docker compose collection — one directory per service, each self-contained.
 Tuned to my own setup rather than written as general-purpose templates.
 
-Services are deployed through [Coolify](https://coolify.io) and
-[Dokploy](https://dokploy.com), which own what a standalone compose file would
-otherwise declare:
+Services are deployed through [Coolify](https://coolify.io), with
+[Dokploy](https://dokploy.com) supported as an optional extra. The platform
+owns what a standalone compose file would otherwise declare:
 
 - **No published ports.** The platform attaches the container to its proxy
   network and maps a domain to the internal port. Publishing one would also
@@ -36,6 +36,13 @@ Each service README covers only its own service. Shared conventions live here
 and are not repeated or linked from a service, so editing one service never
 touches another's directory — each is a separate Coolify app deploying on a
 `<service>/**` watch path.
+
+## Upstream sources
+
+`sources/` holds checkouts of the upstream repositories behind these images,
+cloned as `sources/<owner>/<repo>` when a service needs debugging against its
+real code. Only the empty directory is tracked; its contents are gitignored.
+The `debug-service` skill in `.claude/skills/` walks through the process.
 
 ## Usage
 
