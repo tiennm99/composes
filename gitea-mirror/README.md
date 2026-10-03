@@ -4,40 +4,58 @@ Self-hosted [Gitea](https://about.gitea.com/) backed by PostgreSQL, with
 [gitea-mirror](https://github.com/RayLabsHQ/gitea-mirror) mirroring GitHub
 repositories into it.
 
-Every published port binds to `127.0.0.1`, so nothing is reachable from
-outside the host. Put a reverse proxy in front for remote access.
-
 ## Services
 
-| Service | Image | Address |
-| --- | --- | --- |
-| `db` | `postgres:16-alpine` | internal only |
-| `gitea` | `gitea/gitea:latest` | `127.0.0.1:3000` (HTTP), `127.0.0.1:2222` (SSH) |
-| `gitea-mirror` | `ghcr.io/raylabshq/gitea-mirror:latest` | `127.0.0.1:4321` |
+| Service | Image | Internal port | Domain |
+| --- | --- | --- | --- |
+| `db` | `postgres:16-alpine` | 5432 | none |
+| `gitea` | `gitea/gitea:28` | 3000 | `GITEA_ROOT_URL` |
+| `gitea-mirror` | `ghcr.io/raylabshq/gitea-mirror:latest` | 4321 | `GITEA_MIRROR_URL` |
 
-`gitea` waits for `db` to pass its health check before starting.
-`gitea-mirror` sets `pull_policy: always`, so every recreate takes the newest
-`latest`.
+In Coolify, give `gitea` and `gitea-mirror` each a domain on their internal
+port, matching the two URL variables.
+
+`gitea` waits for `db` to pass its health check. `gitea` checks
+`/api/healthz`; the `gitea-mirror` image ships its own health check.
+
+## Variables
+
+| Variable | Feeds | Notes |
+| --- | --- | --- |
+| `POSTGRES_PASSWORD` | `db`, `gitea` | Defaults to `gitea`. |
+| `GITEA_ROOT_URL` | Gitea `server.ROOT_URL` | Public URL, with trailing slash. Gitea builds clone URLs and redirects from it. |
+| `GITEA_MIRROR_URL` | `BETTER_AUTH_URL`, `PUBLIC_BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS` | Public URL of the mirror UI, no trailing slash. |
+
+Postgres sets the password only when it first initialises `db-data`. Changing
+`POSTGRES_PASSWORD` later breaks Gitea's connection until the role is altered
+to match:
+
+```sh
+docker compose exec db psql -U gitea -c "ALTER USER gitea PASSWORD '<new>';"
+```
+
+Behind a reverse proxy, gitea-mirror rejects sign-in with "invalid origin"
+unless all three Better Auth variables hold the external URL, so one variable
+feeds them all. Its `BETTER_AUTH_SECRET` and `ENCRYPTION_SECRET` are left
+unset: the image generates both on first start and keeps them in
+`gitea-mirror-data`.
+
+## Choices
+
+- **HTTPS only.** The proxy routes HTTP, not SSH, so Gitea's SSH server is
+  disabled and the UI offers HTTPS clone URLs only.
+- **`gitea/gitea:28`.** Gitea publishes major tags; the major pin takes
+  updates without a surprise major upgrade.
+- **`gitea-mirror:latest`** with `pull_policy: always`: upstream publishes no
+  major tag, so every redeploy takes the newest release.
+- **`postgres:16-alpine`** stays on 16: a new Postgres major cannot read the
+  existing data directory without a dump and restore.
 
 ## Usage
 
-Complete Gitea's first-run setup at <http://127.0.0.1:3000>, then configure
-mirroring at <http://127.0.0.1:4321>.
-
-Gitea advertises SSH port `2222`:
-
-```sh
-git clone ssh://git@127.0.0.1:2222/<owner>/<repo>.git
-```
-
-## Configuration
-
-`compose.yml` hardcodes everything — database credentials, ports and the Gitea
-SSH port are written inline, and it reads no environment variables, so
-`.env.example` is not wired up.
-
-The Postgres credentials are `gitea` / `gitea`. Change them before exposing
-this stack beyond localhost.
+Complete Gitea's first-run setup at `GITEA_ROOT_URL`, create an access token,
+then configure mirroring at `GITEA_MIRROR_URL`. In gitea-mirror, set the Gitea
+URL to `http://gitea:3000` so it talks to Gitea over the internal network.
 
 ## Storage
 
@@ -45,4 +63,4 @@ this stack beyond localhost.
 | --- | --- |
 | `db-data` | PostgreSQL data |
 | `gitea-data` | Repositories, Gitea config and state |
-| `gitea-mirror-data` | Mirror job database |
+| `gitea-mirror-data` | Mirror job database and generated secrets |

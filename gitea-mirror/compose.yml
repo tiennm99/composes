@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: gitea
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gitea}
       POSTGRES_USER: gitea
-      POSTGRES_PASSWORD: gitea
+      POSTGRES_DB: gitea
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -15,32 +15,38 @@ services:
       retries: 10
 
   gitea:
-    image: gitea/gitea:latest
+    image: gitea/gitea:28
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     environment:
+      GITEA__database__PASSWD: ${POSTGRES_PASSWORD:-gitea}
       GITEA__database__DB_TYPE: postgres
       GITEA__database__HOST: db:5432
       GITEA__database__NAME: gitea
       GITEA__database__USER: gitea
-      GITEA__database__PASSWD: gitea
-      GITEA__server__SSH_PORT: 2222
+      GITEA__server__ROOT_URL: ${GITEA_ROOT_URL:?required}
+      GITEA__server__DISABLE_SSH: "true"
     volumes:
       - gitea-data:/data
-    ports:
-      - "127.0.0.1:3000:3000"
-      - "127.0.0.1:2222:22"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/api/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   gitea-mirror:
     image: ghcr.io/raylabshq/gitea-mirror:latest
     restart: unless-stopped
     pull_policy: always
+    environment:
+      BETTER_AUTH_URL: ${GITEA_MIRROR_URL:?required}
+      PUBLIC_BETTER_AUTH_URL: ${GITEA_MIRROR_URL:?required}
+      BETTER_AUTH_TRUSTED_ORIGINS: ${GITEA_MIRROR_URL:?required}
     volumes:
       - gitea-mirror-data:/app/data
-    ports:
-      - "127.0.0.1:4321:4321"
 
 volumes:
   db-data:
