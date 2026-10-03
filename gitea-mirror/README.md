@@ -24,6 +24,7 @@ port, matching the two URL variables.
 | --- | --- | --- |
 | `POSTGRES_PASSWORD` | `db`, `gitea` | Defaults to `gitea`. |
 | `GITEA_ROOT_URL` | Gitea `server.ROOT_URL` | Public URL, with trailing slash. Gitea builds clone URLs and redirects from it. |
+| `GITEA_CLONE_TIMEOUT` | Gitea `git.timeout` `MIGRATE` and `MIRROR` | Seconds a mirror's first clone or a later fetch may run. Defaults to `3600`. |
 | `BETTER_AUTH_SECRET` | gitea-mirror | Signs sessions and encrypts its login keys. Generate with `openssl rand -base64 32`. |
 | `ENCRYPTION_SECRET` | gitea-mirror | Encrypts the stored GitHub and Gitea tokens. Generate with `openssl rand -base64 48`. |
 | `GITEA_MIRROR_URL` | `BETTER_AUTH_URL`, `PUBLIC_BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS` | Public URL of the mirror UI, no trailing slash. |
@@ -50,6 +51,10 @@ install.
 
 - **HTTPS only.** The proxy routes HTTP, not SSH, so Gitea's SSH server is
   disabled and the UI offers HTTPS clone URLs only.
+- **One-hour clone timeout.** Gitea's defaults (600 s to migrate, 300 s to
+  fetch) cut off multi-gigabyte repositories mid-clone, leaving empty mirrors
+  that still hold gigabytes of unreachable packfiles. gitea-mirror sets no
+  timeout of its own on the migrate request, so Gitea's is the one that counts.
 - **`gitea/gitea:28`.** Gitea publishes major tags; the major pin takes
   updates without a surprise major upgrade.
 - **`gitea-mirror:latest`** with `pull_policy: always`: upstream publishes no

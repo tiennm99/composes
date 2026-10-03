@@ -28,6 +28,8 @@ services:
       GITEA__database__USER: gitea
       GITEA__server__ROOT_URL: ${GITEA_ROOT_URL:?required}
       GITEA__server__DISABLE_SSH: "true"
+      GITEA__git_0X2E_timeout__MIGRATE: ${GITEA_CLONE_TIMEOUT:-3600}
+      GITEA__git_0X2E_timeout__MIRROR: ${GITEA_CLONE_TIMEOUT:-3600}
     volumes:
       - gitea-data:/data
     healthcheck:
