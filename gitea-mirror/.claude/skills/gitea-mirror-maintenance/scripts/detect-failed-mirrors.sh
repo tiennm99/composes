@@ -43,8 +43,8 @@ echo '{}' > "$WORK/app.json"
 if [ -n "${GITEA_MIRROR_URL:-}" ] && [ -n "${GITEA_MIRROR_API_KEY:-}" ]; then
   curl -fsS --max-time 60 -H @<(printf 'x-api-key: %s\n' "$GITEA_MIRROR_API_KEY") \
     "${GITEA_MIRROR_URL%/}/api/github/repositories" |
-    jq '[.repositories[] | select(.mirroredLocation != null and .mirroredLocation != "")
-         | {key: (.mirroredLocation | ascii_downcase),
+    jq '[.repositories[]
+         | {key: ((if (.mirroredLocation // "") != "" then .mirroredLocation else .fullName end) | ascii_downcase),
             value: {id, status, error: ((.errorMessage // "")[0:160])}}] | from_entries' \
     > "$WORK/app.json"
   jq -r '"  \(length) tracked, \([.[] | select(.status == "failed")] | length) failed"' "$WORK/app.json" >&2
