@@ -1,6 +1,6 @@
 ---
 name: gitea-mirror-maintenance
-description: Detect and clean up failed, broken, or empty Gitea mirror repositories in the Coolify-deployed gitea + gitea-mirror stack, using tea and the gitea-mirror API. Use when the user asks to check mirror health, find failed or empty repos, investigate why a mirror did not sync or clone, delete broken mirror repos, reclaim disk space from partial clones, re-mirror repos that failed, or run routine mirror upkeep. Not for Gitea setup, upgrades, or deployment problems — those belong to the service's compose definition.
+description: Detect and clean up failed, broken, or empty Gitea mirror repositories in the Coolify-deployed gitea + gitea-mirror stack, using tea and the gitea-mirror API. Use when the user asks to check mirror health, find failed or empty repos, investigate why a mirror did not sync or clone, delete broken mirror repos, delete archived copies of the user's own deleted repos, reclaim disk space from partial clones, re-mirror repos that failed, or run routine mirror upkeep. Not for Gitea setup, upgrades, or deployment problems — those belong to the service's compose definition.
 ---
 
 # Gitea Mirror Maintenance
@@ -55,7 +55,8 @@ from four signals; no single one is sufficient:
 2. **Upstream probe** of `original_url`, public repos only — separates "retry"
    from "the source is gone".
 3. **gitea-mirror API** — `GET /api/github/repositories`, each repo's
-   `status` and `errorMessage`, matched to Gitea by `mirroredLocation`.
+   `status` and `errorMessage`, matched to Gitea by `mirroredLocation`, or by
+   `fullName` when a failed mirror has had its location cleared.
 4. **Gitea log** — `[repo: <Repository N:owner/name>]` sync errors.
 
 ### 2. Review the classification
@@ -110,6 +111,25 @@ script warns when the plan is over 15 minutes old.
 
 Re-run detect; an empty plan means the stack is clean. Case A repos re-mirror
 in the background — confirm they come back non-empty rather than assuming it.
+
+## Archived repo cleanup
+
+When a GitHub source disappears, gitea-mirror keeps the Gitea copy, renames it
+`archived-<name>`, and keeps tracking it. To drop those copies for the user's
+own namespaces:
+
+```bash
+scripts/cleanup-archived-repos.sh --login <login> --owners <owner1,owner2,...>
+scripts/cleanup-archived-repos.sh --login <login> --owners <owner1,owner2,...> --apply
+```
+
+`--owners` is the user's own GitHub users and orgs; ask for them if they are
+not known. Only an `archived-*` repo whose gitea-mirror row points at it is
+deleted, so a repo the user named that way by hand is skipped. For each one it
+deletes the Gitea repo, then removes the tracking row
+(`DELETE /api/repositories` with `{"ids": [...]}`) so it is not re-mirrored.
+Third-party archived copies stay; they are the only remaining copy of a source
+someone else deleted. Show the dry run and get confirmation before `--apply`.
 
 ## Mirror status overview
 
