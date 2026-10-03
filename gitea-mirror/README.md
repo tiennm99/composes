@@ -24,7 +24,7 @@ port, matching the two URL variables.
 | --- | --- | --- |
 | `POSTGRES_PASSWORD` | `db`, `gitea` | Defaults to `gitea`. |
 | `GITEA_ROOT_URL` | Gitea `server.ROOT_URL` | Public URL, with trailing slash. Gitea builds clone URLs and redirects from it. |
-| `GITEA_CLONE_TIMEOUT` | Gitea `git.timeout` `MIGRATE` and `MIRROR` | Seconds a mirror's first clone or a later fetch may run. Defaults to `3600`. |
+| `GITEA_CLONE_TIMEOUT` | Gitea `git.timeout` `MIGRATE` and `MIRROR`; gitea-mirror `BUN_CONFIG_HTTP_IDLE_TIMEOUT` | Seconds a mirror's first clone or a later fetch may run. Defaults to `3600`; at most `14340`. |
 | `BETTER_AUTH_SECRET` | gitea-mirror | Signs sessions and encrypts its login keys. Generate with `openssl rand -base64 32`. |
 | `ENCRYPTION_SECRET` | gitea-mirror | Encrypts the stored GitHub and Gitea tokens. Generate with `openssl rand -base64 48`. |
 | `GITEA_MIRROR_URL` | `BETTER_AUTH_URL`, `PUBLIC_BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS` | Public URL of the mirror UI, no trailing slash. |
@@ -53,8 +53,17 @@ install.
   disabled and the UI offers HTTPS clone URLs only.
 - **One-hour clone timeout.** Gitea's defaults (600 s to migrate, 300 s to
   fetch) cut off multi-gigabyte repositories mid-clone, leaving empty mirrors
-  that still hold gigabytes of unreachable packfiles. gitea-mirror sets no
-  timeout of its own on the migrate request, so Gitea's is the one that counts.
+  that still hold gigabytes of unreachable packfiles.
+- **gitea-mirror waits as long as Gitea clones.** Gitea's migrate API sends
+  nothing until the clone ends, and Bun's `fetch` drops a connection idle for
+  5 minutes. gitea-mirror then marks the repository failed while Gitea keeps
+  cloning; on retry it finds the half-made repository and marks it mirrored.
+  If that clone later fails, Gitea keeps an empty repository with no mirror
+  record, which never syncs. `BUN_CONFIG_HTTP_IDLE_TIMEOUT` takes the same
+  value as the clone timeout so the request outlives the clone. Bun caps it
+  at 239 minutes, so a larger `GITEA_CLONE_TIMEOUT` stops helping there.
+- **A redeploy kills clones in progress.** Gitea restarts and the clone dies
+  with it. Avoid pushing to this directory while a large first mirror runs.
 - **`gitea/gitea:28`.** Gitea publishes major tags; the major pin takes
   updates without a surprise major upgrade.
 - **`gitea-mirror:latest`** with `pull_policy: always`: upstream publishes no

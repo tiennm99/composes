@@ -49,6 +49,7 @@ services:
       BETTER_AUTH_URL: ${GITEA_MIRROR_URL:?required}
       PUBLIC_BETTER_AUTH_URL: ${GITEA_MIRROR_URL:?required}
       BETTER_AUTH_TRUSTED_ORIGINS: ${GITEA_MIRROR_URL:?required}
+      BUN_CONFIG_HTTP_IDLE_TIMEOUT: ${GITEA_CLONE_TIMEOUT:-3600}
     volumes:
       - gitea-mirror-data:/app/data
 
