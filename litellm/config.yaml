@@ -1,0 +1,156 @@
+model_list:
+  - model_name: kimi-k3-free
+    litellm_params:
+      model: openai/moonshotai/kimi-k3-free
+      api_base: https://api.tokenrouter.com/v1
+      api_key: os.environ/TOKENROUTER_API_KEY
+
+  - model_name: glm-5.3-flash-free
+    litellm_params:
+      model: openai/z-ai/glm-5.3-flash-free
+      api_base: https://api.orcarouter.ai/v1
+      api_key: os.environ/ORCAROUTER_API_KEY
+
+  - model_name: kimi-for-coding
+    litellm_params:
+      model: anthropic/kimi-for-coding
+      api_base: https://api.kimi.com/coding
+      api_key: os.environ/KIMI_API_KEY
+
+  - model_name: MiniMax-M3
+    litellm_params:
+      model: minimax/MiniMax-M3
+      api_key: os.environ/MINIMAX_API_KEY
+
+  - model_name: gemma-4-31b-it:free
+    litellm_params:
+      model: openrouter/google/gemma-4-31b-it:free
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  - model_name: openrouter-free
+    litellm_params:
+      model: openrouter/openrouter/free
+      api_key: os.environ/OPENROUTER_API_KEY
+
+  - model_name: orcarouter-free
+    litellm_params:
+      model: openai/orcarouter/free
+      api_base: https://api.orcarouter.ai/v1
+      api_key: os.environ/ORCAROUTER_API_KEY
+
+  - model_name: kilo-free
+    litellm_params:
+      model: openai/kilo-auto/free
+      api_base: https://api.kilo.ai/api/gateway
+      api_key: os.environ/KILO_API_KEY
+
+  - model_name: deepseek-v4-flash-free
+    litellm_params:
+      model: openai/deepseek-v4-flash-free
+      api_base: https://opencode.ai/zen/v1
+      api_key: os.environ/OPENCODE_API_KEY
+
+  - model_name: glm4.7
+    litellm_params:
+      model: nvidia_nim/z-ai/glm4.7
+      api_key: os.environ/NVIDIA_NIM_API_KEY
+
+  - model_name: gemini-embedding-001
+    litellm_params:
+      model: gemini/gemini-embedding-001
+      api_key: os.environ/GEMINI_API_KEY
+      dimensions: 1536
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemma-4-31b-it
+    litellm_params:
+      model: gemini/gemma-4-31b-it
+      api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemma-4-26b-a4b-it
+    litellm_params:
+      model: gemini/gemma-4-26b-a4b-it
+      api_key: os.environ/GEMINI_API_KEY
+
+  # - model_name: gemini/*
+  #   litellm_params:
+  #     model: gemini/*
+  #     api_key: os.environ/GEMINI_API_KEY
+
+  - model_name: gemma4:31b-cloud
+    litellm_params:
+      model: ollama/gemma4:31b-cloud
+      api_base: https://ollama.com
+      api_key: os.environ/OLLAMA_API_KEY
+
+  # - model_name: glm-4.7-flash
+  #   litellm_params:
+  #     model: cloudflare/@cf/zai-org/glm-4.7-flash
+  #     api_key: os.environ/CLOUDFLARE_API_KEY
+  #     account_id: os.environ/CLOUDFLARE_ACCOUNT_ID
+
+  # - model_name: deepseek-v4-pro
+  #   litellm_params:
+  #     model: openai/deepseek-v4-pro
+  #     api_base: https://opencode.ai/zen/go/v1
+  #     api_key: os.environ/OPENCODE_API_KEY
+
+  # - model_name: qwen3.7-max
+  #   litellm_params:
+  #     model: anthropic/qwen3.7-max
+  #     api_base: https://opencode.ai/zen/go/v1
+  #     api_key: os.environ/OPENCODE_API_KEY
+
+general_settings:
+  proxy_batch_write_at: 60
+  store_model_in_db: true
+  store_prompts_in_spend_logs: false
+
+router_settings:
+  model_group_alias:
+    claude: openrouter-free
+    sonnet: openrouter-free
+    opus: openrouter-free
+    haiku: openrouter-free
+    opencode: openrouter-free
+    goclaw: openrouter-free
+    openclaw: openrouter-free
+    hermes: openrouter-free
+  redis_host: os.environ/REDIS_HOST
+  redis_port: os.environ/REDIS_PORT
+  redis_password: os.environ/REDIS_PASSWORD
+  enable_pre_call_check: true
+
+litellm_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  check_provider_endpoint: true
+  set_verbose: false
+  json_logs: true
+  log_raw_request_response: false
+  # turn_off_message_logging: false
+  # redact_user_api_key_info: false
+  service_callback: ["prometheus_system"]
+  drop_params: true
+  # max_budget: 100
+  # budget_duration: 30d
+  num_retries: 1
+  request_timeout: 120
+  telemetry: false
+  cache: true
+  cache_params:
+    type: redis
+    host: os.environ/REDIS_HOST
+    port: os.environ/REDIS_PORT
+    password: os.environ/REDIS_PASSWORD
+    namespace: "litellm_cache"
+    ttl: 600
+  success_callback:
+    # - "langfuse"
+    - "prometheus"
+  failure_callback:
+    # - "langfuse"
+    - "prometheus"

@@ -1,0 +1,86 @@
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm-database:main-stable
+    restart: unless-stopped
+    environment:
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:?required}
+      - UI_USERNAME=${UI_USERNAME:-admin}
+      - UI_PASSWORD=${UI_PASSWORD:?required}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-litellm}:${POSTGRES_PASSWORD:?required}@postgres:5432/${POSTGRES_DB:-litellm}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - STORE_MODEL_IN_DB=${STORE_MODEL_IN_DB:-True}
+      - LITELLM_MODE=${LITELLM_MODE:-PRODUCTION}
+      - LITELLM_LOG=${LITELLM_LOG:-ERROR}
+      # - TOKENROUTER_API_KEY=${TOKENROUTER_API_KEY:-}
+      # - ORCAROUTER_API_KEY=${ORCAROUTER_API_KEY:-}
+      # - KIMI_API_KEY=${KIMI_API_KEY:-}
+      # - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+      # - KILO_API_KEY=${KILO_API_KEY:-}
+      # - OPENCODE_API_KEY=${OPENCODE_API_KEY:-}
+      # - NVIDIA_NIM_API_KEY=${NVIDIA_NIM_API_KEY:-}
+      # - OLLAMA_API_KEY=${OLLAMA_API_KEY:-}
+      # - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY:-}
+      # - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID:-}
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    command:
+      - --config
+      - /app/config.yaml
+      - --port
+      - "4000"
+      - --run_gunicorn
+      - --num_workers
+      - "2"
+      - --max_requests_before_restart
+      - "1000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://127.0.0.1:4000/health/liveliness',timeout=5)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  # PostgreSQL for keys, teams, budgets and spend logs.
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-litellm}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?required}
+      - POSTGRES_DB=${POSTGRES_DB:-litellm}
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  # Redis for the response cache and router state.
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pg-data:
+  redis-data:
