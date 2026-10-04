@@ -1,6 +1,6 @@
 services:
   litellm:
-    image: ghcr.io/berriai/litellm-database:main-stable
+    build: .
     restart: unless-stopped
     environment:
       - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:?required}
@@ -24,8 +24,6 @@ services:
       # - OLLAMA_API_KEY=${OLLAMA_API_KEY:-}
       # - CLOUDFLARE_API_KEY=${CLOUDFLARE_API_KEY:-}
       # - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID:-}
-    volumes:
-      - ./config.yaml:/app/config.yaml:ro
     command:
       - --config
       - /app/config.yaml

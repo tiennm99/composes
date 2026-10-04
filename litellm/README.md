@@ -20,8 +20,12 @@ Health check: `GET /health/liveliness`, also the compose healthcheck.
 ## Models
 
 `config.yaml` holds the model list, the `model_group_alias` routing and the
-proxy settings; it is mounted read-only at `/app/config.yaml`. Editing it
-redeploys the service. Every provider key in it is an `os.environ/` reference,
+proxy settings. The `Dockerfile` copies it to `/app/config.yaml`, so editing it
+rebuilds and redeploys the service.
+
+It is built into the image rather than bind-mounted because Coolify does not
+place repository files beside the compose file it runs: a `./config.yaml` bind
+mount finds nothing there, and Docker mounts an empty directory in its place. Every provider key in it is an `os.environ/` reference,
 so the file carries no secrets.
 
 Models can also be added in the admin UI. `STORE_MODEL_IN_DB` keeps those in
@@ -65,7 +69,7 @@ enabled by uncommenting its line, without touching `config.yaml`.
 
 ## Images
 
-`ghcr.io/berriai/litellm-database:main-stable` is the variant with the Prisma
+The `Dockerfile` builds on `ghcr.io/berriai/litellm-database:main-stable`, the variant with the Prisma
 client for PostgreSQL built in. `main-stable` is upstream's moving stable tag.
 
 `postgres:16-alpine` and `redis:7-alpine` track their major versions. Moving
