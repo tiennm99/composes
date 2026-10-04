@@ -29,14 +29,6 @@ port, matching the two URL variables.
 | `ENCRYPTION_SECRET` | gitea-mirror | Encrypts the stored GitHub and Gitea tokens. Generate with `openssl rand -base64 48`. |
 | `GITEA_MIRROR_URL` | `BETTER_AUTH_URL`, `PUBLIC_BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS` | Public URL of the mirror UI, no trailing slash. |
 
-Postgres sets the password only when it first initialises `db-data`. Changing
-`POSTGRES_PASSWORD` later breaks Gitea's connection until the role is altered
-to match:
-
-```sh
-docker compose exec db psql -U gitea -c "ALTER USER gitea PASSWORD '<new>';"
-```
-
 Behind a reverse proxy, gitea-mirror rejects sign-in with "invalid origin"
 unless all three Better Auth variables hold the external URL, so one variable
 feeds them all.
@@ -62,8 +54,6 @@ install.
   record, which never syncs. `BUN_CONFIG_HTTP_IDLE_TIMEOUT` takes the same
   value as the clone timeout so the request outlives the clone. Bun caps it
   at 239 minutes, so a larger `GITEA_CLONE_TIMEOUT` stops helping there.
-- **A redeploy kills clones in progress.** Gitea restarts and the clone dies
-  with it. Avoid pushing to this directory while a large first mirror runs.
 - **`gitea/gitea:28`.** Gitea publishes major tags; the major pin takes
   updates without a surprise major upgrade.
 - **`gitea-mirror:latest`** with `pull_policy: always`: upstream publishes no

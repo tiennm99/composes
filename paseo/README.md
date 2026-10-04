@@ -25,8 +25,7 @@ The port must be typed by hand. The UI rejects a bare hostname, and the
 auto-connect hint does not help: the daemon builds it from the `Host` header,
 browsers drop the default `:443`, and the UI discards a hint with no port. What
 you see instead is its `localhost:6767` placeholder, which in a browser means
-your own machine. If it stays on `localhost:6767` after you enter the address,
-clear site data — the old entry is cached in `localStorage`.
+your own machine.
 
 ## Environment
 

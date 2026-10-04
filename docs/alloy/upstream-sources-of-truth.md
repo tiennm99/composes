@@ -30,7 +30,7 @@ When the upstream integration changes (adds a metric, drops a panel, renames a l
 
 ## Upstream references
 
-The two reference pages this repo's `compose.yml` mirrors:
+The two reference pages `alloy/compose.yml` mirrors:
 
 - **Linux Node integration** — <https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-linux-node/>
 - **Docker integration** — <https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-docker/>
@@ -42,7 +42,7 @@ Where official mixin dashboards exist they're tier-2 corroboration:
 
 ## Mapping our config to upstream
 
-| Block in `compose.yml` | Upstream source |
+| Block in `alloy/compose.yml` | Upstream source |
 |---|---|
 | `prometheus.exporter.unix` (collectors, mounts, fs/net excludes) | Linux Node integration page → "Configure Alloy" |
 | `prometheus.relabel "integrations_node_exporter"` (`keep` allowlist of 157 metrics) | Linux Node integration page → [Metrics](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-linux-node/#metrics) section, verbatim |
@@ -56,11 +56,11 @@ Where official mixin dashboards exist they're tier-2 corroboration:
 
 1. **Don't expand the metric set unilaterally.** If a panel in a Grafana Cloud dashboard requires a metric we don't ship, we'd add it — but the trigger is "the integration dashboard needs it, verified from a tier 1–4 source", not "node_exporter exposes it".
 2. **Don't filter further than upstream does.** We ship at least what the upstream config does. Tightening (e.g. for cost) goes in a clearly-named overlay or a downstream env-specific config.
-3. **Re-check on Alloy/integration major versions.** When bumping `grafana/alloy` image or when the Grafana Cloud integration revs, diff the upstream Alloy snippet against `compose.yml` and update.
+3. **Re-check on Alloy/integration major versions.** When bumping `grafana/alloy` image or when the Grafana Cloud integration revs, diff the upstream Alloy snippet against `alloy/compose.yml` and update.
 
 ## Audit (2026-04-26)
 
-Both keep-lists in `compose.yml` are copied verbatim from the **Metrics** section of each integration page (tier 1):
+Both keep-lists in `alloy/compose.yml` are copied verbatim from the **Metrics** section of each integration page (tier 1):
 
 - **Linux-Node** — 157 raw metrics (`node_*`, `process_max_fds`, `process_open_fds`, `up`). The list also contains `instance:node_num_cpu:sum`, which is a recording-rule output computed server-side by Grafana Cloud's ruler — it's intentionally **not** in the keep-list because the agent doesn't produce it.
 - **Docker** — 16 metrics (`container_*`, `machine_memory_bytes`, `machine_scrape_error`, `up`).

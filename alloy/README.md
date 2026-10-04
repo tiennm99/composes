@@ -31,11 +31,6 @@ integrations verbatim ([Linux Node](https://grafana.com/docs/grafana-cloud/monit
 [Docker](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-docker/#metrics)).
 Logs are unfiltered.
 
-Where rsyslog mirrors journald into `/var/log/syslog` — the Debian and Ubuntu
-default — the journal and file pipelines double-ship the same lines. Drop one
-source on those hosts; the file-based one is the redundant one on systemd-only
-stacks.
-
 ## Environment
 
 All nine are required; `docker compose up` fails fast if any is unset.
@@ -139,9 +134,3 @@ the disclosure one.
 
 `dockerproxy` mounts `/var/run/docker.sock:ro` and nothing else.
 
-## Notes
-
-- [Upstream sources of truth](docs/upstream-sources-of-truth.md) — what this
-  follows, what is in scope, how to audit dashboard metric needs.
-- [Coolify SSH session noise](docs/known-noise-coolify-ssh-sessions.md) — only
-  relevant on Coolify-managed hosts.

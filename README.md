@@ -37,6 +37,11 @@ and are not repeated or linked from a service, so editing one service never
 touches another's directory — each is a separate Coolify app deploying on a
 `<service>/**` watch path.
 
+A service directory holds only what its deploy reads, so changing anything else
+never redeploys it. Known issues, troubleshooting and research for a service
+live in `docs/<service>/`, named after its directory; agent skills live in
+`.claude/skills/`.
+
 ## Upstream sources
 
 `sources/` holds checkouts of the upstream repositories behind these images,

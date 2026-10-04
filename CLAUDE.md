@@ -71,9 +71,17 @@ containers use.
 - **Agent skills** for a service — maintenance scripts, runbooks — go in the
   root `.claude/skills/<name>/`, never in `<service>/.claude/`. A skill there
   also only loads once a session touches that directory.
-- **Anything else** that is not deploy input — CI workflows, research notes,
-  test fixtures — has no default home. Ask the user where it goes before
-  adding it to a service directory.
+- **Docs** beyond the README go in the root `docs/<service>/`, named exactly
+  like the service directory; renaming a service renames its docs directory in
+  the same commit. The service `README.md` covers only what the service is and
+  how to deploy it — variables, storage, wiring, and the reasons behind its
+  configuration. Anything issue-related — known problems, log noise,
+  troubleshooting, investigations, upstream research and audits — goes in
+  `docs/<service>/`. The README does not link there; docs may link to the
+  service.
+- **Anything else** that is not deploy input — CI workflows, test fixtures —
+  has no default home. Ask the user where it goes before adding it to a
+  service directory.
 
 ## Workspace services
 

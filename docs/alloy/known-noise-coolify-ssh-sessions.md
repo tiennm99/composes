@@ -60,7 +60,7 @@ If the matching key's comment is `coolify` → this doc applies.
 
 ### Option A — drop the noise at Alloy (host stays as-is)
 
-Edit the `loki.process "default"` block inside `journal_module` in `compose.yml`:
+Edit the `loki.process "default"` block inside `journal_module` in `alloy/compose.yml`:
 
 ```alloy
 loki.process "default" {
