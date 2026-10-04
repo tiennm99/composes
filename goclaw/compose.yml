@@ -13,6 +13,10 @@ services:
       - GOCLAW_PORT=18790
       - GOCLAW_CONFIG=/app/data/config.json
       - GOCLAW_SKILLS_DIR=/app/data/skills
+      - GOCLAW_AUTO_UPGRADE=${GOCLAW_AUTO_UPGRADE:-true}
+      - GOCLAW_MINIMAX_API_KEY=${GOCLAW_MINIMAX_API_KEY:-}
+      - GOCLAW_TTS_MINIMAX_API_KEY=${GOCLAW_TTS_MINIMAX_API_KEY:-}
+      - GOCLAW_TTS_MINIMAX_GROUP_ID=${GOCLAW_TTS_MINIMAX_GROUP_ID:-}
       - GOCLAW_TRACE_VERBOSE=${GOCLAW_TRACE_VERBOSE:-0}
     volumes:
       - goclaw-data:/app/data
@@ -20,6 +24,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:18790/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     extra_hosts:
       - host.docker.internal:host-gateway
     init: true

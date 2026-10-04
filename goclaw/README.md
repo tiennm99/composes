@@ -20,7 +20,9 @@ sessions, encrypted provider keys and the semantic memory.
 2. Map the domain to port `18790` and deploy. Migrations run on start.
 3. Open the domain and use the setup wizard to add an LLM provider key.
 
-Health check: `GET /health`.
+Health check: `GET /health`, which the `goclaw` container also polls as its
+compose healthcheck so Coolify can report it healthy. The first check waits 60
+seconds, to leave time for migrations on start.
 
 ## Authentication
 
@@ -44,7 +46,20 @@ itself is not used here.
 | `GOCLAW_GATEWAY_TOKEN` | — | Bearer token for the API and dashboard |
 | `GOCLAW_ENCRYPTION_KEY` | — | AES-256-GCM key for stored provider keys |
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | `goclaw` | Database credentials, read by both containers |
+| `GOCLAW_AUTO_UPGRADE` | `true` | Apply schema migrations and data hooks on startup |
+| `GOCLAW_MINIMAX_API_KEY` | empty | MiniMax LLM provider key |
+| `GOCLAW_TTS_MINIMAX_API_KEY` / `GOCLAW_TTS_MINIMAX_GROUP_ID` | empty | MiniMax text-to-speech credentials |
 | `GOCLAW_TRACE_VERBOSE` | `0` | Log full LLM request and response bodies |
+
+`GOCLAW_AUTO_UPGRADE` defaults to `true`, the value upstream recommends for
+Docker. The image entrypoint already runs `goclaw upgrade` before `serve`, but
+it only logs a warning when that fails. With the variable set, `serve` applies
+any pending migrations itself rather than stopping on a schema check.
+
+The MiniMax variables are the one case where a provider key comes from the
+environment rather than the dashboard: GoClaw reads them directly for the
+MiniMax provider and its text-to-speech. Leave them empty when MiniMax is not
+used.
 
 `GOCLAW_HOST`, `GOCLAW_PORT`, `GOCLAW_CONFIG` and `GOCLAW_SKILLS_DIR` are set
 in `compose.yml` rather than here — they are properties of this layout, not of
@@ -52,8 +67,8 @@ whoever deploys it. The two paths override image defaults that point outside
 any volume (`/app/config.json`, `/app/skills`), which would drop the
 configuration and every installed skill on redeploy.
 
-Provider API keys are not variables: they are entered in the dashboard and
-stored encrypted in PostgreSQL.
+Other provider API keys are not variables: they are entered in the dashboard
+and stored encrypted in PostgreSQL.
 
 ## Storage
 
