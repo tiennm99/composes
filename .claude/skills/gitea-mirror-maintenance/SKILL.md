@@ -1,12 +1,12 @@
 ---
 name: gitea-mirror-maintenance
-description: Detect and clean up failed, broken, or empty Gitea mirror repositories in the Coolify-deployed gitea + gitea-mirror stack, using tea and the gitea-mirror API. Use when the user asks to check mirror health, find failed or empty repos, investigate why a mirror did not sync or clone, delete broken mirror repos, delete archived copies of the user's own deleted repos, clean up duplicates left by renamed, transferred or re-cased GitHub repos, reclaim disk space from partial clones, re-mirror repos that failed, or run routine mirror upkeep. Not for Gitea setup, upgrades, or deployment problems — those belong to the service's compose definition.
+description: Detect and clean up failed, broken, or empty Gitea mirror repositories in the Coolify-deployed gitea + gitea-mirror stack, using tea and the gitea-mirror API. Use when the user asks to check mirror health, find failed or empty repos, investigate why a mirror did not sync or clone, delete broken mirror repos, delete archived copies of the user's own deleted repos, clean up duplicates left by renamed, transferred or re-cased GitHub repos, reclaim disk space from partial clones, re-mirror repos that failed, or run routine mirror upkeep. Not for Gitea setup, upgrades, or deployment problems — those belong to `gitea-mirror/compose.yml`.
 ---
 
 # Gitea Mirror Maintenance
 
-Maintain the `gitea` + `gitea-mirror` stack deployed by this directory's
-`compose.yml` on Coolify: find mirror repositories whose pull failed, classify
+Maintain the `gitea` + `gitea-mirror` stack deployed by
+`gitea-mirror/compose.yml` on Coolify: find mirror repositories whose pull failed, classify
 each failure, then clean up only what is safe to delete.
 
 **Scope.** Mirror health auditing and cleanup only. Not Gitea first-run setup,

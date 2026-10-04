@@ -60,6 +60,21 @@ Every Coolify app created from this repo sets its watch path to `<service>/**`.
 An app with no watch path deploys on every push to the repository —
 `traffmonetizer` leaves it unset on purpose, to get restarted that often.
 
+## Service directories hold deploy files only
+
+Because of that watch path, every file in a service directory redeploys the
+service when it changes. A service directory holds only what the deploy reads
+or what describes it: `compose.yml`, `README.md`, `.env.example`,
+`.gitignore`, and any `Dockerfile`, entrypoint or config file the build or
+containers use.
+
+- **Agent skills** for a service — maintenance scripts, runbooks — go in the
+  root `.claude/skills/<name>/`, never in `<service>/.claude/`. A skill there
+  also only loads once a session touches that directory.
+- **Anything else** that is not deploy input — CI workflows, research notes,
+  test fixtures — has no default home. Ask the user where it goes before
+  adding it to a service directory.
+
 ## Workspace services
 
 A service someone works *inside* — an editor, a coding agent, anything with a
