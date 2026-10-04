@@ -35,6 +35,7 @@ separate rootless daemon.
 | `SERVICE_HOSTNAME` | Container hostname, and the name the shell prompt shows. |
 | `PASSWORD` | Web UI login, also the in-container sudo password. **A blank value disables authentication entirely.** |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity |
+| `PWA_APPNAME` | Optional. Name of the installed web app; defaults to `code-server`. |
 
 Generate a password with `openssl rand -base64 24`.
 

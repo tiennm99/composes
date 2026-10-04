@@ -50,6 +50,9 @@ fail fast if unset. Everything else has a working default.
 | `TZ` | `UTC` | Timezone for the schedule and log timestamps |
 | `LOG_LEVEL` / `LOG_JSON` | `info` / `false` | Logging |
 
+`DIUN_WATCH_WORKERS`, `DIUN_WATCH_JITTER`, `LOG_LEVEL` and `LOG_JSON` are
+optional: their defaults are Diun’s own, so they are commented out.
+
 State lives in the `diun-data` volume (`DIUN_DB_PATH=/data/diun.db`). Diun
 notifies on first sight of an image, so a fresh volume produces one round of
 notifications for everything currently running.

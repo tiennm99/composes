@@ -126,7 +126,8 @@ of its most important member, even when a member on its own would rank lower.
 Within a group, the variable others configure comes first.
 
 Optional variables are listed but commented out, in the form
-`# - KEY=${KEY:-default}`, so the service runs without them and enabling one
+`# - KEY=${KEY:-default}` (`# KEY: ${KEY:-default}` in a map-style
+`environment:`), so the service runs without them and enabling one
 means uncommenting its line. The matching `.env.example` entry is commented out
 the same way (`# KEY=default`). Must-have and should-have variables stay active.
 
