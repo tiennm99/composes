@@ -1,6 +1,3 @@
-# Required env vars (set in Coolify/Dokploy, or a sibling .env):
-#   GOCLAW_GATEWAY_TOKEN, GOCLAW_ENCRYPTION_KEY
-
 services:
   goclaw:
     image: ghcr.io/nextlevelbuilder/goclaw:full

@@ -1,7 +1,3 @@
-# Required env vars (export before `docker compose up -d`):
-#   ALLOY_HOSTNAME, REMOTECFG_URL, REMOTECFG_ID, REMOTECFG_USER,
-#   PROM_URL, PROM_USER, LOKI_URL, LOKI_USER, GRAFANA_TOKEN
-
 services:
   alloy:
     image: grafana/alloy:v1.16.1
