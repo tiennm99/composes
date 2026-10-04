@@ -47,9 +47,9 @@ itself is not used here.
 | `GOCLAW_ENCRYPTION_KEY` | — | AES-256-GCM key for stored provider keys |
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | `goclaw` | Database credentials, read by both containers |
 | `GOCLAW_AUTO_UPGRADE` | `true` | Apply schema migrations and data hooks on startup |
-| `GOCLAW_MINIMAX_API_KEY` | empty | MiniMax LLM provider key |
-| `GOCLAW_TTS_MINIMAX_API_KEY` / `GOCLAW_TTS_MINIMAX_GROUP_ID` | empty | MiniMax text-to-speech credentials |
-| `GOCLAW_TRACE_VERBOSE` | `0` | Log full LLM request and response bodies |
+| `GOCLAW_MINIMAX_API_KEY` | optional | MiniMax LLM provider key |
+| `GOCLAW_TTS_MINIMAX_API_KEY` / `GOCLAW_TTS_MINIMAX_GROUP_ID` | optional | MiniMax text-to-speech credentials |
+| `GOCLAW_TRACE_VERBOSE` | optional | Set to `1` to log full LLM request and response bodies |
 
 `GOCLAW_AUTO_UPGRADE` defaults to `true`, the value upstream recommends for
 Docker. The image entrypoint already runs `goclaw upgrade` before `serve`, but
@@ -58,8 +58,7 @@ any pending migrations itself rather than stopping on a schema check.
 
 The MiniMax variables are the one case where a provider key comes from the
 environment rather than the dashboard: GoClaw reads them directly for the
-MiniMax provider and its text-to-speech. Leave them empty when MiniMax is not
-used.
+MiniMax provider and its text-to-speech.
 
 `GOCLAW_HOST`, `GOCLAW_PORT`, `GOCLAW_CONFIG` and `GOCLAW_SKILLS_DIR` are set
 in `compose.yml` rather than here — they are properties of this layout, not of
