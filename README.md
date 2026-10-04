@@ -52,7 +52,9 @@ The `debug-service` skill in `.claude/skills/` walks through the process.
 ## Usage
 
 In Coolify or Dokploy, point a Docker Compose resource at the service directory
-and set the environment variables from its `.env.example`.
+and set the environment variables from its `.env.example`. To move an existing
+deployment and its data onto that resource, use the `migrate-service` skill in
+`.claude/skills/`.
 
 Locally:
 
