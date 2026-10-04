@@ -25,3 +25,6 @@ desktop.ini
 # Upstream source checkouts for debugging; only the directory itself is kept
 sources/*
 !sources/.gitkeep
+
+# Local agent plans and reports
+/plans/
