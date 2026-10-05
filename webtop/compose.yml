@@ -1,0 +1,19 @@
+services:
+  webtop:
+    build: .
+    restart: unless-stopped
+    shm_size: 1gb
+    environment:
+      - CUSTOM_USER=${CUSTOM_USER:-abc}
+      - PASSWORD=${PASSWORD:?required}
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
+      # - TITLE=${TITLE:-Webtop}
+    volumes:
+      - webtop-config:/config
+      - webtop-workspace:/workspace
+
+volumes:
+  webtop-config:
+  webtop-workspace:
