@@ -4,7 +4,12 @@
 Control UI, chat-channel bots and browser automation. Runs the project's
 official image, in its `-browser` variant with Chromium built in.
 
-One container, serving the gateway and the Control UI on port `18789`.
+Laid out after upstream's [Docker guide](https://docs.openclaw.ai/install/docker)
+and its `docker-compose.yml`: one gateway container with the same command,
+path variables, three volumes, healthcheck, `init`, dropped capabilities and
+`host.docker.internal` mapping, serving the gateway and Control UI on port
+`18789`. Upstream's `openclaw-cli` companion service is left out; the CLI runs
+inside the gateway container with `docker exec`.
 
 ## Setup
 
@@ -17,7 +22,8 @@ One container, serving the gateway and the Control UI on port `18789`.
 4. Pick a default model in the Control UI. The image's default is an OpenAI
    model, which needs `OPENAI_API_KEY`.
 
-Health check: the image's own, which calls `/healthz`.
+Health check: `docker-healthcheck.js` from the image, which calls `/healthz`,
+on upstream's compose timings.
 
 ## Environment
 
@@ -47,13 +53,17 @@ answers every proxied request from an untrusted address with 403
 The rest of OpenClaw's settings live in `openclaw.json` on the state volume
 and are edited in the Control UI or with `node openclaw.mjs config set`.
 
-The `Dockerfile` copies `openclaw.json` into the image's state directory, and
-Docker seeds an empty named volume from it on first start. It holds only what
-this deployment needs before anyone can log in: local gateway mode, a bind to
-all interfaces, the port, and the public origin and trusted proxy range as
-`${VAR}` references that OpenClaw resolves from the environment at load. The
-image's own start-up `doctor --fix` keeps those references when it rewrites
-the file. Without `gateway.mode` a fresh volume crash-loops.
+Upstream's guide finishes setup with one-off commands run before the gateway
+first starts: `onboard`, then `config set` for `gateway.mode` and
+`gateway.bind`. Coolify has no step that runs a command against an app's
+volume before it starts, so the `Dockerfile` does the equivalent: it copies
+`openclaw.json` into the image's state directory, and Docker seeds an empty
+named volume from it on first start. The file holds those two settings, the
+port, and the two reverse-proxy settings from upstream's gateway reference,
+`publicOrigin` and `trustedProxies`, as `${VAR}` references that OpenClaw
+resolves from the environment at load. The image's start-up `doctor --fix`
+keeps the references when it rewrites the file. Without `gateway.mode` a
+fresh volume crash-loops.
 
 The seed applies only to a fresh volume. Editing `openclaw.json` in the
 repository later changes nothing for an existing deployment; change the live
@@ -67,12 +77,10 @@ config instead.
 | `openclaw-workspace` | `/home/node/.openclaw/workspace` | Files the agent works on |
 | `openclaw-secrets` | `/home/node/.config/openclaw` | Auth-profile secrets |
 
-The three mounts follow upstream's own compose. `/home/node` as a whole is not
-mounted: the bundled Chromium lives in `/home/node/.cache`, and a volume there
-would freeze it at the first image's version.
-
-`cap_drop` and `no-new-privileges` are also upstream's; the image runs as the
-non-root `node` user.
+The three mounts are upstream's own. `/home/node` as a whole is not mounted:
+the bundled Chromium lives in `/home/node/.cache`, and a volume there would
+freeze it at the first image's version. The image runs as the non-root `node`
+user.
 
 ## Image
 

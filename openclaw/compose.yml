@@ -2,10 +2,20 @@ services:
   openclaw:
     build: .
     restart: unless-stopped
+    init: true
+    command: ["node", "dist/index.js", "gateway", "--bind", "lan", "--port", "18789"]
     environment:
       - OPENCLAW_GATEWAY_TOKEN=${OPENCLAW_GATEWAY_TOKEN:?required}
       - OPENCLAW_PUBLIC_ORIGIN=${OPENCLAW_PUBLIC_ORIGIN:?required}
       - OPENCLAW_TRUSTED_PROXIES=${OPENCLAW_TRUSTED_PROXIES:-10.0.0.0/16}
+      - HOME=/home/node
+      - OPENCLAW_HOME=/home/node
+      - OPENCLAW_STATE_DIR=/home/node/.openclaw
+      - OPENCLAW_CONFIG_PATH=/home/node/.openclaw/openclaw.json
+      - OPENCLAW_CONFIG_DIR=/home/node/.openclaw
+      - OPENCLAW_WORKSPACE_DIR=/home/node/.openclaw/workspace
+      - OPENCLAW_GATEWAY_PORT=18789
+      - TERM=xterm-256color
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - TZ=${TZ:-Asia/Ho_Chi_Minh}
       # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
@@ -44,6 +54,14 @@ services:
       - NET_ADMIN
     security_opt:
       - no-new-privileges:true
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    healthcheck:
+      test: ["CMD", "node", "dist/docker-healthcheck.js"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
 volumes:
   openclaw-state:
