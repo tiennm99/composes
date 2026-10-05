@@ -25,8 +25,6 @@ on port `9119`.
 | `HERMES_DASHBOARD_PUBLIC_URL` | — | Full public URL, e.g. `https://hermes.example.com` |
 | `HERMES_DASHBOARD_USERNAME` / `HERMES_DASHBOARD_PASSWORD` | `hermes` / — | Dashboard login |
 | `HERMES_DASHBOARD_SECRET` | — | Signs dashboard sessions |
-| `TELEGRAM_BOT_TOKEN` | empty | Telegram bot; empty leaves Telegram off |
-| `TELEGRAM_ALLOWED_USERS` / `TELEGRAM_GROUP_ALLOWED_CHATS` | empty | Telegram users and group chats allowed to use the bot |
 | `OPENROUTER_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY` | optional | Provider keys passed from the environment |
 
 The dashboard refuses to start on a non-loopback bind without an auth
@@ -38,11 +36,35 @@ for a public domain.
 `HERMES_DASHBOARD_PUBLIC_URL` adds the domain to the dashboard's Host and
 WebSocket Origin guard, which rejects requests for any other host.
 `HERMES_DASHBOARD_SECRET` keeps sessions valid across restarts; without it
-each restart signs with a new random key.
+each restart signs with a new random key. It must decode to at least 16
+bytes (base64, hex, or raw text), or the password provider does not load and
+the dashboard refuses to start; `openssl rand -hex 32` is long enough.
 
-Provider keys are commented out because upstream keeps them in
-`/opt/data/.env`, written from the dashboard, so they survive without being
-repeated in Coolify. An environment variable, when set, wins over that file.
+Hermes loads `/opt/data/.env` over the process environment, so a key set in
+both takes the file's value. Provider keys are commented out because upstream
+keeps them in that file, written from the dashboard.
+
+## Chat platforms
+
+Telegram and the other gateway platforms are configured in the dashboard
+under Messaging, which writes `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALLOWED_USERS`,
+`TELEGRAM_GROUP_ALLOWED_CHATS` and their equivalents to `/opt/data/.env` and
+restarts the gateway. They are not passed from Coolify, so that file is the
+one place they are set.
+
+The Coolify environment cannot be the source for them. The gateway runs with
+`multiplex_profiles` on by default, and in that mode its allow-lists read
+only the profile's `.env`, never the container environment: with
+`TELEGRAM_ALLOWED_USERS` set only in Coolify, the bot connects but blocks
+every user. Turning multiplexing off (`GATEWAY_MULTIPLEX_PROFILES=false`)
+would make the environment count again, but the file still wins for any key
+it holds, and the dashboard's Messaging setup writes those keys there, so a
+Coolify value would be silently overridden the first time the dashboard is
+used.
+
+To edit a value by hand, change it in `/opt/data/.env` from a shell in the
+container, as the `hermes` user, then run
+`/opt/hermes/.venv/bin/hermes gateway restart`.
 
 ## Storage
 
