@@ -83,6 +83,7 @@ Each links to its own README for variables, ports, and storage.
 | [gitea-mirror](gitea-mirror/README.md) | Gitea + PostgreSQL + gitea-mirror, mirroring GitHub repos |
 | [goclaw](goclaw/README.md) | Multi-tenant AI agent gateway, with pgvector PostgreSQL |
 | [litellm](litellm/README.md) | LiteLLM proxy in front of many LLM providers, with PostgreSQL and Redis |
+| [open-webui](open-webui/README.md) | Open WebUI chat interface for OpenAI-compatible and Ollama providers |
 | [opencode](opencode/README.md) | opencode coding agent, served as a browser UI |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |

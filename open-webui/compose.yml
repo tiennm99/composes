@@ -1,0 +1,20 @@
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:latest
+    restart: unless-stopped
+    environment:
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY:?required}
+      - BYPASS_MODEL_ACCESS_CONTROL=${BYPASS_MODEL_ACCESS_CONTROL:-true}
+      # - OPENAI_API_BASE_URL=${OPENAI_API_BASE_URL:-}
+      # - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      # - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-}
+    volumes:
+      - open-webui:/app/backend/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080"]
+      interval: 5s
+      timeout: 30s
+      retries: 10
+
+volumes:
+  open-webui:
