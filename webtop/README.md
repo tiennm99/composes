@@ -3,6 +3,15 @@
 [Webtop](https://docs.linuxserver.io/images/docker-webtop): a full Ubuntu
 XFCE desktop in the browser, from the LinuxServer image, streamed by Selkies.
 
+Comes with Go, Node.js 24, Python 3 and zsh via LinuxServer mods, the
+`code-server-npmglobal` mod so `npm install -g` lands under `/config` and
+persists, plus `bubblewrap`, `gh`, `git`, `glab`, `unzip` and `zip` through
+`INSTALL_PACKAGES`. The `code-server-*` mods carry that name upstream but are
+plain Ubuntu installers that work on any LinuxServer Ubuntu image.
+
+Mods install into each new container, so the first start after a recreate
+takes a few minutes longer before the desktop answers.
+
 ## Setup
 
 1. Set `PASSWORD`.
@@ -25,6 +34,20 @@ shell and `sudo`, to anyone who opens the domain.
 
 `PUID`/`PGID` are pinned to `1000` in `compose.yml`; the `Dockerfile` depends
 on that (see Storage).
+
+## Docker access
+
+The `universal-docker` mod installs the Docker CLI but no daemon, so the host
+socket is bind-mounted at `/var/run/docker.sock`. Containers started from
+inside are siblings on the host, not children: bind mounts in them resolve
+against host paths, so a path under `/config` will not exist unless the same
+path exists on the host.
+
+The socket belongs to the host's `docker` group, which `abc` is not in; run
+`docker` under `sudo` (the password is `PASSWORD`). Handing a container the
+socket is equivalent to giving it root on the host, accepted here because this
+is a single-user desktop. The `:ro` flag only marks the socket file read-only;
+it does not restrict the Docker API.
 
 ## Storage
 

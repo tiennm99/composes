@@ -8,11 +8,15 @@ services:
       - PASSWORD=${PASSWORD:?required}
       - PUID=1000
       - PGID=1000
+      - 'DOCKER_MODS=linuxserver/mods:universal-package-install|linuxserver/mods:universal-docker|linuxserver/mods:code-server-golang|linuxserver/mods:code-server-nodejs|linuxserver/mods:code-server-npmglobal|linuxserver/mods:code-server-python3|linuxserver/mods:code-server-zsh'
+      - INSTALL_PACKAGES=bubblewrap|gh|git|glab|unzip|zip
+      - NODEJS_MOD_VERSION=24
       - TZ=${TZ:-Asia/Ho_Chi_Minh}
       # - TITLE=${TITLE:-Webtop}
     volumes:
       - webtop-config:/config
       - webtop-workspace:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock:ro
 
 volumes:
   webtop-config:
