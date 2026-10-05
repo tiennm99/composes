@@ -26,6 +26,8 @@ Health check: `GET /api/status`, also the compose healthcheck.
 | `HERMES_DASHBOARD_USERNAME` / `HERMES_DASHBOARD_PASSWORD` | `hermes` / — | Dashboard login |
 | `HERMES_DASHBOARD_SECRET` | — | Signs dashboard sessions |
 | `OPENROUTER_API_KEY` | empty | Model provider |
+| `TELEGRAM_BOT_TOKEN` | empty | Telegram bot; empty leaves Telegram off |
+| `TELEGRAM_ALLOWED_USERS` / `TELEGRAM_GROUP_ALLOWED_CHATS` | empty | Telegram users and group chats allowed to use the bot |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY` | optional | Other model providers |
 
 `HERMES_DASHBOARD=1` turns the dashboard on. Bound to `0.0.0.0`, it refuses to
