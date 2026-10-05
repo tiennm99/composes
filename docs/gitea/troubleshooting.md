@@ -1,4 +1,4 @@
-# gitea-mirror troubleshooting
+# gitea troubleshooting
 
 Applies to `gitea/compose.yml`.
 

@@ -80,7 +80,8 @@ Each links to its own README for variables, ports, and storage.
 | [code-server](code-server/README.md) | VS Code in the browser, as a remote dev box |
 | [couchbase](couchbase/README.md) | Couchbase Server |
 | [diun](diun/README.md) | Image-update notifier, reading the Docker API through a read-only proxy |
-| [gitea](gitea/README.md) | Gitea + PostgreSQL + gitea-mirror, mirroring GitHub repos |
+| [gitea](gitea/README.md) | Gitea backed by PostgreSQL |
+| [gitea-mirror](gitea-mirror/README.md) | gitea-mirror, mirroring GitHub repos into Gitea |
 | [goclaw](goclaw/README.md) | Multi-tenant AI agent gateway, with pgvector PostgreSQL |
 | [hermes](hermes/README.md) | Hermes Agent with its built-in web dashboard |
 | [litellm](litellm/README.md) | LiteLLM proxy in front of many LLM providers, with PostgreSQL and Redis |
