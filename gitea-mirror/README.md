@@ -19,7 +19,7 @@ In Coolify, give `gitea-mirror` a domain on port 4321 matching
 | `BETTER_AUTH_SECRET` | gitea-mirror | Signs sessions and encrypts its login keys. Generate with `openssl rand -base64 32`. |
 | `ENCRYPTION_SECRET` | gitea-mirror | Encrypts the stored GitHub and Gitea tokens. Generate with `openssl rand -base64 48`. |
 | `GITEA_MIRROR_URL` | `BETTER_AUTH_URL`, `PUBLIC_BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS` | Public URL of the mirror UI, no trailing slash. |
-| `GITEA_CLONE_TIMEOUT` | `BUN_CONFIG_HTTP_IDLE_TIMEOUT` | Seconds to wait on Gitea's migrate API. Set it to the target Gitea's clone timeout. Defaults to `3600`; at most `14340`. |
+| `HTTP_IDLE_TIMEOUT` | `BUN_CONFIG_HTTP_IDLE_TIMEOUT` | Seconds an outgoing HTTP request may sit idle before Bun drops it. Set it to at least the target Gitea's clone timeout. Defaults to `3600`; at most `14340`. |
 
 Behind a reverse proxy, gitea-mirror rejects sign-in with "invalid origin"
 unless all three Better Auth variables hold the external URL, so one variable
@@ -38,9 +38,9 @@ install.
   gitea-mirror then marks the repository failed while Gitea keeps cloning; on
   retry it finds the half-made repository and marks it mirrored. If that
   clone later fails, Gitea keeps an empty repository with no mirror record,
-  which never syncs. `BUN_CONFIG_HTTP_IDLE_TIMEOUT` takes Gitea's clone
-  timeout so the request outlives the clone. Bun caps it at 239 minutes, so a
-  larger value stops helping there.
+  which never syncs. `HTTP_IDLE_TIMEOUT` is set at least as long as Gitea's
+  clone timeout so the request outlives the clone. Bun caps it at 239
+  minutes, so a larger value stops helping there.
 - **`gitea-mirror:latest`** with `pull_policy: always`: upstream publishes no
   major tag, so every redeploy takes the newest release.
 
