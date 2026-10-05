@@ -1,12 +1,12 @@
 ---
 name: gitea-mirror-maintenance
-description: Detect and clean up failed, broken, or empty Gitea mirror repositories in the Coolify-deployed gitea + gitea-mirror stack, using tea and the gitea-mirror API. Use when the user asks to check mirror health, find failed or empty repos, investigate why a mirror did not sync or clone, delete broken mirror repos, delete archived copies of the user's own deleted repos, clean up duplicates left by renamed, transferred or re-cased GitHub repos, reclaim disk space from partial clones, re-mirror repos that failed, or run routine mirror upkeep. Not for Gitea setup, upgrades, or deployment problems — those belong to `gitea-mirror/compose.yml`.
+description: Detect and clean up failed, broken, or empty Gitea mirror repositories in the Coolify-deployed gitea + gitea-mirror stack, using tea and the gitea-mirror API. Use when the user asks to check mirror health, find failed or empty repos, investigate why a mirror did not sync or clone, delete broken mirror repos, delete archived copies of the user's own deleted repos, clean up duplicates left by renamed, transferred or re-cased GitHub repos, reclaim disk space from partial clones, re-mirror repos that failed, or run routine mirror upkeep. Not for Gitea setup, upgrades, or deployment problems — those belong to `gitea/compose.yml`.
 ---
 
 # Gitea Mirror Maintenance
 
 Maintain the `gitea` + `gitea-mirror` stack deployed by
-`gitea-mirror/compose.yml` on Coolify: find mirror repositories whose pull failed, classify
+`gitea/compose.yml` on Coolify: find mirror repositories whose pull failed, classify
 each failure, then clean up only what is safe to delete.
 
 **Scope.** Mirror health auditing and cleanup only. Not Gitea first-run setup,
@@ -24,7 +24,7 @@ the host.
 | Delete a repo | `tea repos delete --login <login> --owner O --name N --force` |
 | gitea-mirror API | `$GITEA_MIRROR_URL/api/...` with header `x-api-key: $GITEA_MIRROR_API_KEY` |
 | gitea-mirror key | created in the gitea-mirror UI: Settings → Authentication → API Keys |
-| Gitea container log | Coolify MCP `miti-jp`: `get_logs` on the `gitea-mirror` application |
+| Gitea container log | Coolify MCP `miti-jp`: `get_logs` on the `gitea` application |
 
 Export `GITEA_MIRROR_URL` and `GITEA_MIRROR_API_KEY` in the shell before
 running the scripts; both live in the composes repo-root `.env`, so

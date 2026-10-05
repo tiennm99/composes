@@ -1,6 +1,6 @@
 # gitea-mirror troubleshooting
 
-Applies to `gitea-mirror/compose.yml`.
+Applies to `gitea/compose.yml`.
 
 ## Gitea cannot connect after changing `POSTGRES_PASSWORD`
 
@@ -14,5 +14,5 @@ docker compose exec db psql -U gitea -c "ALTER USER gitea PASSWORD '<new>';"
 
 ## A redeploy kills clones in progress
 
-Gitea restarts and the clone dies with it. Avoid pushing to `gitea-mirror/`
+Gitea restarts and the clone dies with it. Avoid pushing to `gitea/`
 while a large first mirror runs.
