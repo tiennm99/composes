@@ -10,7 +10,8 @@ repositories into a Gitea instance.
 | `gitea-mirror` | `ghcr.io/raylabshq/gitea-mirror:latest` | 4321 | `GITEA_MIRROR_URL` |
 
 In Coolify, give `gitea-mirror` a domain on port 4321 matching
-`GITEA_MIRROR_URL`. The image ships its own health check.
+`GITEA_MIRROR_URL`. The image ships its own health check; the compose file
+keeps its command and only slows how often it runs.
 
 ## Variables
 
@@ -41,6 +42,14 @@ install.
   which never syncs. `HTTP_IDLE_TIMEOUT` is set at least as long as Gitea's
   clone timeout so the request outlives the clone. Bun caps it at 239
   minutes, so a larger value stops helping there.
+- **Health check every 5 minutes.** Each call to `/api/health` also asks
+  GitHub's API, without a token, for the latest gitea-mirror release, and a
+  failed answer is not cached. At the image's 30-second interval that is 120
+  calls an hour against GitHub's limit of 60 unauthenticated calls per IP, so
+  the check fails and logs a 403 every time. Five minutes makes it 12. During
+  the first 30 seconds it still checks every 5 seconds, so a deploy turns
+  healthy as quickly as before. Mirroring itself uses the GitHub token and is
+  unaffected either way.
 - **`gitea-mirror:latest`** with `pull_policy: always`: upstream publishes no
   major tag, so every redeploy takes the newest release.
 

@@ -12,6 +12,10 @@ services:
       BUN_CONFIG_HTTP_IDLE_TIMEOUT: ${HTTP_IDLE_TIMEOUT:-3600}
     volumes:
       - gitea-mirror-data:/app/data
+    healthcheck:
+      interval: 5m
+      start_period: 30s
+      start_interval: 5s
 
 volumes:
   gitea-mirror-data:
