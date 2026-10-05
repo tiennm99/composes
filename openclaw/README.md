@@ -1,65 +1,86 @@
 # openclaw
 
 [OpenClaw](https://docs.openclaw.ai): a personal AI agent gateway with a web
-UI, chat-channel bots and browser automation. Runs Coolify's
-`coollabsio/openclaw` image, which wraps OpenClaw with nginx basic auth and
-env-driven configuration.
+Control UI, chat-channel bots and browser automation. Runs the project's
+official image, in its `-browser` variant with Chromium built in.
 
-Two containers: `openclaw`, and `browser`, a Chromium the agent drives over
-the Chrome DevTools Protocol.
+One container, serving the gateway and the Control UI on port `18789`.
 
 ## Setup
 
-1. Set `AUTH_PASSWORD`, `OPENCLAW_GATEWAY_TOKEN` and `OPENROUTER_API_KEY`.
-2. Map the domain to port `8080` and deploy.
-3. Open the domain and log in with `AUTH_USERNAME` / `AUTH_PASSWORD`.
+1. Set `OPENCLAW_GATEWAY_TOKEN`, `OPENCLAW_PUBLIC_ORIGIN` and
+   `OPENROUTER_API_KEY`.
+2. Map the domain to port `18789` and deploy.
+3. Open the domain and connect with the gateway token. Each new browser is
+   then approved once from inside the container:
+   `node openclaw.mjs devices approve`.
+4. Pick a default model in the Control UI. The image's default is an OpenAI
+   model, which needs `OPENAI_API_KEY`.
 
-Health check: `GET /healthz`, also the compose healthcheck.
+Health check: the image's own, which calls `/healthz`.
 
 ## Environment
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `AUTH_USERNAME` / `AUTH_PASSWORD` | `admin` / — | Basic-auth login in front of the web UI |
-| `OPENCLAW_GATEWAY_TOKEN` | — | Token the web UI and clients use to reach the gateway |
+| `OPENCLAW_GATEWAY_TOKEN` | — | Control UI login and API/WebSocket key |
+| `OPENCLAW_PUBLIC_ORIGIN` | — | Public origin, e.g. `https://openclaw.example.com` |
+| `OPENCLAW_TRUSTED_PROXIES` | `10.0.0.0/16` | Range the reverse proxy connects from |
 | `OPENROUTER_API_KEY` | empty | Model provider |
-| `OPENCLAW_PRIMARY_MODEL` | optional | Default model |
-| Other provider keys, `AWS_*`, `OLLAMA_BASE_URL` | optional | Additional model providers |
-| `TELEGRAM_BOT_TOKEN`, `DISCORD_BOT_TOKEN`, `SLACK_*`, `WHATSAPP_ENABLED` | optional | Chat channels |
-| `OPENCLAW_ALLOWED_ORIGINS` | optional | Origins allowed to open the control UI |
-| `BROWSER_*`, `HOOKS_*`, `OPENCLAW_GATEWAY_BIND` | optional | Tuning, defaults shown in `compose.yml` |
-| `OPENCLAW_DOCKER_APT_PACKAGES` | optional | Extra apt packages installed at start |
+| `TZ` | `Asia/Ho_Chi_Minh` | Timezone for logs and schedules |
+| Other provider keys, `AWS_*` | optional | Additional model providers |
+| `TELEGRAM_BOT_TOKEN`, `DISCORD_BOT_TOKEN`, `SLACK_*` | optional | Chat channels |
 
-`AUTH_PASSWORD` is required: without it nginx serves the UI with no login.
-The entrypoint itself refuses to start without `OPENCLAW_GATEWAY_TOKEN` or
-without at least one provider key.
+`OPENCLAW_GATEWAY_TOKEN` is required: the gateway binds to all interfaces, and
+the token is what keeps the Control UI and API closed. Provider and channel
+keys are read from the environment, so the provider set is changed by
+uncommenting lines.
 
-OpenRouter stays active as the one provider every deployment needs; any
-other provider is enabled by uncommenting its line. Each provider key is read
-from the environment on every start, never stored in the config.
+`OPENCLAW_TRUSTED_PROXIES` must cover the address Coolify's Traefik connects
+from. Traefik joins each app's network with an address from the Docker
+address pool, which on this host is `10.0.0.0/16` in `/24` slices; the gateway
+answers every proxied request from an untrusted address with 403
+`proxy_attribution_required`.
 
-`PORT`, the gateway port, the state and workspace directories and
-`BROWSER_CDP_URL` are fixed in `compose.yml`, as properties of this layout.
+## Config
 
-`OPENCLAW_CONFIG_JSON` sets `gateway.trustedProxies` to `127.0.0.1`. The
-image's own nginx sits in front of the gateway on loopback, and current
-OpenClaw (tested on 2026.9.8) rejects every proxied request with 403
-`proxy_attribution_required` unless that proxy is trusted. The wrapper merges
-this JSON into `openclaw.json` on every start.
+The rest of OpenClaw's settings live in `openclaw.json` on the state volume
+and are edited in the Control UI or with `node openclaw.mjs config set`.
 
-The wrapper adds the deployment's domain to the control UI's allowed origins
-from the `COOLIFY_URL` and `COOLIFY_FQDN` Coolify injects.
-`OPENCLAW_ALLOWED_ORIGINS` is for any other origin, and for a deployment
-Coolify does not inject that into.
+The `Dockerfile` copies `openclaw.json` into the image's state directory, and
+Docker seeds an empty named volume from it on first start. It holds only what
+this deployment needs before anyone can log in: local gateway mode, a bind to
+all interfaces, the port, and the public origin and trusted proxy range as
+`${VAR}` references that OpenClaw resolves from the environment at load. The
+image's own start-up `doctor --fix` keeps those references when it rewrites
+the file. Without `gateway.mode` a fresh volume crash-loops.
+
+The seed applies only to a fresh volume. Editing `openclaw.json` in the
+repository later changes nothing for an existing deployment; change the live
+config instead.
 
 ## Storage
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `openclaw-data` | `/data` | Config and sessions in `.openclaw`, the agent workspace in `workspace` |
-| `browser-data` | `/config` | Chromium profile: cookies and logins of sites the agent uses |
+| `openclaw-state` | `/home/node/.openclaw` | `openclaw.json`, sessions, credentials, agent state |
+| `openclaw-workspace` | `/home/node/.openclaw/workspace` | Files the agent works on |
+| `openclaw-secrets` | `/home/node/.config/openclaw` | Auth-profile secrets |
 
-## Images
+The three mounts follow upstream's own compose. `/home/node` as a whole is not
+mounted: the bundled Chromium lives in `/home/node/.cache`, and a volume there
+would freeze it at the first image's version.
 
-Both images use `latest`. `coollabsio/openclaw` publishes no major tag, only
-dated releases, so `latest` is the moving one.
+`cap_drop` and `no-new-privileges` are also upstream's; the image runs as the
+non-root `node` user.
+
+## Image
+
+`ghcr.io/openclaw/openclaw:latest-browser` is the latest stable release with
+Playwright Chromium built in, published by the project's release automation.
+Upstream publishes no major tag.
+
+On ARM64, release 2026.9.8 cannot find its bundled Chromium ("No supported
+browser found"); the fix is merged upstream but not yet released. Everything
+except browser automation works meanwhile, and the browser starts working on
+the first pull after a release that contains the fix, with no change here.

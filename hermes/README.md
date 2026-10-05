@@ -1,52 +1,72 @@
 # hermes
 
-[Hermes Agent](https://github.com/NousResearch/hermes-agent), an autonomous AI
-agent with persistent memory and scheduling, behind
-[Hermes WebUI](https://github.com/nesquena/hermes-webui), a self-hosted web
-chat for it.
+[Hermes Agent](https://github.com/NousResearch/hermes-agent): an autonomous AI
+agent with persistent memory, scheduling and chat-platform gateways, from Nous
+Research's official image, with its built-in web dashboard.
 
-Two containers: `hermes-agent` runs the agent gateway, and `hermes-webui`
-serves the chat on port `8787`.
+One container. `gateway run` starts the agent gateway, and the image's s6
+supervisor also starts the dashboard on port `9119`: chat (the Hermes
+terminal UI in the browser), sessions, config, cron, skills and logs.
 
 ## Setup
 
-1. Set `HERMES_WEBUI_PASSWORD` and `OPENROUTER_API_KEY`.
-2. Map the domain to the `hermes-webui` container on port `8787` and deploy.
-3. Open the domain and log in with `HERMES_WEBUI_PASSWORD`.
+1. Set `HERMES_DASHBOARD_PUBLIC_URL`, `HERMES_DASHBOARD_PASSWORD`,
+   `HERMES_DASHBOARD_SECRET` and `OPENROUTER_API_KEY`.
+2. Map the domain to port `9119` and deploy.
+3. Open the domain and log in with `HERMES_DASHBOARD_USERNAME` /
+   `HERMES_DASHBOARD_PASSWORD`.
 
-Health check: `GET /health` on the web UI, also its compose healthcheck.
+Health check: `GET /api/status`, also the compose healthcheck.
 
 ## Environment
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `HERMES_WEBUI_PASSWORD` | — | Web UI login |
+| `HERMES_DASHBOARD_PUBLIC_URL` | — | Full public URL, e.g. `https://hermes.example.com` |
+| `HERMES_DASHBOARD_USERNAME` / `HERMES_DASHBOARD_PASSWORD` | `hermes` / — | Dashboard login |
+| `HERMES_DASHBOARD_SECRET` | — | Signs dashboard sessions |
 | `OPENROUTER_API_KEY` | empty | Model provider |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GOOGLE_API_KEY` | optional | Other model providers |
 
-`HERMES_WEBUI_PASSWORD` is required: without it the chat, and the agent
-behind it, are open to anyone who reaches the domain.
+`HERMES_DASHBOARD=1` turns the dashboard on. Bound to `0.0.0.0`, it refuses to
+start without an auth provider, so the password is required. The image's
+username/password provider is the one that needs no outside identity service;
+upstream describes it as meant for trusted networks and recommends OAuth (Nous
+Portal) or self-hosted OIDC for a public domain.
 
-The uid/gid pairs are pinned to `1000` in `compose.yml`. Both containers write
-the shared `hermes-home` volume, so both must run as the same user.
+`HERMES_DASHBOARD_PUBLIC_URL` adds the domain to the dashboard's Host and
+WebSocket Origin guard, which rejects requests for any other host.
+
+`HERMES_DASHBOARD_SECRET` keeps sessions valid across restarts; without it
+each restart signs with a new random key and logs everyone out.
+
+The uid/gid are pinned to `1000` in `compose.yml`; the `Dockerfile` depends on
+that (see Storage).
 
 ## Storage
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `hermes-home` | `/home/hermes/.hermes` (agent), `/home/hermeswebui/.hermes` (web UI) | Agent config, memory, skills and sessions; web UI state in `webui/` |
-| `hermes-agent-src` | `/opt/hermes` (agent), `.hermes/hermes-agent`, read-only (web UI) | The agent's source code, which the web UI imports |
-| `hermes-workspace` | `/workspace` (web UI) | Files the agent works on |
+| `hermes-data` | `/opt/data` | `HERMES_HOME`: config, `.env`, sessions, memory, skills, logs |
+| `hermes-workspace` | `/workspace` | Files the agent works on |
 
-### Updating the agent
+The image hard-blocks the agent's file tools from writing outside
+`HERMES_WRITE_SAFE_ROOT`, which it sets to `/opt/data` alone, so
+`compose.yml` adds `/workspace` to it. `TERMINAL_CWD` starts gateway and cron
+terminal sessions in `/workspace`. Upstream marks that variable deprecated in
+favour of `terminal.cwd` in `config.yaml`; it is used here so the setting stays
+in the compose file rather than on the volume.
 
-`hermes-agent-src` is filled from the agent image only when the volume is
-first created. A newer `latest` image therefore keeps running the old source
-until the volume is removed, which upstream documents as the upgrade step:
-stop the app, delete the `hermes-agent-src` volume, and deploy again. Nothing
-else lives in that volume.
+The `Dockerfile` exists only to make `/workspace` writable. The image does not
+ship that directory and its init chowns only `/opt/data`, so a named volume on
+`/workspace` would come up `root:root`. Creating the directory in the image,
+owned by `1000:1000`, fixes that: Docker seeds an empty named volume from the
+image directory, ownership included.
 
-## Images
+## Image
 
-Both images use `latest`. Upstream recommends moving the two together, since
-the web UI imports the agent's source and is built against matching versions.
+`nousresearch/hermes-agent:latest` moves only on stable releases, roughly
+weekly; upstream publishes no major tag. The agent's code lives in the image,
+not a volume, so a new release takes effect on the next pull and recreate. The
+first start after an upgrade migrates `config.yaml`, keeping a timestamped
+backup.
