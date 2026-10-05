@@ -85,6 +85,7 @@ Each links to its own README for variables, ports, and storage.
 | [litellm](litellm/README.md) | LiteLLM proxy in front of many LLM providers, with PostgreSQL and Redis |
 | [open-webui](open-webui/README.md) | Open WebUI chat interface for OpenAI-compatible and Ollama providers |
 | [opencode](opencode/README.md) | opencode coding agent, served as a browser UI |
+| [owncloud](owncloud/README.md) | ownCloud file sync and share, with MariaDB and Redis |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
 | [webtop](webtop/README.md) | Ubuntu XFCE desktop in the browser |
