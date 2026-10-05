@@ -16,7 +16,7 @@ The image's own HTTPS port `3001`, with a self-signed certificate, is unused.
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `CUSTOM_USER` / `PASSWORD` | `abc` / — | Login for the web desktop |
+| `CUSTOM_USER` / `PASSWORD` | `miti99` / — | Login for the web desktop |
 | `TZ` | `Asia/Ho_Chi_Minh` | Desktop timezone |
 | `TITLE` | optional | Browser tab title |
 
