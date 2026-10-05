@@ -99,4 +99,4 @@ curl -s -H "Authorization: Bearer $GRAFANA_TOKEN" \
 ## Out of scope
 
 - Custom dashboards or metrics for app-level monitoring (deploy a separate Alloy config for that).
-- Host-specific filtering (e.g. dropping noisy log lines from a particular daemon — see `docs/known-noise-coolify-ssh-sessions.md` for an example).
+- Host-specific filtering (e.g. dropping noisy log lines from a particular daemon — see [known-noise-coolify-ssh-sessions.md](known-noise-coolify-ssh-sessions.md) for an example).

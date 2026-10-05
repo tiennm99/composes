@@ -92,8 +92,8 @@ credentials and CLI logins; `/workspace` holds the code. Point whatever
 variable selects the working directory at `/workspace`.
 
 `code-server`, `paseo` and `webtop` all follow this. A service with no
-human inside it does not — one that spawns a container per session keeps only
-its own state volume.
+human inside it does not — an agent such as `hermes` or `openclaw` keeps the
+volume layout of its official Docker guide.
 
 The split is so that wiping one does not take the other. Reinstalling an editor
 should not cost you a repository, and deleting a repository should not cost you
