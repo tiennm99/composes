@@ -82,8 +82,10 @@ Each links to its own README for variables, ports, and storage.
 | [diun](diun/README.md) | Image-update notifier, reading the Docker API through a read-only proxy |
 | [gitea-mirror](gitea-mirror/README.md) | Gitea + PostgreSQL + gitea-mirror, mirroring GitHub repos |
 | [goclaw](goclaw/README.md) | Multi-tenant AI agent gateway, with pgvector PostgreSQL |
+| [hermes](hermes/README.md) | Hermes Agent with its web chat UI |
 | [litellm](litellm/README.md) | LiteLLM proxy in front of many LLM providers, with PostgreSQL and Redis |
 | [open-webui](open-webui/README.md) | Open WebUI chat interface for OpenAI-compatible and Ollama providers |
+| [openclaw](openclaw/README.md) | OpenClaw AI agent gateway, with a CDP browser |
 | [opencode](opencode/README.md) | opencode coding agent, served as a browser UI |
 | [owncloud](owncloud/README.md) | ownCloud file sync and share, with MariaDB and Redis |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
