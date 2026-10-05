@@ -42,6 +42,12 @@ the token is what keeps the Control UI and API closed. Provider and channel
 keys are read from the environment, so the provider set is changed by
 uncommenting lines.
 
+`NODE_COMPILE_CACHE` and `OPENCLAW_NO_RESPAWN=1` are the values `doctor`
+recommends on ARM and small Linux hosts: a compile cache that speeds up
+repeated CLI runs, and gateway restarts that stay inside the process instead
+of handing off to a supervisor, since Docker's restart policy already
+supervises the container.
+
 `OPENCLAW_TRUSTED_PROXIES` must cover the address Coolify's Traefik connects
 from. Traefik joins each app's network with an address from the Docker
 address pool, which on this host is `10.0.0.0/16` in `/24` slices; the gateway

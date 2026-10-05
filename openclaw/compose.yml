@@ -16,6 +16,8 @@ services:
       - OPENCLAW_WORKSPACE_DIR=/home/node/.openclaw/workspace
       - OPENCLAW_GATEWAY_PORT=18789
       - TERM=xterm-256color
+      - NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+      - OPENCLAW_NO_RESPAWN=1
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - TZ=${TZ:-Asia/Ho_Chi_Minh}
       # - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
