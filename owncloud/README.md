@@ -42,9 +42,11 @@ connection rather than changing the password.
 | --- | --- | --- |
 | `owncloud-data` | `/mnt/data` | User files, apps, `config.php` |
 | `owncloud-mysql-data` | `/var/lib/mysql` | The database |
+| `owncloud-redis-data` | `/data` | Redis locks and cache |
 
-Redis has no named volume. It holds only locks and cache, which ownCloud
-rebuilds after a restart.
+The Redis volume follows ownCloud's own compose. Its contents are rebuilt
+after a restart, but the `redis` image declares `/data` a volume, so without a
+named one Docker creates an anonymous volume on every recreate.
 
 ## Images
 
