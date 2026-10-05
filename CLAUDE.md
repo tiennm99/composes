@@ -91,7 +91,7 @@ directory, one mounted at `/workspace`. The home volume holds settings,
 credentials and CLI logins; `/workspace` holds the code. Point whatever
 variable selects the working directory at `/workspace`.
 
-`code-server`, `paseo` and `opencode` all follow this. A service with no
+`code-server`, `paseo` and `webtop` all follow this. A service with no
 human inside it does not — one that spawns a container per session keeps only
 its own state volume.
 
@@ -101,8 +101,8 @@ your extensions and logins.
 
 Check who owns `/workspace` on a fresh volume. Docker creates it `root:root`
 unless the image ships the directory, and an image that drops to a non-root
-user will not be able to write there. `code-server` needs an explicit `chown`
-for this reason; `paseo` and `opencode` do not.
+user will not be able to write there. `code-server` and `webtop` need an
+explicit `chown` for this reason; `paseo` does not.
 
 ## Environment variable order
 
