@@ -29,6 +29,7 @@ services:
       - /sys:/sys:ro
       - /:/rootfs:ro
       - /dev/disk/:/dev/disk:ro
+      - /run/udev:/run/udev:ro
       - /var/lib/docker/:/var/lib/docker:ro
       - /var/log:/var/log:ro
       - /etc/machine-id:/etc/machine-id:ro

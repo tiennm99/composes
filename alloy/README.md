@@ -131,6 +131,7 @@ the disclosure one.
 | `/sys:/sys:ro` | node-exporter and cadvisor cgroups |
 | `/:/rootfs:ro` | filesystem collector, via `rootfs_path` |
 | `/dev/disk/:/dev/disk:ro` | node-exporter diskstats device labels |
+| `/run/udev:/run/udev:ro` | node-exporter diskstats udev device properties (`/run/udev/data`) |
 | `/var/lib/docker:ro` | cadvisor container metadata |
 | `/var/log:/var/log:ro` | `loki.source.journal` and `loki.source.file` |
 | `/etc/machine-id:ro` | Stable host id for the journal reader |
