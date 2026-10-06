@@ -132,3 +132,10 @@ the disclosure one.
 
 `dockerproxy` mounts `/var/run/docker.sock:ro` and nothing else.
 
+
+## Version pinning
+
+Both images use `latest`. Neither project publishes a moving major tag:
+`grafana/alloy` ships only exact `v1.x.y` tags, and `tecnativa/docker-socket-proxy`
+only exact `v0.x.y` tags (its bare `0` tag is a stale leftover). `latest` is the
+closest equivalent, so new releases arrive on the next redeploy.

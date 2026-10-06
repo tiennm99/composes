@@ -1,11 +1,11 @@
 services:
   alloy:
-    image: grafana/alloy:v1.16.1
+    image: grafana/alloy:latest
     restart: unless-stopped
     hostname: ${ALLOY_HOSTNAME:?required}
-    network_mode: host                        # node_exporter netdev/netstat sees real host interfaces (eth0…) not veth
+    network_mode: host
     cap_drop: [ALL]
-    cap_add: [DAC_OVERRIDE]                   # read host files owned by other uids: journal, /rootfs, /var/log
+    cap_add: [DAC_OVERRIDE]
     security_opt:
       - no-new-privileges:true
     mem_limit: 2g
@@ -29,20 +29,20 @@ services:
       - /:/rootfs:ro
       - /dev/disk/:/dev/disk:ro
       - /var/lib/docker/:/var/lib/docker:ro
-      - /var/log:/var/log:ro                  # journal + syslog/messages/*.log for the Linux-Node integration
-      - /etc/machine-id:/etc/machine-id:ro    # stable host id for systemd journal reader
+      - /var/log:/var/log:ro
+      - /etc/machine-id:/etc/machine-id:ro
     configs:
       - { source: alloy_config, target: /etc/alloy/config.alloy }
     command: 'run --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy'
 
   dockerproxy:
-    image: tecnativa/docker-socket-proxy:v0.5.0
+    image: tecnativa/docker-socket-proxy:latest
     restart: unless-stopped
     security_opt:
       - no-new-privileges:true
     mem_limit: 64m
     pids_limit: 64
-    environment:                              # the API sections cadvisor and the log tailer read; POST stays revoked
+    environment:
       CONTAINERS: 1
       NETWORKS: 1
       IMAGES: 1
@@ -110,7 +110,7 @@ configs:
       prometheus.exporter.unix "integrations_node_exporter" {
         disable_collectors = ["ipvs", "btrfs", "infiniband", "xfs", "zfs"]
 
-        // Read host filesystems via bind mounts instead of the container namespace.
+        // Read host filesystems through the /rootfs and /rootproc bind mounts.
         rootfs_path = "/rootfs"
         procfs_path = "/rootproc"
 
@@ -134,10 +134,7 @@ configs:
         forward_to = [prometheus.relabel.integrations_node_exporter.receiver]
       }
 
-      // Keep only the metrics enumerated under "Metrics" in the upstream
-      // Grafana Cloud Linux Node integration page (157 metrics, verbatim).
-      // The recording-rule output `instance:node_num_cpu:sum` is computed
-      // server-side by Grafana Cloud's ruler — not shipped from here.
+      // Keep only the Grafana Cloud Linux Node integration's metric list.
       prometheus.relabel "integrations_node_exporter" {
         forward_to = [prometheus.remote_write.metrics_service.receiver]
 
@@ -164,8 +161,7 @@ configs:
         forward_to = [loki.relabel.integrations_node_exporter.receiver]
       }
 
-      // File-based logs from the Linux-Node integration: syslog/messages/*.log.
-      // On systemd hosts, rsyslog often mirrors journald — see README "What it collects".
+      // File logs from the Linux Node integration: syslog, messages, *.log.
       local.file_match "integrations_node_exporter_files" {
         path_targets = [{
           __address__ = "localhost",
@@ -177,7 +173,7 @@ configs:
         forward_to = [loki.relabel.integrations_node_exporter.receiver]
       }
 
-      //JOURNAL
+      // Journal logs.
       declare "journal_module" {
         argument "forward_to" {
             optional = false

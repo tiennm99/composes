@@ -5,7 +5,8 @@
 
 ## Networking
 
-Publishes its ports on the host:
+Clients connect to Couchbase directly on its ports, not through a domain on the
+proxy, so it publishes them on the host:
 
 | Ports | Purpose |
 | --- | --- |
