@@ -93,8 +93,3 @@ user.
 `ghcr.io/openclaw/openclaw:latest-browser` is the latest stable release with
 Playwright Chromium built in, published by the project's release automation.
 Upstream publishes no major tag.
-
-On ARM64, release 2026.9.8 cannot find its bundled Chromium ("No supported
-browser found"); the fix is merged upstream but not yet released. Everything
-except browser automation works meanwhile, and the browser starts working on
-the first pull after a release that contains the fix, with no change here.

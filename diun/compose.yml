@@ -21,7 +21,7 @@ services:
     depends_on:
       - dockerproxy
 
-  # Read-only slice of the Docker API. POST is revoked by default in this image.
+  # Read-only slice of the Docker API.
   dockerproxy:
     image: tecnativa/docker-socket-proxy:latest
     restart: unless-stopped

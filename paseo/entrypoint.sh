@@ -36,8 +36,7 @@ for agent in ${agents//,/ }; do
     continue
   fi
 
-  # 126 and 127 are the shell's own codes for a binary that is missing or
-  # cannot be executed; any other code means it ran.
+  # Skip the agent when its command runs.
   rc=0
   /usr/sbin/gosu paseo bash -c '"$0" --version' "$agent" >/dev/null 2>&1 \
     || rc=$?

@@ -32,7 +32,7 @@ separate rootless daemon.
 
 | Variable | Purpose |
 | --- | --- |
-| `SERVICE_HOSTNAME` | Container hostname, and the name the shell prompt shows. |
+| `SERVICE_HOSTNAME` | Container hostname. |
 | `PASSWORD` | Web UI login, also the in-container sudo password. Required. |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity |
 | `PWA_APPNAME` | Optional. Name of the installed web app; defaults to `code-server`. |
@@ -42,14 +42,6 @@ Generate a password with `openssl rand -base64 24`.
 The compose file refuses to start when `PASSWORD` is unset or blank. The image
 itself would start anyway and serve code-server with no authentication, on a
 container that holds the Docker socket.
-
-`SERVICE_HOSTNAME` is used twice: as the container's `hostname:` and as the
-`HOST` variable inside it. Coolify injects `HOST=0.0.0.0` into every compose
-app, and zsh seeds `$HOST` and the `%m`/`%M` prompt escapes from that variable
-rather than calling `gethostname()` — so the prompt reads `0`, the first
-dot-separated field of `0.0.0.0`. code-server itself never reads `HOST` — it
-binds `[::]:8443` — so overriding it only affects the prompt. bash is
-unaffected; its `\h` uses the real hostname.
 
 `PUID`/`PGID` are pinned to `1000` in `compose.yml`; the `Dockerfile` depends
 on that (see [Storage](#storage)).

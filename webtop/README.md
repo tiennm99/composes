@@ -14,7 +14,7 @@ takes a few minutes longer before the desktop answers.
 
 ## Setup
 
-1. Set `PASSWORD`.
+1. Set `CUSTOM_USER` and `PASSWORD`.
 2. Map the domain to port `3000` and deploy.
 3. Open the domain and log in with `CUSTOM_USER` / `PASSWORD`.
 
