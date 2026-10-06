@@ -1,5 +1,5 @@
 services:
-  db:
+  couchbase:
     image: couchbase
     ports:
       - "8091-8097:8091-8097"
