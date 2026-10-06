@@ -98,7 +98,7 @@ the hypotheses and what would distinguish them instead of guessing a fix.
 
 ## 6. Fix and report
 
-Change only `<service>/`, following this repository's `CLAUDE.md`: comments
+Change only `<service>/`, following this repository's `CLAUDE.md` and `.claude/rules/`: comments
 say *what*, reasons go in the service `README.md`, `.env.example` stays in sync
 and in compose order. Pin an exact version only when the newer release is
 proven broken, and write what breaks in the README.

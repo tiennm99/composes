@@ -4,88 +4,42 @@ Personal docker compose collection. One directory per service, each holding
 `compose.yml`, its own `README.md`, a committed `.env.example`, and a
 gitignored `.env`.
 
-## File naming
+Topic rules live in `.claude/rules/` and load with this file:
 
-Every service uses `compose.yml` — the current Compose spec name, and the
-shorter one. Not `docker-compose.yml`.
+- `naming.md` — file, directory, service, volume and network names, with
+  example role names for supporting containers.
+- `images-and-comments.md` — where and how software is installed, and what
+  comments in compose files, Dockerfiles and scripts may say.
+- `workspace-services.md` — the home and `/workspace` volume split for services
+  someone works inside.
+- `environment-and-secrets.md` — `environment:` order, `.env.example`, and
+  secrets.
 
-## Names
+## Deployment target
 
-A service directory is named after the software it runs. When two services
-package the same software, the one that is not upstream's own image takes a
-suffix naming its source — `code-server-lsio` for LinuxServer's code-server —
-so both can coexist. The suffix is a directory name only, forced by the
-conflict; it is not a name to copy anywhere else.
+Services are deployed through Coolify, not plain `docker compose` on a host.
+The platform owns the parts a standalone compose file would declare itself.
 
-Prefer each tool's official image, for the main service and for every
-supporting container alike. Upstream's official compose file or Docker guide
-is a starting point, not a spec: adapt it to the conventions in this file
-rather than copying its layout and names as they are.
-
-Inside `compose.yml`, the main service is named after its image —
-`code-server`, not `code-server-lsio`. Where the image's repository name is not
-the software's (`traffmonetizer/cli_v2`), use the software's name
-(`traffmonetizer`). A supporting container is named for its
-role, so the software behind it can be swapped without renaming: `db` for any
-database, `cache` for Redis, Valkey or Memcached, and a short role name such as
-`dockerproxy` for anything else. Swapping Redis for Valkey, MySQL for MariaDB,
-or one SQL database for PostgreSQL then leaves every name, hostname and volume
-as it is.
-
-A volume is named `<service>-<what it holds>`, after the service that mounts it
-and its mount point or meaning — `code-server-home`, `code-server-workspace`,
-`db-data`, `cache-data`.
-
-Services declare no networks. Coolify creates one per app and attaches every
-container to it, so there is nothing to add. Should a service ever need its own,
-it is named after the main service: `code-server-network`.
-
-## Installing software in an image
-
-Follow the upstream project's own documented install method, or the one the
-community has settled on. Do not hand-roll a download, and do not take a stale
-distro package just because `apt install` is shorter — check what version it
-actually gives you first.
-
-Where it gets installed depends on the kind of service. In a workspace service
-(see below), install tools into a location that survives a redeploy — the
-container user's home volume, such as `~/.local/bin` — not into the image. The
-exception is a system package that is more than a single binary — shared
-libraries, a daemon, anything that hooks into `/etc` or the system paths. That
-goes in the image, through the system package manager. Every other service
-installs into the image.
-
-## Comments in compose files, Dockerfiles and scripts
-
-This holds for every file in a service directory, not just the compose file.
-
-A comment says *what* a section installs, configures or does, in a line or
-two. It does not explain *why*. Reasons — why not the distro package, why that
-directory, why a version is pinned, why a step runs here and not there, what
-would break if it were simplified — go in the service's `README.md`, where
-they can be read in full and where someone deciding whether to change
-something will actually look.
-
-So: no rationale, no trade-offs, no cautionary notes in the file itself. When a
-choice needs defending, write the defence in the README and let the header
-comment point at it. Keep the README current whenever a file changes, otherwise
-the reasoning is simply lost rather than relocated.
-
-The root `README.md` is an index only — it covers the shared conventions and
-links out to each service. Per-service detail (variables, ports, storage)
-belongs in that service's README, not the root one. Adding a service means
-adding its README and a row to the root table.
+Coolify is the primary target: design, test and debug against it first.
+Dokploy is optional — keep a service working there when it costs nothing
+(the `restart:` policy below), but never trade Coolify behaviour for Dokploy
+compatibility, and do not block on Dokploy-only issues.
 
 ## Service READMEs stay inside their directory
 
 A service's `README.md` describes that service and nothing else. It does not
 name, link to, or compare itself with another service, and it does not link up
-to the root README or CLAUDE.md. Shared conventions — the workspace volume
+to the root README, CLAUDE.md or `.claude/rules/`. Shared conventions — the workspace volume
 split, no published ports, the restart policy, secrets, variable order — are
 written once at the root and are not restated or "see the root for why"-linked
 from a service. A service README says what the service is, its variables,
 storage and wiring, and the reasons behind choices specific to that service.
 Keep it concise and minimal.
+
+The root `README.md` is an index only — it covers the shared conventions and
+links out to each service. Per-service detail (variables, ports, storage)
+belongs in that service's README, not the root one. Adding a service means
+adding its README and a row to the root table.
 
 This is a deployment rule, not a style preference. Each service is a separate
 Coolify app whose webhook watch path is `<service>/**`. A cross-link means
@@ -120,73 +74,6 @@ containers use.
   has no default home. Ask the user where it goes before adding it to a
   service directory.
 
-## Workspace services
-
-A service someone works *inside* — an editor, a coding agent, anything with a
-shell — gets exactly two named volumes: one for the container user's home
-directory, one mounted at `/workspace`. The home volume holds settings,
-credentials and CLI logins; `/workspace` holds the code. Point whatever
-variable selects the working directory at `/workspace`.
-
-`code-server`, `code-server-lsio`, `paseo` and `webtop` all follow this. A service with no
-human inside it does not — an agent such as `hermes` or `openclaw` keeps the
-volume layout of its official Docker guide.
-
-The split is so that wiping one does not take the other. Reinstalling an editor
-should not cost you a repository, and deleting a repository should not cost you
-your extensions and logins.
-
-Check who owns `/workspace` on a fresh volume. Docker creates it `root:root`
-unless the image ships the directory, and an image that drops to a non-root
-user will not be able to write there. `code-server`, `code-server-lsio` and `webtop` need an
-explicit `chown` for this reason; `paseo` does not.
-
-## Environment variable order
-
-`environment:` entries are ordered by how badly the service needs them — not
-alphabetically, and not by when they were added:
-
-1. **Must have** — without it the service does not do its job, or is exposed.
-   Auth secrets, the uid/gid its files belong to, host allow-lists, proxy
-   trust, and the mod list that supplies the toolchain.
-2. **Should have** — it starts without these, but behaves wrongly for this
-   setup: timezone, default workspace, shell, git identity, pinned tool
-   versions, extra packages.
-3. **Optional** — cosmetics and conveniences; dropping one changes nothing
-   functional. Window titles, prompt labels.
-
-Grouping wins over the tiers. Variables that belong together stay on adjacent
-lines — `PUID`/`PGID`, `PASSWORD`/`SUDO_PASSWORD`, the four `GIT_*` entries,
-the `PASEO_*` daemon settings, `DOCKER_MODS` with the `INSTALL_PACKAGES` and
-`NODEJS_MOD_VERSION` that configure it — and the whole group sits at the tier
-of its most important member, even when a member on its own would rank lower.
-Within a group, the variable others configure comes first.
-
-Optional variables are listed but commented out, in the form
-`# - KEY=${KEY:-default}` (`# KEY: ${KEY:-default}` in a map-style
-`environment:`), so the service runs without them and enabling one
-means uncommenting its line. The matching `.env.example` entry is commented out
-the same way (`# KEY=default`). Must-have and should-have variables stay active.
-
-Do not write the tier into the file as a comment — the order is the
-documentation. Where every variable is required, as in `alloy`, the tiers
-collapse and the existing grouping stands.
-
-`.env.example` follows its compose file's order. The names differ — one
-`PASSWORD` can feed several container variables, and `SERVICE_HOSTNAME` feeds
-`hostname:` and `HOST` — so each entry sits where the first compose entry that reads it sits.
-Reordering a compose file means reordering the `.env.example` with it.
-
-## Deployment target
-
-Services are deployed through Coolify, not plain `docker compose` on a host.
-The platform owns the parts a standalone compose file would declare itself.
-
-Coolify is the primary target: design, test and debug against it first.
-Dokploy is optional — keep a service working there when it costs nothing
-(the `restart:` policy below), but never trade Coolify behaviour for Dokploy
-compatibility, and do not block on Dokploy-only issues.
-
 ## Intentional omissions — do not "fix" these
 
 These are deliberate, not oversights. Do not flag them as defects or add them
@@ -208,24 +95,6 @@ Dokploy does not inject anything, so in its default compose mode an omitted
 policy leaves the container down after a crash or a host reboot. Setting it is
 correct on both. `traffmonetizer` sets `restart: always` on purpose, to be
 restarted as often as possible.
-
-## Secrets
-
-Every service reads secrets from a sibling `.env`. Never commit one — the root
-`.gitignore` covers `.env`/`*.env` and re-includes `.env.example`. Keep
-`.env.example` in sync whenever a compose file gains or drops a variable.
-
-`.env.example` is a template for anyone, so every value in it stays generic —
-the service's own name, a placeholder domain, or an empty string. Never a real
-hostname, git identity, email, domain or account name. Personal values are set
-per deployment, in the Coolify or Dokploy environment for that app, and live
-only in the gitignored `.env`.
-
-Compose interpolation reads the deploying shell's environment before the
-`.env` file, so a variable must not share a name with anything the shell
-already exports. `HOSTNAME` is the trap: it is set inside every container,
-including the one Coolify itself runs in, and would silently win. Hence
-`SERVICE_HOSTNAME` in `code-server`, `code-server-lsio` and `paseo`.
 
 ## Upstream sources
 
