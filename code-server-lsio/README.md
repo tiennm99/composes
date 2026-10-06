@@ -16,9 +16,9 @@ to. Containers started from inside are siblings on the host, not children --
 bind mounts in them resolve against host paths, so a path under `/config` will
 not exist unless the same path exists on the host.
 
-The socket is owned by the host's `docker` group, which the `abc` user inside
-the container is not a member of; run `docker` under `sudo` (the `SUDO_PASSWORD`
-is the same `PASSWORD`) or add the group by hand. Handing a container the
+The socket is owned by the host's `docker` group. At startup the mod reads the
+socket's GID, creates a group with it if none exists and adds `abc` to it, so
+`docker` works without `sudo`. Handing a container the
 socket is equivalent to giving it root on the host — that is accepted here
 because this is a single-user dev box.
 
@@ -33,11 +33,15 @@ separate rootless daemon.
 | Variable | Purpose |
 | --- | --- |
 | `SERVICE_HOSTNAME` | Container hostname, and the name the shell prompt shows. |
-| `PASSWORD` | Web UI login, also the in-container sudo password. **A blank value disables authentication entirely.** |
+| `PASSWORD` | Web UI login, also the in-container sudo password. Required. |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity |
 | `PWA_APPNAME` | Optional. Name of the installed web app; defaults to `code-server`. |
 
 Generate a password with `openssl rand -base64 24`.
+
+The compose file refuses to start when `PASSWORD` is unset or blank. The image
+itself would start anyway and serve code-server with no authentication, on a
+container that holds the Docker socket.
 
 `SERVICE_HOSTNAME` is used twice: as the container's `hostname:` and as the
 `HOST` variable inside it. Coolify injects `HOST=0.0.0.0` into every compose
