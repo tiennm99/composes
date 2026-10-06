@@ -7,8 +7,7 @@ Management.
 One container runs both the `node_exporter` (host) and `cadvisor` (container)
 collectors. A second, tiny container proxies a read-only slice of the Docker
 API to it. The Alloy config is embedded inline via Compose `configs:`, so
-there is no `config.alloy` on disk. There is no `.env.example` either: the
-nine variables are exported before `docker compose up`.
+there is no `config.alloy` on disk.
 
 Both containers have fixed names,
 `container_name: alloy` and `alloy-dockerproxy`, and `dockerproxy` publishes
@@ -50,7 +49,7 @@ source, and under Fleet Management. The same token serves `remotecfg`,
 Prometheus and Loki basic-auth.
 
 ```bash
-export ALLOY_HOSTNAME=example-host REMOTECFG_ID=example-host ...
+cp .env.example .env   # then fill in the values
 docker compose up -d
 ```
 

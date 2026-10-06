@@ -183,7 +183,8 @@ adding hardening or convention that the platform already provides.
 when a service does not declare one, and keeps the declared value when it does;
 Dokploy does not inject anything, so in its default compose mode an omitted
 policy leaves the container down after a crash or a host reboot. Setting it is
-correct on both.
+correct on both. `traffmonetizer` sets `restart: always` on purpose, to be
+restarted as often as possible.
 
 ## Secrets
 
