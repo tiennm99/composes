@@ -9,8 +9,7 @@ collectors. A second, tiny container proxies a read-only slice of the Docker
 API to it. The Alloy config is embedded inline via Compose `configs:`, so
 there is no `config.alloy` on disk.
 
-Both containers have fixed names,
-`container_name: alloy` and `alloy-dockerproxy`, and `dockerproxy` publishes
+`dockerproxy` publishes
 `127.0.0.1:2375` — Alloy runs with host networking, so it has no compose
 network to reach the proxy over.
 

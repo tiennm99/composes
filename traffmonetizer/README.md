@@ -1,7 +1,7 @@
 # traffmonetizer
 
 [TraffMonetizer](https://traffmonetizer.com) bandwidth-sharing client, defined
-in `compose.yml` with `container_name: tm` and `restart: always`. It
+in `compose.yml` with `restart: always`. It
 only makes outbound connections, so there is no port to map a domain to.
 
 `restart: always` instead of `unless-stopped` is on purpose: the client should

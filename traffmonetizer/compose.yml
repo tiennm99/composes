@@ -1,7 +1,6 @@
 services:
   traffmonetizer:
     image: 'traffmonetizer/cli_v2:arm64v8'
-    container_name: tm
     restart: always
     command: 'start accept --token ${TOKEN}'
     environment:
