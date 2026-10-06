@@ -1,0 +1,20 @@
+services:
+  code-server:
+    build: .
+    restart: unless-stopped
+    hostname: ${SERVICE_HOSTNAME}
+    working_dir: /workspace
+    environment:
+      - PASSWORD=${PASSWORD:?required}
+      - TZ=Asia/Ho_Chi_Minh
+      - GIT_AUTHOR_NAME=${GIT_NAME}
+      - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
+      - GIT_COMMITTER_NAME=${GIT_NAME}
+      - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
+    volumes:
+      - 'code-server-home:/home/coder'
+      - 'code-server-workspace:/workspace'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+volumes:
+  code-server-home:
+  code-server-workspace:

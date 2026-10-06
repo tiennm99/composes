@@ -77,6 +77,7 @@ Each links to its own README for variables, ports, and storage.
 | Service | What it is |
 | --- | --- |
 | [alloy](alloy/README.md) | Grafana Alloy shipping host and Docker telemetry to Grafana Cloud |
+| [code-server](code-server/README.md) | VS Code in the browser from the official image |
 | [code-server-lsio](code-server-lsio/README.md) | VS Code in the browser from the LinuxServer image, as a remote dev box |
 | [couchbase](couchbase/README.md) | Couchbase Server |
 | [diun](diun/README.md) | Image-update notifier, reading the Docker API through a read-only proxy |

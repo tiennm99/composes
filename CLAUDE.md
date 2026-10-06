@@ -105,7 +105,7 @@ directory, one mounted at `/workspace`. The home volume holds settings,
 credentials and CLI logins; `/workspace` holds the code. Point whatever
 variable selects the working directory at `/workspace`.
 
-`code-server-lsio`, `paseo` and `webtop` all follow this. A service with no
+`code-server`, `code-server-lsio`, `paseo` and `webtop` all follow this. A service with no
 human inside it does not — an agent such as `hermes` or `openclaw` keeps the
 volume layout of its official Docker guide.
 
@@ -115,7 +115,7 @@ your extensions and logins.
 
 Check who owns `/workspace` on a fresh volume. Docker creates it `root:root`
 unless the image ships the directory, and an image that drops to a non-root
-user will not be able to write there. `code-server-lsio` and `webtop` need an
+user will not be able to write there. `code-server`, `code-server-lsio` and `webtop` need an
 explicit `chown` for this reason; `paseo` does not.
 
 ## Environment variable order
@@ -201,7 +201,7 @@ Compose interpolation reads the deploying shell's environment before the
 `.env` file, so a variable must not share a name with anything the shell
 already exports. `HOSTNAME` is the trap: it is set inside every container,
 including the one Coolify itself runs in, and would silently win. Hence
-`SERVICE_HOSTNAME` in `code-server-lsio` and `paseo`.
+`SERVICE_HOSTNAME` in `code-server`, `code-server-lsio` and `paseo`.
 
 ## Upstream sources
 
