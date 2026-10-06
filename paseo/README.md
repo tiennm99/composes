@@ -35,7 +35,7 @@ your own machine.
 | `PASEO_HOSTNAMES` | Domains allowed to reach the daemon, comma-separated. Your domain must be listed. |
 | `PASEO_TRUSTED_PROXIES` | Set to `uniquelocal`, or the UI loads but never connects. |
 | `AGENTS` | Agent CLIs to install on start if missing, space- or comma-separated. Empty installs none. See [Agents](#agents). |
-| `SERVICE_HOSTNAME` | Container hostname, shown as the host label in the UI. Without it the label is a random container ID. |
+| `SERVICE_HOSTNAME` | Container hostname, shown as the host label in the UI and in the shell prompt. Without it the label is a random container ID. |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity for agents and terminals. |
 
 `PASEO_TRUSTED_PROXIES` matches the proxy's *source IP*, so hostnames are
@@ -46,8 +46,14 @@ the browser blocks that as mixed content. `uniquelocal` covers the private
 ranges Docker uses. An exact CIDR works too, but Coolify assigns a fresh subnet
 per project.
 
-`SERVICE_HOSTNAME` sets the container's `hostname:`, which is where the daemon
-takes its host label from.
+`SERVICE_HOSTNAME` is used twice: as the container's `hostname:`, which is
+where the daemon takes its host label from, and as the `HOST` variable inside
+it. Coolify injects `HOST=0.0.0.0` into every compose app, and zsh seeds `$HOST`
+and the `%m`/`%M` prompt escapes from that variable rather than calling
+`gethostname()` — so the prompt would read `0`, the first dot-separated field
+of `0.0.0.0`. Paseo itself never reads `HOST` — it binds `PASEO_LISTEN` — so
+overriding it only affects the prompt. bash is unaffected; its `\h` uses the
+real hostname.
 
 `SHELL=/bin/zsh` and `TZ=Asia/Ho_Chi_Minh` are written into `compose.yml`
 directly rather than read from `.env`, which is why neither is in the table.

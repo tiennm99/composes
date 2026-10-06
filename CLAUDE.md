@@ -151,7 +151,7 @@ collapse and the existing grouping stands.
 
 `.env.example` follows its compose file's order. The names differ — one
 `PASSWORD` can feed several container variables, and `SERVICE_HOSTNAME` feeds
-`hostname:` — so each entry sits where the first compose entry that reads it sits.
+`hostname:` and `HOST` — so each entry sits where the first compose entry that reads it sits.
 Reordering a compose file means reordering the `.env.example` with it.
 
 ## Deployment target
