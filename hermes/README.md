@@ -66,6 +66,16 @@ To edit a value by hand, change it in `/opt/data/.env` from a shell in the
 container, as the `hermes` user, then run
 `/opt/hermes/.venv/bin/hermes gateway restart`.
 
+In groups the bot answers only when tagged: `telegram.require_mention` is
+`true` in `/opt/data/config.yaml`, set with
+`/opt/hermes/.venv/bin/hermes config set telegram.require_mention true`
+followed by a gateway restart. A group message then needs an `@botusername`
+mention, a `/command@botusername`, or a reply to one of the bot's messages;
+DMs are not gated. Upstream defaults it to `false`, answering every group
+message the bot can see. It lives in the volume for the same reason as the
+allow-lists: the gateway reads it from the profile, not the container
+environment.
+
 ## Storage
 
 | Volume | Mount | Holds |
