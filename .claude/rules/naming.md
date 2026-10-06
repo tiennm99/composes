@@ -19,9 +19,12 @@ is a starting point, not a spec: adapt it to the conventions in these rules
 rather than copying its layout and names as they are.
 
 Inside `compose.yml`, the main service is named after its image —
-`code-server`, not `code-server-lsio`. Where the image's repository name is not
-the software's (`traffmonetizer/cli_v2`), use the software's name
-(`traffmonetizer`). A supporting container is named for its
+`code-server`, not `code-server-lsio`. The exception is an image whose name
+is not a good identifier on its own — too generic, or longer than it needs to
+be. Use a short name that still says which software it is: `owncloud` for
+`owncloud/server`, since `server` alone could be anything; `traffmonetizer`
+for `traffmonetizer/cli_v2`; `hermes` for `nousresearch/hermes-agent`. A
+supporting container is named for its
 role, so the software behind it can be swapped without renaming: `db` for any
 database, `cache` for Redis, Valkey or Memcached, and a short role name such as
 `dockerproxy` for anything else (see the examples below). Swapping Redis for
