@@ -17,20 +17,35 @@ suffix naming its source — `code-server-lsio` for LinuxServer's code-server �
 so both can coexist. The suffix is a directory name only, forced by the
 conflict; it is not a name to copy anywhere else.
 
-Inside `compose.yml`, service, volume and network names follow the upstream
-project's official Docker guide. Where the guide gives none, the main service
-takes the image's own name (`code-server`, not `code-server-lsio`), and a
-supporting container may be named for its role instead — `db`, `database`,
-`cache` and the like.
+Prefer each tool's official image, for the main service and for every
+supporting container alike. Upstream's official compose file or Docker guide
+is a starting point, not a spec: adapt it to the conventions in this file
+rather than copying its layout and names as they are.
+
+Inside `compose.yml`, a service is named after its image — `code-server`, not
+`code-server-lsio`. A supporting container may instead be named for its role —
+`db`, `database`, `cache` and the like — so the software behind it can be
+swapped without renaming: Redis for Valkey, MySQL for MariaDB, or one SQL
+database for PostgreSQL.
+
+A volume is named `<service>-<what it holds>`, after the service that mounts it
+and its mount point or meaning — `code-server-home`, `code-server-workspace`,
+`db-data`. A network is named after the main service: `code-server-network`.
 
 ## Installing software in an image
 
 Follow the upstream project's own documented install method, or the one the
-community has settled on. In order of preference: the vendor's signed package
-repository, the vendor's official tarball or install script, then a well-known
-community installer. Do not hand-roll a download, and do not take a stale
+community has settled on. Do not hand-roll a download, and do not take a stale
 distro package just because `apt install` is shorter — check what version it
 actually gives you first.
+
+Where it gets installed depends on the kind of service. In a workspace service
+(see below), install tools into a location that survives a redeploy — the
+container user's home volume, such as `~/.local/bin` — not into the image. The
+exception is a system package that is more than a single binary — shared
+libraries, a daemon, anything that hooks into `/etc` or the system paths. That
+goes in the image, through the system package manager. Every other service
+installs into the image.
 
 ## Comments in compose files, Dockerfiles and scripts
 
