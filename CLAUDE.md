@@ -22,15 +22,23 @@ supporting container alike. Upstream's official compose file or Docker guide
 is a starting point, not a spec: adapt it to the conventions in this file
 rather than copying its layout and names as they are.
 
-Inside `compose.yml`, a service is named after its image — `code-server`, not
-`code-server-lsio`. A supporting container may instead be named for its role —
-`db`, `database`, `cache` and the like — so the software behind it can be
-swapped without renaming: Redis for Valkey, MySQL for MariaDB, or one SQL
-database for PostgreSQL.
+Inside `compose.yml`, the main service is named after its image —
+`code-server`, not `code-server-lsio`. Where the image's repository name is not
+the software's (`traffmonetizer/cli_v2`), use the software's name
+(`traffmonetizer`). A supporting container is named for its
+role, so the software behind it can be swapped without renaming: `db` for any
+database, `cache` for Redis, Valkey or Memcached, and a short role name such as
+`dockerproxy` for anything else. Swapping Redis for Valkey, MySQL for MariaDB,
+or one SQL database for PostgreSQL then leaves every name, hostname and volume
+as it is.
 
 A volume is named `<service>-<what it holds>`, after the service that mounts it
 and its mount point or meaning — `code-server-home`, `code-server-workspace`,
-`db-data`. A network is named after the main service: `code-server-network`.
+`db-data`, `cache-data`.
+
+Services declare no networks. Coolify creates one per app and attaches every
+container to it, so there is nothing to add. Should a service ever need its own,
+it is named after the main service: `code-server-network`.
 
 ## Installing software in an image
 
