@@ -3,7 +3,6 @@ version: '3'
 services:
   db:
     image: couchbase
-    container_name: db
     ports:
       - "8091-8097:8091-8097"
       - "9123:9123"
