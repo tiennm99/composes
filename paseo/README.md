@@ -1,11 +1,11 @@
 # paseo
 
 [Paseo](https://paseo.sh) — self-hosted daemon and web UI for running coding
-agents. Built from a local `Dockerfile` that adds `gh`, `glab`, Python, a C
-toolchain, `zsh` and `nano` to the
-[official image](https://paseo.sh/docs/docker), which ships none of it. The
-agent CLIs are not baked in; `entrypoint.sh` installs them into `$HOME` on
-start, see [Agents](#agents).
+agents. Built from a local `Dockerfile` that adds a C toolchain, `sudo`, `zsh`
+and `nano` to the [official image](https://paseo.sh/docs/docker), which ships
+none of it. The agent CLIs are not baked in; `entrypoint.sh` installs them into
+`$HOME` on start, see [Agents](#agents). `gh`, `glab`, `uv` and Python are
+installed by hand into `$HOME`, see [Tools](#tools).
 
 ## Setup
 
@@ -18,7 +18,8 @@ start, see [Agents](#agents).
    ```
 
 3. List the agents you want in `AGENTS`; the first start installs them.
-   Log in to each — see [Agents](#agents) — plus `gh auth login` and
+   Log in to each — see [Agents](#agents).
+4. Install the [tools](#tools) you want, then `gh auth login` and
    `glab auth login`.
 
 The port must be typed by hand. The UI rejects a bare hostname, and the
@@ -134,33 +135,59 @@ into it — so every login survives a redeploy, as do dotfiles such as a `.zshrc
 or an oh-my-zsh install. Anything written outside `$HOME` (`chsh`,
 `apt install`) is lost on rebuild.
 
+## Tools
+
+`gh`, `glab`, `uv` and Python are not in the image. Install them from a
+terminal inside Paseo, as `paseo` and not under `sudo`, into `~/.local/bin`.
+That directory is already on the image's `PATH` and lives on the `paseo-home`
+volume, so each tool survives a redeploy and the daemon sees it at once. To
+update one, run its block again (`uv self update` for `uv`).
+
+```sh
+mkdir -p ~/.local/bin
+arch=$(dpkg --print-architecture)
+
+# gh, from GitHub's release tarball
+v=$(curl -fsSL https://api.github.com/repos/cli/cli/releases/latest \
+  | sed -n 's/.*"tag_name": "v\([^"]*\)".*/\1/p')
+curl -fsSL "https://github.com/cli/cli/releases/download/v${v}/gh_${v}_linux_${arch}.tar.gz" \
+  | tar -xz -C ~/.local --strip-components=1 "gh_${v}_linux_${arch}/bin/gh"
+
+# glab, from GitLab's release tarball
+v=$(curl -fsSL https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases/permalink/latest \
+  | sed -n 's/.*"tag_name":"v\([^"]*\)".*/\1/p')
+curl -fsSL "https://gitlab.com/gitlab-org/cli/-/releases/v${v}/downloads/glab_${v}_linux_${arch}.tar.gz" \
+  | tar -xz -C ~/.local bin/glab
+
+# uv, then Python through it; --default adds python and python3
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv python install 3.12 --default
+```
+
 ## Image
 
-| Tool | Source | Why not apt |
-| --- | --- | --- |
-| `gh` | GitHub's signed apt repo | Debian does not package it |
-| `glab` (`GLAB_VERSION`) | The `.deb` on GitLab's releases page | Debian does not package it, and GitLab runs no apt repo |
-| Python (`PYTHON_VERSION`) | `uv python install` | Debian 12 ships 3.11 |
-| `build-essential`, `sudo`, `zsh`, `nano` | apt | — |
-
-Bump a pinned version with a build arg, e.g.
-`--build-arg PYTHON_VERSION=3.13`. `uv` itself is installed too.
-`GLAB_VERSION` is pinned rather than tracking the latest because GitLab's
-download URL carries the version in the path.
+| Package | Why |
+| --- | --- |
+| `build-essential` | The C toolchain npm's node-gyp addons and Python C extensions shell out to for `gcc` and `make` |
+| `sudo` | Root inside a terminal; `PASEO_PASSWORD` is the password |
+| `zsh` | The shell Paseo's terminals run, see [Environment](#environment) |
+| `nano` | An editor for a terminal |
 
 The `Dockerfile` and `entrypoint.sh` only say what each step does. The
 reasoning:
 
-- Python lives in `/opt/python` rather than under `$HOME`, the `uv` default,
-  because `/home/paseo` is a volume that masks anything the build writes there.
+- Only system packages are in the image. Single-binary tools — `gh`,
+  `glab`, `uv`, Python — go in `$HOME` like the agent CLIs, where they persist
+  and `paseo` can update them. A build-time install into `/home/paseo` would be
+  masked by the volume, and one under `/usr/local` cannot be updated by
+  `paseo`.
 - No agent CLIs, and no runtime only they need (`omp`'s Bun). Under
   `/usr/local` they cannot self-update; in `$HOME` they can, and they persist
   anyway. See [Agents](#agents).
-- `build-essential` is the C toolchain npm's node-gyp addons and Python C
-  extensions shell out to for `gcc` and `make`. No other language toolchain is
-  in the image, because none is wanted often enough to pay for a rebuild —
-  install Go, a JVM or anything else into `$HOME` from a terminal, where it
-  persists on the `paseo-home` volume like the agent CLIs do.
+- No language toolchain beyond `build-essential` is in the image, because
+  none is wanted often enough to pay for a rebuild — install Go, a JVM or
+  anything else into `$HOME` from a terminal, where it persists on the
+  `paseo-home` volume like the agent CLIs do.
 - `git` and `curl` are already in the base image. `sudo` is not, despite
   Debian's `base-passwd` shipping an empty `sudo` group, so the apt layer adds
   it and puts `paseo` in the group.
