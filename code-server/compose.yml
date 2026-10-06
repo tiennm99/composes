@@ -11,6 +11,7 @@ services:
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
       - GIT_COMMITTER_NAME=${GIT_NAME}
       - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
+      - HOST=${SERVICE_HOSTNAME}
     volumes:
       - 'code-server-home:/home/coder'
       - 'code-server-workspace:/workspace'

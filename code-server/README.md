@@ -98,7 +98,7 @@ new binary overwrites the old one.
 | --- | --- |
 | `PASSWORD` | Web UI login. Required. |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity |
-| `SERVICE_HOSTNAME` | Container hostname, and the name the shell prompt shows |
+| `SERVICE_HOSTNAME` | Container hostname, and the name the shell prompt shows (also passed as `HOST`) |
 
 Generate a password with `openssl rand -base64 24`.
 
@@ -108,6 +108,13 @@ can only read from inside the container.
 
 The `coder` user has passwordless `sudo`, as the image sets it up. Anyone who
 can log in to the editor is root in the container.
+
+`SERVICE_HOSTNAME` is used twice: as the container's `hostname:` and as the
+`HOST` variable inside it. Coolify injects `HOST=0.0.0.0` into every compose
+app, and zsh seeds `$HOST` and the `%m`/`%M` prompt escapes from that variable
+rather than calling `gethostname()`, so a zsh prompt reads `0`. code-server
+itself never reads `HOST`; it binds through `--bind-addr`. bash is unaffected;
+its `\h` uses the real hostname.
 
 ## Docker access
 
