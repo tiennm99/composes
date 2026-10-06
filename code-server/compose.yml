@@ -3,15 +3,17 @@ services:
     build: .
     restart: unless-stopped
     hostname: ${SERVICE_HOSTNAME}
-    working_dir: /workspace
     environment:
       - PASSWORD=${PASSWORD:?required}
       - TZ=Asia/Ho_Chi_Minh
+      - DEFAULT_WORKSPACE=/workspace
+      - SHELL=/bin/zsh
       - GIT_AUTHOR_NAME=${GIT_NAME}
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
       - GIT_COMMITTER_NAME=${GIT_NAME}
       - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
       - HOST=${SERVICE_HOSTNAME}
+      # - CODE_SERVER_APP_NAME=${CODE_SERVER_APP_NAME:-code-server}
     volumes:
       - 'code-server-home:/home/coder'
       - 'code-server-workspace:/workspace'

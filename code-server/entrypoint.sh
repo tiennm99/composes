@@ -1,6 +1,11 @@
 #!/bin/sh
 set -eu
 
+# Start in DEFAULT_WORKSPACE, the folder code-server opens.
+if [ -n "${DEFAULT_WORKSPACE:-}" ]; then
+  cd "$DEFAULT_WORKSPACE"
+fi
+
 # Add coder to the group that owns the mounted Docker socket, then restart
 # under that group.
 if [ -S /var/run/docker.sock ]; then

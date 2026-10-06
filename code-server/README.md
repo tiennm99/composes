@@ -5,9 +5,10 @@ official `codercom/code-server` image.
 
 The image ships code-server on Debian with `git`, `zsh`, `curl`, `sudo` and a
 few editors. The `Dockerfile` adds `build-essential`, `bubblewrap`, `zip`,
-`unzip` and the headers Ruby builds against, makes zsh the login shell, and
-wraps the entrypoint so `coder` can use the Docker socket. Language toolchains
-and CLIs are installed into home, below.
+`unzip`, the headers Ruby builds against, the Docker CLI with its Compose and
+Buildx plugins, and the GitHub CLI, and wraps the entrypoint so it starts in
+`/workspace` and `coder` can use the Docker socket. Language toolchains and
+other CLIs are installed into home, below.
 
 ## Toolchains
 
@@ -60,29 +61,20 @@ rbenv install "$V" && rbenv global "$V"
 
 To get newer Ruby versions listed, `git -C "$(rbenv root)"/plugins/ruby-build pull`.
 
-Docker Compose and Buildx, as CLI plugins in `~/.docker/cli-plugins`, the
-manual install from the
-[Compose docs](https://docs.docker.com/compose/install/linux/#install-the-plugin-manually)
-and the [Buildx README](https://github.com/docker/buildx#manual-download).
-Nothing installs them together with the client: Docker's static archive holds
-only the client and daemon, and the packages that bundle all three are apt
-packages, which land outside home. The client itself is below:
+Java, with SDKMAN, from its [install guide](https://sdkman.io/install/).
+SDKMAN and every JDK it installs live in `~/.sdkman`; the installer adds itself
+to `~/.bashrc` and `~/.zshrc`, and needs the `zip` and `unzip` the `Dockerfile`
+installs. `sdk install java` with no version takes SDKMAN's default, the
+current Temurin LTS:
 
 ```sh
-DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
-mkdir -p "$DOCKER_CONFIG/cli-plugins"
-ARCH=$(dpkg --print-architecture)
-
-V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/docker/compose/releases/latest | sed 's|.*/||')
-curl -fsSL "https://github.com/docker/compose/releases/download/$V/docker-compose-linux-$(uname -m)" -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
-
-V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/docker/buildx/releases/latest | sed 's|.*/||')
-curl -fsSL "https://github.com/docker/buildx/releases/download/$V/buildx-$V.linux-$ARCH" -o "$DOCKER_CONFIG/cli-plugins/docker-buildx"
-
-chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose" "$DOCKER_CONFIG/cli-plugins/docker-buildx"
+curl -s "https://get.sdkman.io" | bash
+. "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk install java
 ```
 
-To upgrade them, run the same commands again.
+`sdk list java` shows other vendors and versions, and `sdk install gradle` or
+`sdk install maven` adds a build tool the same way.
 
 ### Suggested by AI, may not be the optimal way
 
@@ -106,41 +98,21 @@ echo 'export PATH="$HOME/.local/go/bin:$HOME/go/bin:$PATH"' >> ~/.bashrc
 To upgrade Go, `rm -rf ~/.local/go` and run the same commands again, without
 the `echo` line.
 
-Docker CLI, GitHub CLI, GitLab CLI and jq, as the release binaries each
-project publishes, into `~/.local/bin`:
-
-- Docker: [static binaries](https://docs.docker.com/engine/install/binaries/),
-  documented for `/usr/bin`. Only the client is taken; the daemon is the
-  host's, through the socket.
-- GitHub CLI: the `.tar.gz` on [cli.github.com](https://cli.github.com/), with
-  no documented location.
-- GitLab CLI: the binary from the
-  [releases page](https://gitlab.com/gitlab-org/cli/-/releases), with no
-  documented location.
-- jq: the binary from the
-  [releases page](https://github.com/jqlang/jq/releases), with no documented
-  location.
+jq, the binary from its
+[releases page](https://github.com/jqlang/jq/releases), into `~/.local/bin`,
+with no documented location:
 
 ```sh
 mkdir -p ~/.local/bin
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 ARCH=$(dpkg --print-architecture)
 
-V=$(curl -fsSL https://download.docker.com/linux/static/stable/$(uname -m)/ | grep -o 'docker-[0-9.]*\.tgz' | sort -V | tail -1)
-curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/$V" | tar -C ~/.local/bin -xzf - --strip-components=1 docker/docker
-
-V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/cli/cli/releases/latest | sed 's|.*/v||')
-curl -fsSL "https://github.com/cli/cli/releases/download/v$V/gh_${V}_linux_$ARCH.tar.gz" | tar -C ~/.local/bin -xzf - --strip-components=2 "gh_${V}_linux_$ARCH/bin/gh"
-
-V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://gitlab.com/gitlab-org/cli/-/releases/permalink/latest | sed 's|.*/v||')
-curl -fsSL "https://gitlab.com/gitlab-org/cli/-/releases/v$V/downloads/glab_${V}_linux_$ARCH.tar.gz" | tar -C ~/.local/bin -xzf - --strip-components=1 bin/glab
-
 V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/jqlang/jq/releases/latest | sed 's|.*/||')
 curl -fsSL "https://github.com/jqlang/jq/releases/download/$V/jq-linux-$ARCH" -o ~/.local/bin/jq && chmod +x ~/.local/bin/jq
 ```
 
-To upgrade one, run the `ARCH=` line and that tool's two lines again; the
-new binary overwrites the old one.
+To upgrade it, run the same commands again, without the `echo` line; the new
+binary overwrites the old one.
 
 ## Environment
 
@@ -149,6 +121,7 @@ new binary overwrites the old one.
 | `PASSWORD` | Web UI login. Required. |
 | `GIT_NAME` / `GIT_EMAIL` | Git author and committer identity |
 | `SERVICE_HOSTNAME` | Container hostname, and the name the shell prompt shows (also passed as `HOST`) |
+| `CODE_SERVER_APP_NAME` | Optional. Name in the title bar and welcome page; defaults to `code-server`. |
 
 Generate a password with `openssl rand -base64 24`.
 
@@ -168,8 +141,8 @@ its `\h` uses the real hostname.
 
 ## Docker access
 
-The host's Docker socket is bind-mounted at `/var/run/docker.sock`. The image
-ships no Docker CLI; install the client into home as above. Containers
+The host's Docker socket is bind-mounted at `/var/run/docker.sock`. The
+`Dockerfile` installs the client only; the daemon is the host's. Containers
 started through it are siblings on the host, not children, so bind mounts in
 them resolve against host paths.
 
@@ -207,8 +180,12 @@ Listens on `8080`; point the domain at it.
 | `code-server-home` | `/home/coder` | Home directory: settings, extensions, shell history, CLI logins |
 | `code-server-workspace` | `/workspace` | Code you work on |
 
-The image's entrypoint opens `.`, its working directory. `working_dir:
-/workspace` makes that the folder code-server opens.
+The image's entrypoint opens `.`, its working directory. `entrypoint.sh`
+changes into `DEFAULT_WORKSPACE`, set to `/workspace` in `compose.yml`, before
+starting it, so that is the folder code-server opens and where new terminals
+start. Changing the variable moves both without editing the compose file's
+structure. `docker exec` shells are not affected and start in the image's
+`/home/coder`.
 
 The `Dockerfile` also makes `/workspace` writable. The image does not
 ship that directory, so a named volume mounted there comes up `root:root`,
@@ -227,9 +204,27 @@ rbenv. `libffi-dev`, `libssl-dev`, `libyaml-dev` and `zlib1g-dev` are the
 headers a rbenv-built Ruby needs for its `fiddle`, `openssl`, `psych` and
 `zlib` extensions; without them `rbenv install` fails or leaves those out.
 
-The image leaves `coder` with `/bin/bash` as its login shell. The editor's
-terminal opens zsh regardless, but tools that read the login shell from
-`/etc/passwd` or `$SHELL` get bash, so the `Dockerfile` sets it to zsh.
+The Docker CLI, its Compose and Buildx plugins, and the GitHub CLI come from
+Docker's and GitHub's signed apt repositories, which is each vendor's documented
+install for Debian. Neither documents an install into home, and Coolify builds
+with `--pull`, so they update with each rebuild rather than by hand. The GitLab
+CLI is not in the image: GitLab publishes no apt repository, only Homebrew and
+a community one.
+
+Copies of `docker`, `gh` or the plugins left in `~/.local/bin` or
+`~/.docker/cli-plugins` from an older setup take precedence over the image's
+and should be deleted.
+
+## Shell
+
+`SHELL=/bin/zsh` in `compose.yml` picks the shell. The editor's terminal takes
+its default from `$SHELL` first and only falls back to the login shell in
+`/etc/passwd`, so the variable is enough, and switching to another shell the
+image ships means changing one line rather than rebuilding. `sudo -E` in
+`entrypoint.sh` keeps the variable; without it sudo would replace it with
+root's `/bin/bash`. The value is written literally, not read from `.env`,
+because every deploying shell exports its own `SHELL`, which interpolation
+would pick up first.
 
 ## Image
 
