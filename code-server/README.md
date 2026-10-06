@@ -4,17 +4,25 @@
 official `codercom/code-server` image.
 
 The image ships code-server on Debian with `git`, `zsh`, `curl`, `sudo` and a
-few editors. The `Dockerfile` adds `build-essential`, `bubblewrap`, `zip`,
-`unzip`, the headers Ruby builds against, the Docker CLI with its Compose and
-Buildx plugins, and the GitHub CLI, and wraps the entrypoint so it starts in
-`/workspace` and `coder` can use the Docker socket. Language toolchains and
-other CLIs are installed into home, below.
+few editors. The `Dockerfile` adds `build-essential`, `bubblewrap`, `zip` and
+`unzip`, and wraps the entrypoint so it starts in `/workspace` and `coder` can
+use the Docker socket. Language toolchains and CLIs are installed into home,
+below.
 
 ## Toolchains
 
 Only `/home/coder` and `/workspace` survive a redeploy, so install toolchains
 and CLIs into home from the editor's terminal. Each command below was tested in
-the image. Open a new terminal afterwards so the `PATH` changes apply.
+the image, in this order. Open a new terminal afterwards so the `PATH` changes
+apply.
+
+The terminal is zsh, and the image ships no `~/.zshrc`. Create it first, with
+`~/.local/bin` on `PATH` for the binaries below:
+
+```sh
+mkdir -p ~/.local/bin
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+```
 
 ### Official install methods
 
@@ -43,38 +51,36 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv python install 3.13
 ```
 
-Ruby, with rbenv and its ruby-build plugin, each cloned with git as their
-READMEs document ([rbenv](https://github.com/rbenv/rbenv#basic-git-checkout),
-[ruby-build](https://github.com/rbenv/ruby-build#clone-as-rbenv-plugin-using-git)).
-Debian's `ruby` package is 3.3, several releases behind. Rubies are compiled into
-`~/.rbenv/versions` against the headers the `Dockerfile` installs.
-`rbenv init` adds itself to the login shell's startup file, `~/.zprofile`:
+Rust, with rustup, from the [install page](https://rustup.rs/). The toolchain
+lives in `~/.rustup`, and `cargo` with the tools it installs in `~/.cargo/bin`;
+rustup adds itself to `~/.zshenv`. `-y` accepts the default install:
 
 ```sh
-git clone https://github.com/rbenv/rbenv.git ~/.rbenv
-~/.rbenv/bin/rbenv init
-eval "$(~/.rbenv/bin/rbenv init - zsh)"
-git clone https://github.com/rbenv/ruby-build.git "$(rbenv root)"/plugins/ruby-build
-V=$(rbenv install -l 2>/dev/null | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | tail -1)
-rbenv install "$V" && rbenv global "$V"
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+. "$HOME/.cargo/env"
 ```
 
-To get newer Ruby versions listed, `git -C "$(rbenv root)"/plugins/ruby-build pull`.
-
-Java, with SDKMAN, from its [install guide](https://sdkman.io/install/).
-SDKMAN and every JDK it installs live in `~/.sdkman`; the installer adds itself
-to `~/.bashrc` and `~/.zshrc`, and needs the `zip` and `unzip` the `Dockerfile`
-installs. `sdk install java` with no version takes SDKMAN's default, the
-current Temurin LTS:
+Docker Compose and Buildx, as CLI plugins in `~/.docker/cli-plugins`, the
+manual install from the
+[Compose docs](https://docs.docker.com/compose/install/linux/#install-the-plugin-manually)
+and the [Buildx README](https://github.com/docker/buildx#manual-download). The
+Docker client itself is below:
 
 ```sh
-curl -s "https://get.sdkman.io" | bash
-. "$HOME/.sdkman/bin/sdkman-init.sh"
-sdk install java
+DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
+mkdir -p "$DOCKER_CONFIG/cli-plugins"
+ARCH=$(dpkg --print-architecture)
+
+V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/docker/compose/releases/latest | sed 's|.*/||')
+curl -fsSL "https://github.com/docker/compose/releases/download/$V/docker-compose-linux-$(uname -m)" -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
+
+V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/docker/buildx/releases/latest | sed 's|.*/||')
+curl -fsSL "https://github.com/docker/buildx/releases/download/$V/buildx-$V.linux-$ARCH" -o "$DOCKER_CONFIG/cli-plugins/docker-buildx"
+
+chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose" "$DOCKER_CONFIG/cli-plugins/docker-buildx"
 ```
 
-`sdk list java` shows other vendors and versions, and `sdk install gradle` or
-`sdk install maven` adds a build tool the same way.
+To upgrade them, run the same commands again.
 
 ### Suggested by AI, may not be the optimal way
 
@@ -90,29 +96,52 @@ puts tools in `~/go/bin`:
 
 ```sh
 V=$(curl -fsSL 'https://go.dev/VERSION?m=text' | head -1)
-mkdir -p ~/.local
 curl -fsSL "https://go.dev/dl/$V.linux-$(dpkg --print-architecture).tar.gz" | tar -C ~/.local -xzf -
-echo 'export PATH="$HOME/.local/go/bin:$HOME/go/bin:$PATH"' >> ~/.bashrc
+echo 'export PATH="$HOME/.local/go/bin:$HOME/go/bin:$PATH"' >> ~/.zshrc
 ```
 
 To upgrade Go, `rm -rf ~/.local/go` and run the same commands again, without
 the `echo` line.
 
-jq, the binary from its
-[releases page](https://github.com/jqlang/jq/releases), into `~/.local/bin`,
-with no documented location:
+Docker CLI and GitHub CLI, as the release binaries each project publishes,
+into `~/.local/bin`:
+
+- Docker: [static binaries](https://docs.docker.com/engine/install/binaries/),
+  documented for `/usr/bin`. Only the client is taken; the daemon is the
+  host's, through the socket.
+- GitHub CLI: the `.tar.gz` on [cli.github.com](https://cli.github.com/), with
+  no documented location.
 
 ```sh
-mkdir -p ~/.local/bin
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 ARCH=$(dpkg --print-architecture)
 
-V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/jqlang/jq/releases/latest | sed 's|.*/||')
-curl -fsSL "https://github.com/jqlang/jq/releases/download/$V/jq-linux-$ARCH" -o ~/.local/bin/jq && chmod +x ~/.local/bin/jq
+V=$(curl -fsSL https://download.docker.com/linux/static/stable/$(uname -m)/ | grep -o 'docker-[0-9.]*\.tgz' | sort -V | tail -1)
+curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/$V" | tar -C ~/.local/bin -xzf - --strip-components=1 docker/docker
+
+V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/cli/cli/releases/latest | sed 's|.*/v||')
+curl -fsSL "https://github.com/cli/cli/releases/download/v$V/gh_${V}_linux_$ARCH.tar.gz" | tar -C ~/.local/bin -xzf - --strip-components=2 "gh_${V}_linux_$ARCH/bin/gh"
 ```
 
-To upgrade it, run the same commands again, without the `echo` line; the new
-binary overwrites the old one.
+To upgrade one, run the `ARCH=` line and that tool's two lines again; the
+new binary overwrites the old one.
+
+### Java, last
+
+Java, with SDKMAN, from its [install guide](https://sdkman.io/install/).
+SDKMAN and every JDK it installs live in `~/.sdkman`; it needs the `zip` and
+`unzip` the `Dockerfile` installs. Its installer appends to `~/.zshrc` and
+requires its lines to stay at the end of the file, so install it after
+everything above. `sdk install java` with no version takes SDKMAN's default,
+the current Temurin LTS:
+
+```sh
+curl -s "https://get.sdkman.io" | bash
+. "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk install java
+```
+
+`sdk list java` shows other vendors and versions, and `sdk install gradle` or
+`sdk install maven` adds a build tool the same way.
 
 ## Environment
 
@@ -141,8 +170,8 @@ its `\h` uses the real hostname.
 
 ## Docker access
 
-The host's Docker socket is bind-mounted at `/var/run/docker.sock`. The
-`Dockerfile` installs the client only; the daemon is the host's. Containers
+The host's Docker socket is bind-mounted at `/var/run/docker.sock`. The image
+ships no Docker CLI; install the client into home as above. Containers
 started through it are siblings on the host, not children, so bind mounts in
 them resolve against host paths.
 
@@ -197,23 +226,14 @@ The home volume needs no such step, because the image already ships
 
 `build-essential`, `bubblewrap`, `zip` and `unzip` are in the `Dockerfile`
 rather than home because their projects publish no standalone binaries;
-Debian's packages are the install method, and they land outside home.
-`build-essential` supplies the `gcc` and `make` that native builds expect:
-node-gyp addons, Python sdists, Rust crates using `cc`, and Ruby built by
-rbenv. `libffi-dev`, `libssl-dev`, `libyaml-dev` and `zlib1g-dev` are the
-headers a rbenv-built Ruby needs for its `fiddle`, `openssl`, `psych` and
-`zlib` extensions; without them `rbenv install` fails or leaves those out.
+Debian's packages are the install method, and they land outside home. The base
+image ships none of them. `build-essential` supplies the `gcc` and `make` that
+native builds expect: the linker `cargo` calls, node-gyp addons and Python
+sdists.
 
-The Docker CLI, its Compose and Buildx plugins, and the GitHub CLI come from
-Docker's and GitHub's signed apt repositories, which is each vendor's documented
-install for Debian. Neither documents an install into home, and Coolify builds
-with `--pull`, so they update with each rebuild rather than by hand. The GitLab
-CLI is not in the image: GitLab publishes no apt repository, only Homebrew and
-a community one.
-
-Copies of `docker`, `gh` or the plugins left in `~/.local/bin` or
-`~/.docker/cli-plugins` from an older setup take precedence over the image's
-and should be deleted.
+Everything else lives in home rather than the image, so the image build stays
+small and a redeploy does not reinstall or upgrade tools behind your back;
+upgrading is the same commands run again.
 
 ## Shell
 
