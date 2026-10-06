@@ -22,6 +22,7 @@ services:
       LOKI_URL: ${LOKI_URL:?required}
       LOKI_USER: ${LOKI_USER:?required}
       GRAFANA_TOKEN: ${GRAFANA_TOKEN:?required}
+      GCLOUD_RW_API_KEY: ${GRAFANA_TOKEN:?required}
     volumes:
       - alloy-data:/var/lib/alloy/data
       - /proc:/rootproc:ro

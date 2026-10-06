@@ -43,6 +43,12 @@ All nine are required; `docker compose up` fails fast if any is unset.
 | `LOKI_URL` / `LOKI_USER` | Loki push endpoint and user id |
 | `GRAFANA_TOKEN` | One Cloud Access Policy token, scopes `metrics:write` + `logs:write` + `fleet-management:read` |
 
+`GRAFANA_TOKEN` is also passed into the container as `GCLOUD_RW_API_KEY`.
+Fleet Management's auto-generated `self_monitoring_*` pipelines read the token
+from that fixed name; without it their remote-write gets an empty password and
+Grafana Cloud answers `401 invalid token`, so the collector shows no health
+data in Fleet Management.
+
 Find the values under Grafana Cloud → your stack → **Details** on each data
 source, and under Fleet Management. The same token serves `remotecfg`,
 Prometheus and Loki basic-auth.
