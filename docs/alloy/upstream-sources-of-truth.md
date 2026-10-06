@@ -51,6 +51,7 @@ Where official mixin dashboards exist they're tier-2 corroboration:
 | `prometheus.exporter.cadvisor` (`docker_only = true`) | Docker integration page |
 | `prometheus.relabel "integrations_cadvisor"` (`keep` allowlist of 16 metrics) | Docker integration page → [Metrics](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-docker/#metrics) section, verbatim |
 | `discovery.docker` + `loki.source.docker` (job/instance/container/stream) | Docker integration page → log scraping |
+| `loki.process "logs_integrations_docker"` (drop lines older than 168h) | Local addition, not upstream. Drops only what Loki rejects anyway; see [docker-logs-resent-on-restart.md](docker-logs-resent-on-restart.md) |
 
 ## What "follow upstream" means in practice
 

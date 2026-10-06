@@ -276,7 +276,17 @@ configs:
       loki.source.docker "logs_integrations_docker" {
           host             = "tcp://127.0.0.1:2375"
           targets          = discovery.docker.logs_integrations_docker.targets
-          forward_to       = [loki.write.grafana_cloud_loki.receiver]
+          forward_to       = [loki.process.logs_integrations_docker.receiver]
           relabel_rules    = discovery.relabel.logs_integrations_docker.rules
           refresh_interval = "5s"
+      }
+
+      // Drop container log lines older than Grafana Cloud Loki accepts.
+      loki.process "logs_integrations_docker" {
+          forward_to = [loki.write.grafana_cloud_loki.receiver]
+
+          stage.drop {
+              older_than          = "168h"
+              drop_counter_reason = "too_old"
+          }
       }

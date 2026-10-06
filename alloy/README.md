@@ -27,7 +27,12 @@ network to reach the proxy over.
 Metric filtering copies the `keep`-lists from the upstream Grafana Cloud
 integrations verbatim ([Linux Node](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-linux-node/#metrics),
 [Docker](https://grafana.com/docs/grafana-cloud/monitor-infrastructure/integrations/integration-reference/integration-docker/#metrics)).
-Logs are unfiltered.
+Logs are unfiltered, except that container log lines older than 168h are
+dropped before they are sent. Grafana Cloud Loki rejects anything older than
+7 days, and `loki.source.docker` re-reads a container's last second of logs
+on every restart (its saved position has one-second precision), so an idle
+container's last lines would otherwise come back as a `400 timestamp too old`
+error on every redeploy. Nothing Loki would have accepted is dropped.
 
 ## Environment
 
