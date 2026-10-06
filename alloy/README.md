@@ -18,7 +18,7 @@ network to reach the proxy over.
 | Source | Component | Notes |
 |---|---|---|
 | Host metrics | `prometheus.exporter.unix` | CPU, memory, load, disk I/O, filesystem, network, uname, boot time, systemd, vmstat, sockstat — the default collector set minus `ipvs/btrfs/infiniband/xfs/zfs` |
-| Container metrics | `prometheus.exporter.cadvisor` | CPU, memory, fs usage/limit, network, `last_seen` |
+| Container metrics | `prometheus.exporter.cadvisor` | CPU, memory, fs usage/limit, network, `last_seen`. Docker labels are not copied onto the series (`store_container_labels = false`): Coolify gives its containers 50–80 labels, which pushes series past Grafana Cloud's 60-label limit and gets them rejected |
 | Container logs | `loki.source.docker` | All running containers, labeled `container`, `stream`, `instance` |
 | Journal logs | `loki.source.journal` | systemd journal, labeled `unit`, `boot_id`, `transport`, `level` |
 | File logs | `loki.source.file` | `/var/log/syslog`, `/var/log/messages`, `/var/log/*.log` |
