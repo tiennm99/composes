@@ -1,4 +1,4 @@
-# code-server
+# code-server-linuxserver
 
 [VS Code in the browser](https://github.com/linuxserver/docker-code-server),
 from the LinuxServer image, set up as a full remote dev box.

@@ -29,8 +29,8 @@ README.
   .env            # real values, gitignored
 ```
 
-Compose names the project after its directory, so `code-server/` comes up as
-the `code-server` project with its own network and volumes.
+Compose names the project after its directory, so `gitea/` comes up as
+the `gitea` project with its own network and volumes.
 
 Each service README covers only its own service. Shared conventions live here
 and are not repeated or linked from a service, so editing one service never
@@ -77,7 +77,7 @@ Each links to its own README for variables, ports, and storage.
 | Service | What it is |
 | --- | --- |
 | [alloy](alloy/README.md) | Grafana Alloy shipping host and Docker telemetry to Grafana Cloud |
-| [code-server](code-server/README.md) | VS Code in the browser, as a remote dev box |
+| [code-server-linuxserver](code-server-linuxserver/README.md) | VS Code in the browser from the LinuxServer image, as a remote dev box |
 | [couchbase](couchbase/README.md) | Couchbase Server |
 | [diun](diun/README.md) | Image-update notifier, reading the Docker API through a read-only proxy |
 | [gitea](gitea/README.md) | Gitea backed by PostgreSQL |
