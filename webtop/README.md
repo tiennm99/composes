@@ -43,8 +43,11 @@ inside are siblings on the host, not children: bind mounts in them resolve
 against host paths, so a path under `/config` will not exist unless the same
 path exists on the host.
 
-The socket belongs to the host's `docker` group, which `abc` is not in; run
-`docker` under `sudo` (the password is `PASSWORD`). Handing a container the
+The socket belongs to the host's `docker` group. At startup the mod reads the
+socket's GID, creates a group with it if none exists and adds `abc` to it. The
+desktop starts as `abc` afterwards, with that group, so `docker` works without
+`sudo` in any terminal it opens. `CUSTOM_USER` only names the web login; the
+Linux user is still `abc`. Handing a container the
 socket is equivalent to giving it root on the host, accepted here because this
 is a single-user desktop. The `:ro` flag only marks the socket file read-only;
 it does not restrict the Docker API.
