@@ -19,4 +19,4 @@ The admin console is on `8091`. Complete the first-run setup there.
 
 ## Storage
 
-`couchbase_data` at `/opt/couchbase/var` — data, indexes, config, logs.
+`couchbase-data` at `/opt/couchbase/var` — data, indexes, config, logs.

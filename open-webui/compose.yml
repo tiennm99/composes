@@ -9,7 +9,7 @@ services:
       # - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       # - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-}
     volumes:
-      - open-webui:/app/backend/data
+      - open-webui-data:/app/backend/data
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8080"]
       interval: 5s
@@ -17,4 +17,4 @@ services:
       retries: 10
 
 volumes:
-  open-webui:
+  open-webui-data:

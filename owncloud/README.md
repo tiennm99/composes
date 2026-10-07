@@ -3,8 +3,8 @@
 [ownCloud](https://doc.owncloud.com/server/10.16/admin_manual/installation/docker/)
 Server: file sync and share, with web, desktop and mobile clients.
 
-Three containers: `owncloud`, `mariadb` for metadata, users and shares, and
-`redis` for file locking and the distributed cache.
+Three containers: `owncloud`, `db` (MariaDB) for metadata, users and shares, and
+`cache` (Redis) for file locking and the distributed cache.
 
 ## Setup
 
@@ -41,8 +41,8 @@ connection rather than changing the password.
 | Volume | Mount | Holds |
 | --- | --- | --- |
 | `owncloud-data` | `/mnt/data` | User files, apps, `config.php` |
-| `owncloud-mysql-data` | `/var/lib/mysql` | The database |
-| `owncloud-redis-data` | `/data` | Redis locks and cache |
+| `db-data` | `/var/lib/mysql` | The database |
+| `cache-data` | `/data` | Redis locks and cache |
 
 The Redis volume follows ownCloud's own compose. Its contents are rebuilt
 after a restart, but the `redis` image declares `/data` a volume, so without a

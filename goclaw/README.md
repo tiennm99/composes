@@ -5,7 +5,7 @@ providers, messaging channels (Telegram, Discord, Slack, Zalo, Feishu,
 WhatsApp), agent teams, and a knowledge vault, behind one binary with a
 built-in web dashboard.
 
-Two containers: `goclaw`, and `postgres` — pgvector, which holds tenants,
+Two containers: `goclaw`, and `db` — pgvector, which holds tenants,
 sessions, encrypted provider keys and the semantic memory.
 
 ## Setup
@@ -75,14 +75,14 @@ and stored encrypted in PostgreSQL.
 | --- | --- | --- |
 | `goclaw-data` | `/app/data` | `config.json`, skills, Claude CLI credentials, runtime packages |
 | `goclaw-workspace` | `/app/workspace` | Files the agents work on |
-| `postgres-data` | `/var/lib/postgresql` | The database |
+| `db-data` | `/var/lib/postgresql` | The database |
 
 Upstream's PostgreSQL overlay adds a third `goclaw-skills` volume at
 `/app/skills`; it is not here, because `GOCLAW_SKILLS_DIR` points at
 `/app/data/skills` and the volume would mount empty over a path nothing reads.
 Skills persist in `goclaw-data` instead.
 
-`postgres-data` mounts `/var/lib/postgresql`, not `/var/lib/postgresql/data`.
+`db-data` mounts `/var/lib/postgresql`, not `/var/lib/postgresql/data`.
 PostgreSQL 18 images moved `PGDATA` down a level into a version directory, so
 the parent is now the mount point.
 

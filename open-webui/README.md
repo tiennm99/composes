@@ -40,7 +40,7 @@ connections exist the admin UI is where they change.
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `open-webui` | `/app/backend/data` | `webui.db`, uploads, the vector database, and model cache |
+| `open-webui-data` | `/app/backend/data` | `webui.db`, uploads, the vector database, and model cache |
 
 ## Image
 

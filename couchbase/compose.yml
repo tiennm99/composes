@@ -9,8 +9,8 @@ services:
       - "11280:11280"
       - "18091-18097:18091-18097"
     volumes:
-      - couchbase_data:/opt/couchbase/var
+      - couchbase-data:/opt/couchbase/var
     restart: unless-stopped
 
 volumes:
-  couchbase_data:
+  couchbase-data:

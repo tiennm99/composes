@@ -4,8 +4,8 @@
 front of many LLM providers, with virtual keys, spend tracking and an admin UI
 at `/ui`.
 
-Three containers: `litellm`, `postgres` for keys, teams, budgets and spend
-logs, and `redis` for the response cache.
+Three containers: `litellm`, `db` (PostgreSQL) for keys, teams, budgets and spend
+logs, and `cache` (Redis) for the response cache.
 
 ## Setup
 
@@ -64,8 +64,8 @@ enabled by uncommenting its line, without touching `config.yaml`.
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `pg-data` | `/var/lib/postgresql/data` | The database |
-| `redis-data` | `/data` | Redis append-only file |
+| `db-data` | `/var/lib/postgresql/data` | The database |
+| `cache-data` | `/data` | Redis append-only file |
 
 ## Images
 

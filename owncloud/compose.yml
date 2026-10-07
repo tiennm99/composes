@@ -8,19 +8,19 @@ services:
       - OWNCLOUD_ADMIN_USERNAME=${OWNCLOUD_ADMIN_USERNAME:-admin}
       - OWNCLOUD_ADMIN_PASSWORD=${OWNCLOUD_ADMIN_PASSWORD:?required}
       - OWNCLOUD_DB_TYPE=mysql
-      - OWNCLOUD_DB_HOST=mariadb
+      - OWNCLOUD_DB_HOST=db
       - OWNCLOUD_DB_NAME=${DB_NAME:-owncloud}
       - OWNCLOUD_DB_USERNAME=${DB_USER:-owncloud}
       - OWNCLOUD_DB_PASSWORD=${DB_PASSWORD:?required}
       - OWNCLOUD_MYSQL_UTF8MB4=true
       - OWNCLOUD_REDIS_ENABLED=true
-      - OWNCLOUD_REDIS_HOST=redis
+      - OWNCLOUD_REDIS_HOST=cache
     volumes:
       - owncloud-data:/mnt/data
     depends_on:
-      mariadb:
+      db:
         condition: service_healthy
-      redis:
+      cache:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "/usr/bin/healthcheck"]
@@ -29,7 +29,7 @@ services:
       retries: 5
 
   # MariaDB for file metadata, users and shares.
-  mariadb:
+  db:
     image: mariadb:12
     restart: unless-stopped
     command:
@@ -43,7 +43,7 @@ services:
       - MYSQL_USER=${DB_USER:-owncloud}
       - MYSQL_PASSWORD=${DB_PASSWORD:?required}
     volumes:
-      - owncloud-mysql-data:/var/lib/mysql
+      - db-data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
@@ -51,12 +51,12 @@ services:
       retries: 10
 
   # Redis for file locking and the distributed cache.
-  redis:
+  cache:
     image: redis:6
     restart: unless-stopped
     command: ["--databases", "1"]
     volumes:
-      - owncloud-redis-data:/data
+      - cache-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -65,5 +65,5 @@ services:
 
 volumes:
   owncloud-data:
-  owncloud-mysql-data:
-  owncloud-redis-data:
+  db-data:
+  cache-data:
