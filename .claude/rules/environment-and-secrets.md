@@ -53,3 +53,8 @@ Compose interpolation reads the deploying shell's environment before the
 already exports. `HOSTNAME` is the trap: it is set inside every container,
 including the one Coolify itself runs in, and would silently win. Hence
 `SERVICE_HOSTNAME` in `code-server`, `code-server-lsio` and `paseo`.
+
+A value stored in the Coolify app's environment, including its preview copy,
+beats the `${VAR:-default}` default in `compose.yml`. Changing a default in the
+repo does nothing while that stored value exists; clear it in Coolify, then
+redeploy.

@@ -44,7 +44,10 @@ either.
 3. `get_logs` only when the resource is running; otherwise follow the
    returned reason and `next_tools` rather than retrying.
 4. `list_env_keys` to confirm every variable in `.env.example` is set
-   (names only; values are never returned).
+   (names only; values are never returned). When a changed
+   `${VAR:-default}` in `compose.yml` has no effect, check here first: a value
+   stored in Coolify, including its preview copy, overrides the default.
+   Confirm the live value from the container logs.
 
 If neither server has it, the service is likely on Dokploy, which has no MCP
 here: ask the user to paste the container logs and deploy output.

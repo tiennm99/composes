@@ -27,6 +27,7 @@ compatibility, and do not block on Dokploy-only issues.
 
 ## Service READMEs stay inside their directory
 
+This rule has high priority: editing one service must never redeploy another.
 A service's `README.md` describes that service and nothing else. It does not
 name, link to, or compare itself with another service, and it does not link up
 to the root README, CLAUDE.md or `.claude/rules/`. Shared conventions — the workspace volume
@@ -48,8 +49,13 @@ Cross-cutting changes to every compose file (a new restart policy, say) are the
 one legitimate case where a push redeploys several services.
 
 Every Coolify app created from this repo sets its watch path to `<service>/**`.
-An app with no watch path deploys on every push to the repository —
-`traffmonetizer` leaves it unset on purpose, to get restarted that often.
+After creating one, check `watch_paths` with the Coolify MCP `get_application`;
+`null` means the app deploys on every push to the repository. Only these are
+`null` and expected — do not flag or "fix" them:
+
+- `traffmonetizer`, on both `miti-sg` and `miti-jp`, leaves it unset on purpose
+  to be restarted on every push.
+- `gitea-mirror` on `miti-jp` is not a real setup; skip it.
 
 ## Service directories hold deploy files only
 
@@ -81,7 +87,9 @@ unprompted:
 
 - **No `ports:`.** Coolify and Dokploy attach the container to their proxy
   network and map a domain to the internal port. Publishing a port is redundant
-  and would additionally expose it on the host.
+  and would additionally expose it on the host. Coolify's `ports_exposes`
+  field (often a prefilled `3000`) is never read for compose apps; the proxy
+  port comes from the compose `expose:` entry or the domain's port. Leave it.
 - **No `container_name:`.** Let Compose derive it from the directory.
 
 More generally: these files are tuned to one person's setup and are not meant
