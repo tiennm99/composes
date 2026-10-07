@@ -76,6 +76,17 @@ message the bot can see. It lives in the volume for the same reason as the
 allow-lists: the gateway reads it from the profile, not the container
 environment.
 
+The bot still reads the untagged group messages as context:
+`telegram.observe_unmentioned_group_messages` is `true`, set the same way.
+Hermes stores each skipped message, labelled with its sender, in one session
+shared by the chat or topic, and hands those messages to the model as a
+context-only block when it is next addressed. This needs Telegram privacy mode
+off for the bot (`can_read_all_group_messages` in `getMe`), and it covers only
+the chats in `TELEGRAM_GROUP_ALLOWED_CHATS`. In those chats, everyone shares
+one conversation with the bot, overriding `group_sessions_per_user`; every
+message lands in `state.db`, and each reply carries the observed backlog to the
+model provider.
+
 ## Storage
 
 | Volume | Mount | Holds |
