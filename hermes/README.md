@@ -87,6 +87,16 @@ one conversation with the bot, overriding `group_sessions_per_user`; every
 message lands in `state.db`, and each reply carries the observed backlog to the
 model provider.
 
+## Scheduled jobs
+
+Cron deliveries carry only the job's own output: `cron.wrap_response` is
+`false` in `/opt/data/config.yaml`, set with
+`/opt/hermes/.venv/bin/hermes config set cron.wrap_response false`. Upstream
+defaults it to `true`, which wraps every delivery in a
+`Cronjob Response: <name>` header with the job ID and a "To stop or manage
+this job" footer. It applies to every job; with it off, a job is managed by
+asking the bot by name.
+
 ## Storage
 
 | Volume | Mount | Holds |
