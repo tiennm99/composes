@@ -26,6 +26,8 @@ itself.
 
 - **HTTPS only.** The proxy routes HTTP, not SSH, so Gitea's SSH server is
   disabled and the UI offers HTTPS clone URLs only.
+- **Registration disabled.** The instance is public, and open sign-up drew
+  spam accounts. Admins create users from the site administration page.
 - **One-hour clone timeout.** Gitea's defaults (600 s to migrate, 300 s to
   fetch) cut off multi-gigabyte repositories mid-clone, leaving empty mirrors
   that still hold gigabytes of unreachable packfiles. A client that calls the
@@ -38,7 +40,8 @@ itself.
 
 ## Usage
 
-Complete Gitea's first-run setup at `GITEA_ROOT_URL`, then create an access
+Complete Gitea's first-run setup at `GITEA_ROOT_URL`, creating the admin
+account there since sign-up is closed, then create an access
 token for any tool that mirrors into it.
 
 ## Storage
