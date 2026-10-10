@@ -1,0 +1,72 @@
+services:
+  nextcloud:
+    image: nextcloud:35-apache
+    restart: unless-stopped
+    environment:
+      - NEXTCLOUD_ADMIN_USER=${NEXTCLOUD_ADMIN_USER:-admin}
+      - NEXTCLOUD_ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD:?required}
+      - NEXTCLOUD_TRUSTED_DOMAINS=${NEXTCLOUD_DOMAIN:?required}
+      - OVERWRITEPROTOCOL=https
+      - OVERWRITECLIURL=https://${NEXTCLOUD_DOMAIN:?required}
+      - TRUSTED_PROXIES=${TRUSTED_PROXIES:-10.0.0.0/8 172.16.0.0/12 192.168.0.0/16}
+      - APACHE_DISABLE_REWRITE_IP=1
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=${POSTGRES_DB:-nextcloud}
+      - POSTGRES_USER=${POSTGRES_USER:-nextcloud}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?required}
+      - REDIS_HOST=cache
+      - PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT:-1G}
+      - PHP_UPLOAD_LIMIT=${PHP_UPLOAD_LIMIT:-16G}
+    volumes:
+      - nextcloud-html:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+
+  # Runs Nextcloud background jobs every five minutes.
+  cron:
+    image: nextcloud:35-apache
+    restart: unless-stopped
+    entrypoint: /cron.sh
+    volumes:
+      - nextcloud-html:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+
+  # PostgreSQL for file metadata, users and shares.
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-nextcloud}
+      - POSTGRES_USER=${POSTGRES_USER:-nextcloud}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?required}
+    volumes:
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Redis for file locking and the distributed cache.
+  cache:
+    image: redis:8-alpine
+    restart: unless-stopped
+    volumes:
+      - cache-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  nextcloud-html:
+  db-data:
+  cache-data:

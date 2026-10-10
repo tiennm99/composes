@@ -79,6 +79,7 @@ Each links to its own README for variables, ports, and storage.
 | [alloy](alloy/README.md) | Grafana Alloy shipping host and Docker telemetry to Grafana Cloud |
 | [code-server](code-server/README.md) | VS Code in the browser from the official image |
 | [code-server-lsio](code-server-lsio/README.md) | VS Code in the browser from the LinuxServer image, as a remote dev box |
+| [collabora](collabora/README.md) | Collabora Online CODE, an online office suite for WOPI hosts |
 | [couchbase](couchbase/README.md) | Couchbase Server |
 | [diun](diun/README.md) | Image-update notifier, reading the Docker API through a read-only proxy |
 | [gitea](gitea/README.md) | Gitea backed by PostgreSQL |
@@ -86,10 +87,14 @@ Each links to its own README for variables, ports, and storage.
 | [goclaw](goclaw/README.md) | Multi-tenant AI agent gateway, with pgvector PostgreSQL |
 | [hermes](hermes/README.md) | Hermes Agent with its built-in web dashboard |
 | [litellm](litellm/README.md) | LiteLLM proxy in front of many LLM providers, with PostgreSQL and Redis |
+| [nextcloud](nextcloud/README.md) | Nextcloud file sync and share, with PostgreSQL, Redis and a cron container |
+| [onlyoffice](onlyoffice/README.md) | ONLYOFFICE Docs Community Edition, an online document editor |
 | [open-webui](open-webui/README.md) | Open WebUI chat interface for OpenAI-compatible and Ollama providers |
 | [openclaw](openclaw/README.md) | OpenClaw AI agent gateway, with built-in browser automation |
+| [opencloud](opencloud/README.md) | OpenCloud file sync and share, single container with built-in identity provider |
 | [owncloud](owncloud/README.md) | ownCloud file sync and share, with MariaDB and Redis |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
+| [seafile](seafile/README.md) | Seafile CE file sync and share, with MariaDB, Redis and the notification server |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
 | [webtop](webtop/README.md) | Ubuntu XFCE desktop in the browser |
 

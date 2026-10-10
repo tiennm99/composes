@@ -1,0 +1,28 @@
+services:
+  opencloud:
+    image: opencloudeu/opencloud:7
+    restart: unless-stopped
+    # Writes the config with generated secrets on first start, then runs the server.
+    entrypoint: ["/bin/sh"]
+    command: ["-c", "opencloud init || true; opencloud server"]
+    environment:
+      - OC_URL=https://${OC_DOMAIN:?required}
+      - IDM_ADMIN_PASSWORD=${INITIAL_ADMIN_PASSWORD:?required}
+      - PROXY_TLS=false
+      - PROXY_HTTP_ADDR=0.0.0.0:9200
+      - OC_INSECURE=false
+      # - OC_LOG_LEVEL=${OC_LOG_LEVEL:-info}
+      # - PROXY_ENABLE_BASIC_AUTH=${PROXY_ENABLE_BASIC_AUTH:-false}
+    volumes:
+      - opencloud-config:/etc/opencloud
+      - opencloud-data:/var/lib/opencloud
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9205/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  opencloud-config:
+  opencloud-data:

@@ -1,0 +1,11 @@
+services:
+  collabora:
+    image: collabora/code:latest
+    restart: unless-stopped
+    environment:
+      - aliasgroup1=${COLLABORA_ALIASGROUP1:?required}
+      - extra_params=--o:ssl.enable=false --o:ssl.termination=true
+      - username=${COLLABORA_ADMIN_USERNAME:-admin}
+      - password=${COLLABORA_ADMIN_PASSWORD:?required}
+      - server_name=${COLLABORA_SERVER_NAME:-}
+      # - dictionaries=${COLLABORA_DICTIONARIES:-de_DE en_GB en_US es_ES fr_FR it nl pt_BR pt_PT ru}
