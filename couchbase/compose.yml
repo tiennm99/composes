@@ -1,6 +1,6 @@
 services:
   couchbase:
-    image: couchbase
+    image: couchbase:community
     ports:
       - "8091-8097:8091-8097"
       - "9123:9123"
