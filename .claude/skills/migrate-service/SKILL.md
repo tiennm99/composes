@@ -24,8 +24,8 @@ old resource stays intact until the user deletes it; it is the rollback.
 ## 1. Identify both resources
 
 Read `<service>/compose.yml` and `<service>/README.md`. Then
-`search_resources` with the service name on every Coolify MCP server
-(`miti-jp`, `miti-sg`). The old one is usually a Service (`get_service`,
+`search_resources` with the service name through the Coolify MCP
+(`miti-coolify`, which manages both servers `miti-sg` and `miti-jp`). The old one is usually a Service (`get_service`,
 `list_service_applications`, `list_service_databases`); the new one is an
 Application whose `git_repository` is this repo and `base_directory` is
 `/<service>`. If the new app does not exist, the user creates it first —

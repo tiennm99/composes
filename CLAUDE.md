@@ -55,7 +55,6 @@ After creating one, check `watch_paths` with the Coolify MCP `get_application`;
 
 - `traffmonetizer`, on both `miti-sg` and `miti-jp`, leaves it unset on purpose
   to be restarted on every push.
-- `gitea-mirror` on `miti-jp` is not a real setup; skip it.
 
 ## Service directories hold deploy files only
 

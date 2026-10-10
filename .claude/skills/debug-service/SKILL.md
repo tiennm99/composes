@@ -35,10 +35,10 @@ Run `git log --oneline -10 -- <service>/`; a recent change is the first suspect.
 
 ## 3. Collect runtime evidence
 
-Coolify has two MCP servers, `miti-jp` and `miti-sg`; the service may live on
-either.
+One Coolify MCP, `miti-coolify`, manages both servers, `miti-sg` and
+`miti-jp`; the service may live on either.
 
-1. `search_resources` with the service name on both servers.
+1. `search_resources` with the service name.
 2. For a failed deploy: `list_deployments`, then `get_deployment` with
    `include_log_summary=true`.
 3. `get_logs` only when the resource is running; otherwise follow the
