@@ -4,6 +4,9 @@ Personal docker compose collection. One directory per service, each holding
 `compose.yml`, its own `README.md`, a committed `.env.example`, and a
 gitignored `.env`.
 
+Only common, well-known third-party services belong here. Our own tools
+ship their compose file in their own repo and deploy from there.
+
 Topic rules live in `.claude/rules/` and load with this file:
 
 - `naming.md` — file, directory, service, volume and network names, with
