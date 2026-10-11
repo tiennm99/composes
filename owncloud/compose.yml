@@ -1,10 +1,12 @@
 services:
   owncloud:
-    image: owncloud/server:10
+    image: owncloud/server:11
     restart: unless-stopped
     environment:
       - OWNCLOUD_DOMAIN=${OWNCLOUD_DOMAIN:?required}
       - OWNCLOUD_TRUSTED_DOMAINS=${OWNCLOUD_DOMAIN:?required}
+      - OWNCLOUD_PROTOCOL=https
+      - OWNCLOUD_OVERWRITE_PROTOCOL=https
       - OWNCLOUD_ADMIN_USERNAME=${OWNCLOUD_ADMIN_USERNAME:-admin}
       - OWNCLOUD_ADMIN_PASSWORD=${OWNCLOUD_ADMIN_PASSWORD:?required}
       - OWNCLOUD_DB_TYPE=mysql
@@ -30,7 +32,7 @@ services:
 
   # MariaDB for file metadata, users and shares.
   db:
-    image: mariadb:12
+    image: mariadb:10.11
     restart: unless-stopped
     command:
       - --character-set-server=utf8mb4
@@ -42,6 +44,7 @@ services:
       - MYSQL_DATABASE=${DB_NAME:-owncloud}
       - MYSQL_USER=${DB_USER:-owncloud}
       - MYSQL_PASSWORD=${DB_PASSWORD:?required}
+      - MARIADB_AUTO_UPGRADE=1
     volumes:
       - db-data:/var/lib/mysql
     healthcheck:
@@ -52,7 +55,7 @@ services:
 
   # Redis for file locking and the distributed cache.
   cache:
-    image: redis:6
+    image: redis:7
     restart: unless-stopped
     command: ["--databases", "1"]
     volumes:

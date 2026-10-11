@@ -1,6 +1,6 @@
 # owncloud
 
-[ownCloud](https://doc.owncloud.com/server/10.16/admin_manual/installation/docker/)
+[ownCloud](https://doc.owncloud.com/server/11.0/admin_manual/installation/installing_with_docker.html)
 Server: file sync and share, with web, desktop and mobile clients.
 
 Three containers: `owncloud`, `db` (MariaDB) for metadata, users and shares, and
@@ -15,7 +15,11 @@ Three containers: `owncloud`, `db` (MariaDB) for metadata, users and shares, and
 3. Log in with `OWNCLOUD_ADMIN_USERNAME` / `OWNCLOUD_ADMIN_PASSWORD`.
 
 Health check: `/usr/bin/healthcheck`, the image's own script, also the compose
-healthcheck.
+healthcheck. It requests `/status.php` on port `8080`.
+
+Every start runs `occ upgrade` when `config.php` on `owncloud-data` says
+ownCloud is installed, and a fresh install otherwise. A new image version is
+therefore migrated on the next deploy, against whatever database `db` holds.
 
 ## Environment
 
@@ -28,6 +32,10 @@ healthcheck.
 
 `OWNCLOUD_DOMAIN` also fills `OWNCLOUD_TRUSTED_DOMAINS`; ownCloud rejects
 requests for any host not on that list.
+
+TLS ends at the proxy, so ownCloud sees plain HTTP. `OWNCLOUD_OVERWRITE_PROTOCOL`
+makes the URLs it generates `https`, and `OWNCLOUD_PROTOCOL` does the same for
+the URL `occ` and cron jobs use in links.
 
 The admin variables are read only by the first-start install. Changing them
 later does not change the account; use the web UI or `occ user:resetpassword`.
@@ -50,10 +58,19 @@ named one Docker creates an anonymous volume on every recreate.
 
 ## Images
 
-`owncloud/server:10` tracks the 10.x line. `latest` points at the same
-release today, but ownCloud now also publishes 11.x, and a move to a new major
-should be a deliberate upgrade with a backup, not a side effect of a pull.
+`owncloud/server:11` tracks the 11.x line, so patch releases arrive on the next
+deploy and a move to a new major stays a deliberate upgrade. ownCloud's own
+compose pins a full version instead.
 
-`mariadb:12` and `redis:6` track their major versions. A MariaDB data
-directory cannot move back to an older major, so back up the database volume
-before changing it.
+`mariadb:10.11` is the release ownCloud 11's compose uses and the top of the
+MariaDB range ownCloud supports (10.2 to 10.11); a newer major is outside it.
+`MARIADB_AUTO_UPGRADE=1`, also from ownCloud's compose, runs `mariadb-upgrade`
+when the server version changes. A MariaDB data directory cannot move back to
+an older major, so going down a version means a dump and restore into an empty
+volume, not an image change. Back up `db-data` before changing the tag.
+
+`redis:7` is the version ownCloud's compose uses.
+
+ownCloud 11 runs on PHP 8. Apps installed into `/mnt/data/apps` from the
+marketplace under 10.x were built for PHP 7, so they are removed or replaced
+with PHP 8 versions before moving a 10.x install to 11.
