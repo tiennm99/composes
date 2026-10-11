@@ -6,7 +6,7 @@ Self-hosted [Gitea](https://about.gitea.com/) backed by PostgreSQL.
 
 | Service | Image | Internal port | Domain |
 | --- | --- | --- | --- |
-| `db` | `postgres:16-alpine` | 5432 | none |
+| `db` | `postgres:18-alpine` | 5432 | none |
 | `gitea` | `gitea/gitea:28` | 3000 | `GITEA_ROOT_URL` |
 
 In Coolify, give `gitea` a domain on port 3000 matching `GITEA_ROOT_URL`.
@@ -35,8 +35,12 @@ itself.
   this long.
 - **`gitea/gitea:28`.** Gitea publishes major tags; the major pin takes
   updates without a surprise major upgrade.
-- **`postgres:16-alpine`** stays on 16: a new Postgres major cannot read the
-  existing data directory without a dump and restore.
+- **`postgres:18-alpine`**, the newest Postgres major; Gitea needs 12 or
+  later. The major stays pinned because a new major cannot read an existing
+  data directory without a dump and restore. From 18 the image keeps its data
+  in `/var/lib/postgresql/18/docker`, so `db-data` mounts at
+  `/var/lib/postgresql`, which lets a later major sit beside it on the same
+  volume.
 
 ## Usage
 
@@ -48,5 +52,5 @@ token for any tool that mirrors into it.
 
 | Volume | Holds |
 | --- | --- |
-| `db-data` | PostgreSQL data |
+| `db-data` | PostgreSQL data, under `18/docker` |
 | `gitea-data` | Repositories, Gitea config and state |
