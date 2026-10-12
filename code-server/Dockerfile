@@ -8,6 +8,17 @@ RUN apt-get update \
     build-essential bubblewrap unzip zip \
   && rm -rf /var/lib/apt/lists/*
 
+# Command-line utilities: network and DNS, search and review, lint,
+# database clients, and backup and maintenance.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    iproute2 lsof bind9-dnsutils netcat-openbsd socat mtr-tiny whois \
+    tree fd-find fzf git-delta bat \
+    shellcheck shfmt yamllint \
+    postgresql-client sqlite3 redis-tools \
+    ncdu tmux restic rclone age hyperfine entr 7zip \
+  && rm -rf /var/lib/apt/lists/*
+
 # Workspace directory, owned by the container user.
 RUN mkdir -p /workspace && chown 1000:1000 /workspace
 

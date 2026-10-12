@@ -4,8 +4,8 @@
 official `codercom/code-server` image.
 
 The image ships code-server on Debian with `git`, `zsh`, `curl`, `sudo` and a
-few editors. The `Dockerfile` adds `build-essential`, `bubblewrap`, `zip` and
-`unzip`, and wraps the entrypoint so it starts in `/workspace` and `coder` can
+few editors. The `Dockerfile` adds `build-essential`, `bubblewrap`, `zip`,
+`unzip` and a set of command-line utilities, and wraps the entrypoint so it starts in `/workspace` and `coder` can
 use the Docker socket. Language toolchains and CLIs are installed into home,
 below.
 
@@ -230,6 +230,22 @@ Debian's packages are the install method, and they land outside home. The base
 image ships none of them. `build-essential` supplies the `gcc` and `make` that
 native builds expect: the linker `cargo` calls, node-gyp addons and Python
 sdists.
+
+The command-line utilities are Debian packages too, kept in the image as a
+baseline every fresh deploy has without a setup step:
+
+| Group | Packages |
+| --- | --- |
+| Network and DNS | `iproute2` (`ss`, `ip`), `lsof`, `bind9-dnsutils` (`dig`), `netcat-openbsd` (`nc`), `socat`, `mtr-tiny`, `whois` |
+| Search and review | `tree`, `fd-find`, `fzf`, `git-delta`, `bat` |
+| Lint | `shellcheck`, `shfmt`, `yamllint` |
+| Database clients | `postgresql-client` (`psql`), `sqlite3`, `redis-tools` (`redis-cli`) |
+| Maintenance | `ncdu`, `tmux`, `restic`, `rclone`, `age`, `hyperfine`, `entr`, `7zip` (`7z`) |
+
+Debian installs `fd` as `fdfind` and `bat` as `batcat`. They track Debian 13's
+versions, which lag upstream: `rclone` is 1.60, and `postgresql-client` is 17,
+whose `pg_dump` refuses to dump a newer server. Install a newer copy into home
+when one of these falls short.
 
 Everything else lives in home rather than the image, so the image build stays
 small and a redeploy does not reinstall or upgrade tools behind your back;
