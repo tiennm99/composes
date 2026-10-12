@@ -6,7 +6,7 @@ directory, one mounted at `/workspace`. The home volume holds settings,
 credentials and CLI logins; `/workspace` holds the code. Point whatever
 variable selects the working directory at `/workspace`.
 
-`code-server`, `code-server-lsio`, `paseo` and `webtop` all follow this. A service with no
+`code-server`, `paseo` and `webtop` all follow this. A service with no
 human inside it does not — an agent such as `hermes` or `openclaw` keeps the
 volume layout of its official Docker guide.
 
@@ -16,5 +16,5 @@ your extensions and logins.
 
 Check who owns `/workspace` on a fresh volume. Docker creates it `root:root`
 unless the image ships the directory, and an image that drops to a non-root
-user will not be able to write there. `code-server`, `code-server-lsio` and `webtop` need an
+user will not be able to write there. `code-server` and `webtop` need an
 explicit `chown` for this reason; `paseo` does not.
