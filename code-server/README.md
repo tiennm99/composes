@@ -5,7 +5,7 @@ official `codercom/code-server` image.
 
 The image ships code-server on Debian with `git`, `zsh`, `curl`, `sudo` and a
 few editors. The `Dockerfile` adds `build-essential`, `bubblewrap`, `zip`,
-`unzip` and a set of command-line utilities, and wraps the entrypoint so it starts in `/workspace` and `coder` can
+`unzip`, a set of command-line utilities and Chromium, and wraps the entrypoint so it starts in `/workspace` and `coder` can
 use the Docker socket. Language toolchains and CLIs are installed into home,
 below.
 
@@ -250,6 +250,29 @@ when one of these falls short.
 Everything else lives in home rather than the image, so the image build stays
 small and a redeploy does not reinstall or upgrade tools behind your back;
 upgrading is the same commands run again.
+
+## Browser
+
+Debian's `chromium` is in the image so that browser-automation CLIs, such as
+agent-browser, can launch a headless browser inside the container, where they
+reach dev servers on `localhost`. Chrome for Testing, the browser those tools
+download by default, publishes no Linux ARM64 build, so the distro package is
+the install method on an ARM host. agent-browser finds `/usr/bin/chromium` on
+its own; no path variable is needed. Debian 13 ships Chromium through its
+security repository, so it stays within a release of upstream stable.
+
+`fonts-liberation`, `fonts-noto-color-emoji` and `fonts-noto-cjk` cover
+Latin, Vietnamese, emoji and CJK text in pages and screenshots; the base image
+ships almost no fonts. Together with Chromium they add about 850 MB to the
+image.
+
+There is no GPU. Headless Chromium renders in software, and WebGL runs on the
+SwiftShader backend that the package bundles, which works but is slow.
+
+`shm_size: 1gb` raises `/dev/shm`, the in-memory filesystem Chromium uses to
+pass rendered frames and data between its processes. Docker's default is
+64 MB, which makes tabs crash on heavy pages. The size is a ceiling, not a
+reservation: memory is used only while something is stored there.
 
 ## Shell
 

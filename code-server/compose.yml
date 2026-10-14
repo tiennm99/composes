@@ -3,6 +3,7 @@ services:
     build: .
     restart: unless-stopped
     hostname: ${SERVICE_HOSTNAME}
+    shm_size: 1gb
     environment:
       - PASSWORD=${PASSWORD:?required}
       - TZ=Asia/Ho_Chi_Minh

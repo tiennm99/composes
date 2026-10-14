@@ -19,6 +19,12 @@ RUN apt-get update \
     ncdu tmux restic rclone age hyperfine entr 7zip \
   && rm -rf /var/lib/apt/lists/*
 
+# Chromium and fonts for headless browser automation.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    chromium fonts-liberation fonts-noto-color-emoji fonts-noto-cjk \
+  && rm -rf /var/lib/apt/lists/*
+
 # Workspace directory, owned by the container user.
 RUN mkdir -p /workspace && chown 1000:1000 /workspace
 
