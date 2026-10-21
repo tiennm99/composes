@@ -112,12 +112,7 @@ general_settings:
 
 router_settings:
   model_group_alias:
-    claude: openrouter-free
-    sonnet: openrouter-free
-    opus: openrouter-free
-    haiku: openrouter-free
     opencode: openrouter-free
-    goclaw: openrouter-free
     openclaw: openrouter-free
     hermes: openrouter-free
   redis_host: os.environ/REDIS_HOST
