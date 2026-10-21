@@ -1,6 +1,6 @@
 ---
 name: debug-service
-description: Debug a service in this compose collection — read its compose definition, pull deploy status and logs from Coolify, check out the matching upstream source into sources/, and prove the root cause before changing the service directory. Use when a service here fails to deploy, crashes, or misbehaves. Not for bugs in the upstream project's own code or in repos outside this collection.
+description: Debug a service in this compose collection — read its compose definition, pull deploy status and logs from Coolify, check out the matching upstream source into .sources/, and prove the root cause before changing the service directory. Use when a service here fails to deploy, crashes, or misbehaves. Not for bugs in the upstream project's own code or in repos outside this collection.
 ---
 
 # Debug a service
@@ -15,7 +15,7 @@ investigating as soon as it is proven.
   Do not copy tokens, passwords or keys from logs into reports.
 - Read-only Coolify calls need no confirmation. `control` (start, stop,
   restart) and `deploy` affect a live service: ask the user first.
-- Never commit anything under `sources/`, and never fix a service by editing
+- Never commit anything under `.sources/`, and never fix a service by editing
   upstream code there.
 
 ## 1. Frame the issue
@@ -73,17 +73,17 @@ moving tag (`latest`, `:4`), take the version printed in the logs; failing
 that, the latest release (`gh release view -R <owner>/<repo> --json tagName`),
 and say it is inferred.
 
-Clone into `sources/<owner>/<repo>`:
+Clone into `.sources/<owner>/<repo>`:
 
 ```sh
-git clone --depth 1 --branch <tag> https://github.com/<owner>/<repo> sources/<owner>/<repo>
+git clone --depth 1 --branch <tag> https://github.com/<owner>/<repo> .sources/<owner>/<repo>
 ```
 
 If the checkout exists, switch it instead of cloning again:
 
 ```sh
-git -C sources/<owner>/<repo> fetch --depth 1 origin tag <tag>
-git -C sources/<owner>/<repo> checkout <tag>
+git -C .sources/<owner>/<repo> fetch --depth 1 origin tag <tag>
+git -C .sources/<owner>/<repo> checkout <tag>
 ```
 
 ## 5. Trace the cause
@@ -107,4 +107,4 @@ and in compose order. Pin an exact version only when the newer release is
 proven broken, and write what breaks in the README.
 
 Report the cause, the evidence, the change, and how to verify after redeploy.
-Ask before redeploying. Leave `sources/` checkouts in place for next time.
+Ask before redeploying. Leave `.sources/` checkouts in place for next time.

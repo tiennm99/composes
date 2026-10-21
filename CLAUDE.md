@@ -108,8 +108,8 @@ restarted as often as possible.
 
 ## Upstream sources
 
-`sources/` is for upstream source checkouts used while debugging, cloned as
-`sources/<owner>/<repo>` at the version the service runs. Its contents are
-gitignored; only `sources/.gitkeep` is tracked. Never commit a checkout or fix
+`.sources/` is for upstream source checkouts used while debugging, cloned as
+`.sources/<owner>/<repo>` at the version the service runs. Its contents are
+gitignored; only `.sources/.gitkeep` is tracked. Never commit a checkout or fix
 a service by editing code there. Use the `debug-service` skill
 (`.claude/skills/debug-service/SKILL.md`) for service issues.

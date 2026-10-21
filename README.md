@@ -44,8 +44,8 @@ live in `docs/<service>/`, named after its directory; agent skills live in
 
 ## Upstream sources
 
-`sources/` holds checkouts of the upstream repositories behind these images,
-cloned as `sources/<owner>/<repo>` when a service needs debugging against its
+`.sources/` holds checkouts of the upstream repositories behind these images,
+cloned as `.sources/<owner>/<repo>` when a service needs debugging against its
 real code. Only the empty directory is tracked; its contents are gitignored.
 The `debug-service` skill in `.claude/skills/` walks through the process.
 
