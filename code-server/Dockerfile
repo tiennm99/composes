@@ -19,6 +19,13 @@ RUN apt-get update \
     ncdu tmux restic rclone age hyperfine entr 7zip \
   && rm -rf /var/lib/apt/lists/*
 
+# Desktop GUI build libraries: GTK, WebKitGTK, tray and image loaders.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    pkg-config libwebkit2gtk-4.1-dev libssl-dev \
+    libayatana-appindicator3-dev librsvg2-dev libxdo-dev \
+  && rm -rf /var/lib/apt/lists/*
+
 # Chromium and fonts for headless browser automation.
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \

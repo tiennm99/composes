@@ -247,6 +247,22 @@ versions, which lag upstream: `rclone` is 1.60, and `postgresql-client` is 17,
 whose `pg_dump` refuses to dump a newer server. Install a newer copy into home
 when one of these falls short.
 
+Native desktop apps built on GTK and WebKitGTK, such as Tauri apps, need
+development libraries to compile on Linux. They are shared libraries with
+headers and `pkg-config` metadata, so they go in the image:
+
+| Package | Supplies |
+| --- | --- |
+| `pkg-config` | Library discovery for Rust `-sys` crates |
+| `libwebkit2gtk-4.1-dev` | WebKitGTK webview and GTK 3 |
+| `libssl-dev` | OpenSSL headers |
+| `libayatana-appindicator3-dev` | System tray icons |
+| `librsvg2-dev` | SVG icon loading |
+| `libxdo-dev` | Keyboard and window helpers used by menu crates |
+
+The package list follows Tauri's Debian prerequisites. The container has no
+display, so these let an app compile and run its tests, not open a window.
+
 Everything else lives in home rather than the image, so the image build stays
 small and a redeploy does not reinstall or upgrade tools behind your back;
 upgrading is the same commands run again.
