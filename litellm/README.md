@@ -69,8 +69,20 @@ enabled by uncommenting its line, without touching `config.yaml`.
 
 ## Images
 
-The `Dockerfile` builds on `ghcr.io/berriai/litellm-database:main-stable`, the variant with the Prisma
-client for PostgreSQL built in. `main-stable` is upstream's moving stable tag.
+The `Dockerfile` builds on `ghcr.io/berriai/litellm-database`, the variant
+with the Prisma client for PostgreSQL built in.
+
+It is pinned to `v1.106.2` by digest instead of the moving `main-stable` tag.
+LiteLLM v1.107.0 (2026-10-21) was a supply-chain compromise: the release was
+built from a lookalike repository, and its PyPI wheels and Docker images carried
+a credential stealer that also dumps the provider keys stored in the proxy
+database. `main-stable`, `main-latest` and `latest` pointed at that image for
+a few hours and were then deleted, so builds against them fail with `not found`.
+Upstream has not yet found how the release was published and advises pinning
+1.106.2, the last release built from the real repository. The digest keeps a
+re-pushed `v1.106.2` tag from changing what gets built. Return to `main-stable`
+once upstream publishes a post-mortem and a release from a pipeline it has
+secured ([BerriAI/litellm#47826](https://github.com/BerriAI/litellm/issues/47826)).
 
 `postgres:16-alpine` and `redis:7-alpine` track their major versions. Moving
 PostgreSQL to a new major needs a dump and restore; the data directory does
