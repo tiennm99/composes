@@ -46,7 +46,6 @@ services:
       POSTGRESQL_HOSTNAME: db
       POSTGRESQL_DATABASE: guacamole
       POSTGRESQL_USERNAME: guacamole
-      TOTP_ENABLED: "true"
       GUACD_HOSTNAME: guacd
       WEBAPP_CONTEXT: ROOT
 

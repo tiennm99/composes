@@ -1,7 +1,7 @@
 # guacamole
 
 [Apache Guacamole](https://guacamole.apache.org/): remote desktops (RDP, VNC,
-SSH) in the browser, with users, connections and TOTP stored in PostgreSQL.
+SSH) in the browser, with users and connections stored in PostgreSQL.
 
 ## Services
 
@@ -40,10 +40,8 @@ points at `http://localhost:8080`.
 
 ## Usage
 
-1. Open the UI and log in as `guacadmin` / `guacadmin`. TOTP is on for every
-   user, so enrol an authenticator app first.
-2. Create your own administrator, log in as it, enrol TOTP, and delete
-   `guacadmin`.
+1. Open the UI and log in as `guacadmin` / `guacadmin`.
+2. Create your own administrator, log in as it, and delete `guacadmin`.
 3. Add connections. For an RDP server on the Docker host, use hostname
    `host.docker.internal`; `guacd` maps it to the host gateway.
 
