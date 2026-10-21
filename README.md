@@ -90,5 +90,6 @@ Each links to its own README for variables, ports, and storage.
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
 | [webtop](webtop/README.md) | Ubuntu XFCE desktop in the browser |
+| [zellij](zellij/README.md) | Zellij web terminals, one URL per session |
 
 Licensed under Apache 2.0 — see [LICENSE](LICENSE).
