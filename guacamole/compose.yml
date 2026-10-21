@@ -1,0 +1,55 @@
+services:
+  init:
+    image: guacamole/guacamole:1.6.0
+    restart: "no"
+    user: root
+    command: ["sh", "-c", "/opt/guacamole/bin/initdb.sh --postgresql > /initdb/initdb.sql"]
+    volumes:
+      - db-init:/initdb
+
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-guacamole}
+      POSTGRES_USER: guacamole
+      POSTGRES_DB: guacamole
+    volumes:
+      - db-init:/docker-entrypoint-initdb.d:ro
+      - db-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U guacamole -d guacamole"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  guacd:
+    image: guacamole/guacd:1.6.0
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  guacamole:
+    image: guacamole/guacamole:1.6.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      guacd:
+        condition: service_started
+    environment:
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD:-guacamole}
+      POSTGRESQL_ENABLED: "true"
+      POSTGRESQL_HOSTNAME: db
+      POSTGRESQL_DATABASE: guacamole
+      POSTGRESQL_USERNAME: guacamole
+      TOTP_ENABLED: "true"
+      GUACD_HOSTNAME: guacd
+      WEBAPP_CONTEXT: ROOT
+
+volumes:
+  db-init:
+  db-data:
