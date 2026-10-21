@@ -91,7 +91,6 @@ Each links to its own README for variables, ports, and storage.
 | [opencloud](opencloud/README.md) | OpenCloud file sync and share, single container with built-in identity provider |
 | [owncloud](owncloud/README.md) | ownCloud file sync and share, with MariaDB and Redis |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
-| [selkies](selkies/README.md) | Selkies' minimal LXQt desktop in the browser, apps added later |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
 | [webtop](webtop/README.md) | Ubuntu XFCE desktop in the browser |
 
