@@ -20,6 +20,7 @@ RUN chsh -s /bin/zsh ubuntu \
   && mkdir -p /workspace && chown ubuntu:ubuntu /workspace
 
 ENV LANG=C.UTF-8 \
+    TERM=xterm-256color \
     SHELL=/bin/zsh \
     PATH=/home/ubuntu/.local/bin:$PATH
 

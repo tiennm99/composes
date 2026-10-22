@@ -51,6 +51,11 @@ The proxy already terminates TLS, so Zellij listens on `127.0.0.1:8082` and
 `socat` relays `0.0.0.0:8080` to it with `TCP_NODELAY`, so keystrokes are not
 batched. If either process exits, the container restarts.
 
+The container has no TTY, so Docker sets no `TERM`, and Zellij passes that
+on to its panes as `TERM=unknown`. Without terminfo, zsh cannot move the
+cursor left: backspace moves it right instead and redraws stutter. The image
+sets `TERM=xterm-256color`, which matches the browser's xterm.js.
+
 Zellij's web server exits silently without a config file, so the entrypoint
 creates an empty `~/.config/zellij/config.kdl`, plus an empty `~/.zshrc` to
 skip zsh's first-run wizard. Both are yours to edit.
