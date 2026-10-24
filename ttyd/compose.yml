@@ -1,0 +1,22 @@
+services:
+  ttyd:
+    build: .
+    restart: unless-stopped
+    hostname: ${SERVICE_HOSTNAME}
+    expose:
+      - '7681'
+    environment:
+      - PASSWORD=${PASSWORD:?required}
+      - TZ=Asia/Ho_Chi_Minh
+      - GIT_AUTHOR_NAME=${GIT_NAME}
+      - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
+      - GIT_COMMITTER_NAME=${GIT_NAME}
+      - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
+      - HOST=${SERVICE_HOSTNAME}
+    volumes:
+      - 'ttyd-home:/home/ubuntu'
+      - 'ttyd-workspace:/workspace'
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
+volumes:
+  ttyd-home:
+  ttyd-workspace:

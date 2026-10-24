@@ -90,6 +90,7 @@ Each links to its own README for variables, ports, and storage.
 | [owncloud](owncloud/README.md) | ownCloud file sync and share, with MariaDB and Redis |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
+| [ttyd](ttyd/README.md) | tmux terminals in the browser through ttyd, one URL per session |
 | [webtop](webtop/README.md) | Ubuntu XFCE desktop in the browser |
 | [zellij](zellij/README.md) | Zellij web terminals, one URL per session |
 
