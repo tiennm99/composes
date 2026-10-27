@@ -1,0 +1,93 @@
+services:
+  seafile:
+    image: seafileltd/seafile-mc:13.0-latest
+    restart: unless-stopped
+    environment:
+      - SEAFILE_SERVER_HOSTNAME=${SEAFILE_SERVER_HOSTNAME:?required}
+      - SEAFILE_SERVER_PROTOCOL=https
+      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY:?required}
+      - INIT_SEAFILE_ADMIN_EMAIL=${INIT_SEAFILE_ADMIN_EMAIL:?required}
+      - INIT_SEAFILE_ADMIN_PASSWORD=${INIT_SEAFILE_ADMIN_PASSWORD:?required}
+      - SEAFILE_MYSQL_DB_HOST=db
+      - SEAFILE_MYSQL_DB_PORT=3306
+      - SEAFILE_MYSQL_DB_USER=seafile
+      - SEAFILE_MYSQL_DB_PASSWORD=${DB_PASSWORD:?required}
+      - INIT_SEAFILE_MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:?required}
+      - SEAFILE_MYSQL_DB_CCNET_DB_NAME=ccnet_db
+      - SEAFILE_MYSQL_DB_SEAFILE_DB_NAME=seafile_db
+      - SEAFILE_MYSQL_DB_SEAHUB_DB_NAME=seahub_db
+      - CACHE_PROVIDER=redis
+      - REDIS_HOST=cache
+      - REDIS_PORT=6379
+      - ENABLE_NOTIFICATION_SERVER=true
+      - INNER_NOTIFICATION_SERVER_URL=http://notification:8083
+      - NOTIFICATION_SERVER_URL=https://${SEAFILE_SERVER_HOSTNAME:?required}/notification
+      - ENABLE_SEADOC=false
+      - TIME_ZONE=${TIME_ZONE:-Etc/UTC}
+      - SEAFILE_LOG_TO_STDOUT=true
+    volumes:
+      - seafile-data:/shared
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 2m
+
+  # Notification server: pushes library changes to web and desktop clients over WebSocket.
+  notification:
+    image: seafileltd/notification-server:13.0-latest
+    restart: unless-stopped
+    environment:
+      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY:?required}
+      - SEAFILE_MYSQL_DB_HOST=db
+      - SEAFILE_MYSQL_DB_PORT=3306
+      - SEAFILE_MYSQL_DB_USER=seafile
+      - SEAFILE_MYSQL_DB_PASSWORD=${DB_PASSWORD:?required}
+      - SEAFILE_MYSQL_DB_CCNET_DB_NAME=ccnet_db
+      - SEAFILE_MYSQL_DB_SEAFILE_DB_NAME=seafile_db
+      - SEAFILE_LOG_TO_STDOUT=true
+    depends_on:
+      db:
+        condition: service_healthy
+      seafile:
+        condition: service_healthy
+
+  # MariaDB for the ccnet, seafile and seahub databases.
+  db:
+    image: mariadb:10.11
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:?required}
+      - MYSQL_LOG_CONSOLE=true
+      - MARIADB_AUTO_UPGRADE=1
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--mariadbupgrade", "--innodb_initialized"]
+      interval: 20s
+      start_period: 30s
+      timeout: 5s
+      retries: 10
+
+  # Redis for the Seahub cache.
+  cache:
+    image: redis:8
+    restart: unless-stopped
+    volumes:
+      - cache-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  seafile-data:
+  db-data:
+  cache-data:

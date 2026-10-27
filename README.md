@@ -94,4 +94,7 @@ Each links to its own README for variables, ports, and storage.
 | [webtop](webtop/README.md) | Ubuntu XFCE desktop in the browser |
 | [zellij](zellij/README.md) | Zellij web terminals, one URL per session |
 
+Services I no longer run are kept as history in [archived/](archived/README.md).
+They are not deployed or maintained.
+
 Licensed under Apache 2.0 — see [LICENSE](LICENSE).

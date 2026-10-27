@@ -106,6 +106,13 @@ policy leaves the container down after a crash or a host reboot. Setting it is
 correct on both. `traffmonetizer` sets `restart: always` on purpose, to be
 restarted as often as possible.
 
+## Archived services
+
+`archived/<service>/` holds removed services as they stood when removed, for
+history only; `docs/archived/<service>/` holds their old docs. Nothing there is
+deployed. Do not update, lint or "fix" them to current conventions. Retiring a
+service moves its directory there and adds a row to `archived/README.md`.
+
 ## Upstream sources
 
 `.sources/` is for upstream source checkouts used while debugging, cloned as
