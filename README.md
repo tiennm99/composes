@@ -87,6 +87,7 @@ Each links to its own README for variables, ports, and storage.
 | [nextcloud](nextcloud/README.md) | Nextcloud file sync and share, with PostgreSQL, Redis and a cron container |
 | [open-webui](open-webui/README.md) | Open WebUI chat interface for OpenAI-compatible and Ollama providers |
 | [openclaw](openclaw/README.md) | OpenClaw AI agent gateway, with built-in browser automation |
+| [orca](orca/README.md) | Orca headless server (`orca serve`) for browser, desktop and mobile clients; not production ready |
 | [owncloud](owncloud/README.md) | ownCloud file sync and share, with MariaDB and Redis |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |

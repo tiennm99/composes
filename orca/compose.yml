@@ -1,0 +1,23 @@
+services:
+  orca:
+    build: .
+    restart: unless-stopped
+    hostname: ${SERVICE_HOSTNAME}
+    shm_size: 256m
+    expose:
+      - '6768'
+    environment:
+      - ORCA_PAIRING_ADDRESS=${ORCA_PAIRING_ADDRESS:?required}
+      - ORCA_PAIRING=${ORCA_PAIRING:-runtime}
+      - TZ=Asia/Ho_Chi_Minh
+      - GIT_AUTHOR_NAME=${GIT_NAME}
+      - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
+      - GIT_COMMITTER_NAME=${GIT_NAME}
+      - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
+      - HOST=${SERVICE_HOSTNAME}
+    volumes:
+      - 'orca-home:/home/ubuntu'
+      - 'orca-workspace:/workspace'
+volumes:
+  orca-home:
+  orca-workspace:
