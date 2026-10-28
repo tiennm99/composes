@@ -87,6 +87,23 @@ one conversation with the bot, overriding `group_sessions_per_user`; every
 message lands in `state.db`, and each reply carries the observed backlog to the
 model provider.
 
+## Model fallback
+
+When the primary provider fails, Hermes falls back to Claude through the
+Anthropic API. `/opt/data/config.yaml` holds the chain:
+
+```yaml
+fallback_providers:
+  - provider: anthropic
+    model: claude-sonnet-5-5
+```
+
+`ANTHROPIC_API_KEY` sits in `/opt/data/.env`, like the other provider keys.
+`agent.api_max_retries` is `1`, so a failing primary hands over after one
+retry instead of upstream's default three. `hermes fallback list`, `add` and
+`remove` manage the chain; both settings live in the volume, so a gateway
+restart applies them.
+
 ## Scheduled jobs
 
 Cron deliveries carry only the job's own output: `cron.wrap_response` is
