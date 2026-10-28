@@ -113,6 +113,11 @@ history only; `docs/archived/<service>/` holds their old docs. Nothing there is
 deployed. Do not update, lint or "fix" them to current conventions. Retiring a
 service moves its directory there and adds a row to `archived/README.md`.
 
+Removing a deployment does not retire its directory. When a service is
+dropped from a Coolify host, leave its directory and its root README row as
+they are: the template may still be deployed on another machine. Retire or
+delete a service directory only when the user asks for that service by name.
+
 ## Upstream sources
 
 `.sources/` is for upstream source checkouts used while debugging, cloned as
