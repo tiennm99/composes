@@ -4,8 +4,6 @@ services:
     restart: unless-stopped
     hostname: ${SERVICE_HOSTNAME}
     shm_size: 256m
-    expose:
-      - '6768'
     environment:
       - ORCA_PAIRING_ADDRESS=${ORCA_PAIRING_ADDRESS:?required}
       - ORCA_PAIRING=${ORCA_PAIRING:-runtime}
@@ -18,6 +16,35 @@ services:
     volumes:
       - 'orca-home:/home/ubuntu'
       - 'orca-workspace:/workspace'
+
+  # Tailscale node that serves Orca over HTTPS on the tailnet.
+  tunnel:
+    image: tailscale/tailscale:latest
+    restart: unless-stopped
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY:?required}
+      - TS_AUTH_ONCE=true
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_HOSTNAME=${TS_HOSTNAME:-orca}
+      - TS_SERVE_CONFIG=/config/serve.json
+    volumes:
+      - 'tunnel-state:/var/lib/tailscale'
+    configs:
+      - { source: tunnel_serve, target: /config/serve.json }
+
 volumes:
   orca-home:
   orca-workspace:
+  tunnel-state:
+
+configs:
+  tunnel_serve:
+    content: |
+      {
+        "TCP": { "443": { "HTTPS": true } },
+        "Web": {
+          "$${TS_CERT_DOMAIN}:443": {
+            "Handlers": { "/": { "Proxy": "http://orca:6768" } }
+          }
+        }
+      }
