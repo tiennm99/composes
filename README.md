@@ -19,6 +19,13 @@ default compose mode means the container stays down after a reboot.
 Services that publish ports or set `container_name:` say so in their own
 README.
 
+Domains sit behind Cloudflare's proxy (orange cloud) with SSL/TLS set to
+Full (strict), so Cloudflare can block AI crawlers before they reach the
+server. Keep each domain `https://` in Coolify: Traefik still issues its own
+Let's Encrypt certificate, which Full (strict) requires. A wildcard record
+covers most hosts; a record Coolify creates on its own is DNS-only, so switch
+it to proxied in Cloudflare.
+
 ## Layout
 
 ```
