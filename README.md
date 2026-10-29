@@ -24,7 +24,9 @@ Full (strict), so Cloudflare can block AI crawlers before they reach the
 server. Keep each domain `https://` in Coolify: Traefik still issues its own
 Let's Encrypt certificate, which Full (strict) requires. A wildcard record
 covers most hosts; a record Coolify creates on its own is DNS-only, so switch
-it to proxied in Cloudflare.
+it to proxied in Cloudflare. Coolify's proxy configuration on each server
+trusts Cloudflare's IP ranges (`forwardedHeaders.trustedIPs` on both
+entrypoints), so services see the visitor's IP in `X-Forwarded-For`.
 
 ## Layout
 
