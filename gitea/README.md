@@ -28,6 +28,10 @@ itself.
   disabled and the UI offers HTTPS clone URLs only.
 - **Registration disabled.** The instance is public, and open sign-up drew
   spam accounts. Admins create users from the site administration page.
+- **Sign-in required to view.** `service.REQUIRE_SIGNIN_VIEW` is `true`,
+  so every page, raw file and anonymous clone needs a login. AI crawlers
+  walked every commit of every public mirror, and one public mirror held a
+  private GitHub repo's content. Tools reach the API with a token as before.
 - **One-hour clone timeout.** Gitea's defaults (600 s to migrate, 300 s to
   fetch) cut off multi-gigabyte repositories mid-clone, leaving empty mirrors
   that still hold gigabytes of unreachable packfiles. A client that calls the
