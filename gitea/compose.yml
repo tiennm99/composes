@@ -34,6 +34,8 @@ services:
       GITEA__git_0X2E_timeout__MIRROR: ${GITEA_CLONE_TIMEOUT:-3600}
     volumes:
       - gitea-data:/data
+    configs:
+      - { source: gitea_robots, target: /data/gitea/public/robots.txt }
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:3000/api/healthz"]
       interval: 30s
@@ -44,3 +46,9 @@ services:
 volumes:
   db-data:
   gitea-data:
+
+configs:
+  gitea_robots:
+    content: |
+      User-agent: Reflectionbot
+      Disallow: /

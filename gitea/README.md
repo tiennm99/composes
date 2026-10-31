@@ -32,6 +32,11 @@ itself.
   so every page, raw file and anonymous clone needs a login. AI crawlers
   walked every commit of every public mirror, and one public mirror held a
   private GitHub repo's content. Tools reach the API with a token as before.
+- **`robots.txt` names Reflectionbot.** The domain sits behind Cloudflare,
+  whose managed `robots.txt` disallows most AI crawlers and is prepended to
+  this file. Its list lacks Reflectionbot, which kept crawling, so the
+  inline `gitea_robots` config adds it. Gitea serves the file from
+  `/data/gitea/public/robots.txt`.
 - **One-hour clone timeout.** Gitea's defaults (600 s to migrate, 300 s to
   fetch) cut off multi-gigabyte repositories mid-clone, leaving empty mirrors
   that still hold gigabytes of unreachable packfiles. A client that calls the
