@@ -15,6 +15,7 @@ redeploy nothing.
 | [couchbase](couchbase/README.md) | Single-node Couchbase Server | 2026-10-21 |
 | [gitea-mirror-local](gitea-mirror-local/README.md) | Gitea with PostgreSQL and gitea-mirror in one stack | 2026-09-19 |
 | [goclaw](goclaw/README.md) | GoClaw multi-tenant AI agent gateway | 2026-10-21 |
+| [guacamole](guacamole/README.md) | Apache Guacamole remote desktops in the browser, with PostgreSQL | 2026-11-03 |
 | [netdata](netdata/README.md) | Netdata monitoring agent | 2026-09-19 |
 | [ollama](ollama/README.md) | Ollama LLM server, CPU-only | 2026-09-19 |
 | [onlyoffice](onlyoffice/README.md) | ONLYOFFICE Docs Community Edition | 2026-10-12 |
