@@ -1,0 +1,23 @@
+services:
+  t3code:
+    build: .
+    restart: unless-stopped
+    init: true
+    hostname: ${SERVICE_HOSTNAME}
+    expose:
+      - '3773'
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
+      - GIT_AUTHOR_NAME=${GIT_NAME}
+      - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
+      - GIT_COMMITTER_NAME=${GIT_NAME}
+      - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
+      - HOST=${SERVICE_HOSTNAME}
+      # - T3CODE_TELEMETRY_ENABLED=${T3CODE_TELEMETRY_ENABLED:-true}
+    volumes:
+      - 't3code-home:/home/ubuntu'
+      - 't3code-workspace:/workspace'
+
+volumes:
+  t3code-home:
+  t3code-workspace:
