@@ -1,0 +1,10 @@
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:?required}
+    # Resolves host.docker.internal to the Docker host.
+    extra_hosts:
+      - host.docker.internal:host-gateway

@@ -86,6 +86,7 @@ Each links to its own README for variables, ports, and storage.
 | Service | What it is |
 | --- | --- |
 | [alloy](alloy/README.md) | Grafana Alloy shipping host and Docker telemetry to Grafana Cloud |
+| [cloudflared](cloudflared/README.md) | Cloudflare Tunnel connector, for reaching a host service such as SSH without an inbound port |
 | [code-server](code-server/README.md) | VS Code in the browser from the official image |
 | [diun](diun/README.md) | Image-update notifier, reading the Docker API through a read-only proxy |
 | [gitea](gitea/README.md) | Gitea backed by PostgreSQL |
