@@ -13,8 +13,9 @@ redeploy — the container user's home volume, such as `~/.local/bin` — not in
 the image. The
 exception is a system package that is more than a single binary — shared
 libraries, a daemon, anything that hooks into `/etc` or the system paths. That
-goes in the image, through the system package manager. Every other service
-installs into the image.
+goes in the image, through the system package manager. So do the git-host and
+Docker CLIs in `code-server`, by the user's choice. Every other service installs
+into the image.
 
 ## Comments in compose files, Dockerfiles and scripts
 

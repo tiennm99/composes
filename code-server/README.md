@@ -5,14 +5,15 @@ official `codercom/code-server` image.
 
 The image ships code-server on Debian with `git`, `zsh`, `curl`, `sudo` and a
 few editors. The `Dockerfile` adds `build-essential`, `bubblewrap`, `zip`,
-`unzip`, a set of command-line utilities and Chromium, and wraps the entrypoint so it starts in `/workspace` and `coder` can
-use the Docker socket. Language toolchains and CLIs are installed into home,
+`unzip`, a set of command-line utilities, the `gh`, `glab`, `gt` and `docker`
+CLIs and Chromium, and wraps the entrypoint so it starts in `/workspace` and
+`coder` can use the Docker socket. Language toolchains are installed into home,
 below.
 
 ## Toolchains
 
 Only `/home/coder` and `/workspace` survive a redeploy, so install toolchains
-and CLIs into home from the editor's terminal. Each command below was tested in
+into home from the editor's terminal. Each command below was tested in
 the image, in this order. Open a new terminal afterwards so the `PATH` changes
 apply.
 
@@ -65,28 +66,6 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 . "$HOME/.cargo/env"
 ```
 
-Docker Compose and Buildx, as CLI plugins in `~/.docker/cli-plugins`, the
-manual install from the
-[Compose docs](https://docs.docker.com/compose/install/linux/#install-the-plugin-manually)
-and the [Buildx README](https://github.com/docker/buildx#manual-download). The
-Docker client itself is below:
-
-```sh
-DOCKER_CONFIG=${DOCKER_CONFIG:-$HOME/.docker}
-mkdir -p "$DOCKER_CONFIG/cli-plugins"
-ARCH=$(dpkg --print-architecture)
-
-V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/docker/compose/releases/latest | sed 's|.*/||')
-curl -fsSL "https://github.com/docker/compose/releases/download/$V/docker-compose-linux-$(uname -m)" -o "$DOCKER_CONFIG/cli-plugins/docker-compose"
-
-V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/docker/buildx/releases/latest | sed 's|.*/||')
-curl -fsSL "https://github.com/docker/buildx/releases/download/$V/buildx-$V.linux-$ARCH" -o "$DOCKER_CONFIG/cli-plugins/docker-buildx"
-
-chmod +x "$DOCKER_CONFIG/cli-plugins/docker-compose" "$DOCKER_CONFIG/cli-plugins/docker-buildx"
-```
-
-To upgrade them, run the same commands again.
-
 ### Suggested by AI, may not be the optimal way
 
 These use each project's official download, but no official doc covers
@@ -107,28 +86,6 @@ echo 'export PATH="$HOME/.local/go/bin:$HOME/go/bin:$PATH"' >> ~/.zshrc
 
 To upgrade Go, `rm -rf ~/.local/go` and run the same commands again, without
 the `echo` line.
-
-Docker CLI and GitHub CLI, as the release binaries each project publishes,
-into `~/.local/bin`:
-
-- Docker: [static binaries](https://docs.docker.com/engine/install/binaries/),
-  documented for `/usr/bin`. Only the client is taken; the daemon is the
-  host's, through the socket.
-- GitHub CLI: the `.tar.gz` on [cli.github.com](https://cli.github.com/), with
-  no documented location.
-
-```sh
-ARCH=$(dpkg --print-architecture)
-
-V=$(curl -fsSL https://download.docker.com/linux/static/stable/$(uname -m)/ | grep -o 'docker-[0-9.]*\.tgz' | sort -V | tail -1)
-curl -fsSL "https://download.docker.com/linux/static/stable/$(uname -m)/$V" | tar -C ~/.local/bin -xzf - --strip-components=1 docker/docker
-
-V=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/cli/cli/releases/latest | sed 's|.*/v||')
-curl -fsSL "https://github.com/cli/cli/releases/download/v$V/gh_${V}_linux_$ARCH.tar.gz" | tar -C ~/.local/bin -xzf - --strip-components=2 "gh_${V}_linux_$ARCH/bin/gh"
-```
-
-To upgrade one, run the `ARCH=` line and that tool's two lines again; the
-new binary overwrites the old one.
 
 ### Java, last
 
@@ -175,8 +132,8 @@ its `\h` uses the real hostname.
 
 ## Docker access
 
-The host's Docker socket is bind-mounted at `/var/run/docker.sock`. The image
-ships no Docker CLI; install the client into home as above. Containers
+The host's Docker socket is bind-mounted at `/var/run/docker.sock`, and the
+`Dockerfile` installs the client. Containers
 started through it are siblings on the host, not children, so bind mounts in
 them resolve against host paths.
 
@@ -242,7 +199,7 @@ baseline every fresh deploy has without a setup step:
 | Group | Packages |
 | --- | --- |
 | Network and DNS | `iproute2` (`ss`, `ip`), `lsof`, `bind9-dnsutils` (`dig`), `netcat-openbsd` (`nc`), `socat`, `mtr-tiny`, `whois` |
-| Search and review | `tree`, `fd-find`, `fzf`, `git-delta`, `bat` |
+| Search and review | `tree`, `fd-find`, `fzf`, `git-delta`, `bat`, `ripgrep`, `jq` |
 | Lint | `shellcheck`, `shfmt`, `yamllint` |
 | Database clients | `postgresql-client` (`psql`), `sqlite3`, `redis-tools` (`redis-cli`) |
 | Maintenance | `ncdu`, `tmux`, `restic`, `rclone`, `age`, `hyperfine`, `entr`, `7zip` (`7z`) |
@@ -251,6 +208,13 @@ Debian installs `fd` as `fdfind` and `bat` as `batcat`. They track Debian 13's
 versions, which lag upstream: `rclone` is 1.60, and `postgresql-client` is 17,
 whose `pg_dump` refuses to dump a newer server. Install a newer copy into home
 when one of these falls short.
+
+`gh`, `glab`, `gt` and the Docker client with its Compose and Buildx plugins are
+in the image too, so every deploy can reach the git hosts and the socket before
+any setup. Each project publishes a Debian package: `gh` and Docker from their
+apt repositories, `glab` and `gt` as a `.deb` on their latest release, because
+Debian's own are behind or missing. A rebuild without the layer cache picks up
+new versions.
 
 Native desktop apps built on GTK and WebKitGTK, such as Tauri apps, need
 development libraries to compile on Linux. They are shared libraries with
