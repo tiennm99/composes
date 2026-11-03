@@ -28,27 +28,32 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 
 These follow the project's own documented install, which already targets home.
 
-Node.js, with nvm, the method marked recommended for Linux on the
-[Node.js download page](https://nodejs.org/en/download). nvm, Node and global
-npm packages all live in `~/.nvm`:
+Node.js, with fnm, one of the methods on the
+[Node.js download page](https://nodejs.org/en/download). fnm, Node and global
+npm packages all live in `~/.local/share/fnm`. The default alias keeps one
+stable path for shells and tools that do not load `fnm env`:
 
 ```sh
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
-. "$HOME/.nvm/nvm.sh"
-nvm install 24
+curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
+echo 'export PATH="$HOME/.local/share/fnm/aliases/default/bin:$HOME/.local/share/fnm:$PATH"' >> ~/.zshenv
+echo 'eval "$(fnm env --use-on-cd --shell zsh)"' >> ~/.zshrc
+. ~/.zshenv
+fnm install --lts
+fnm default lts-latest
 ```
 
 Python, with uv, from the
 [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/)
 and [Python install guide](https://docs.astral.sh/uv/guides/install-python/).
 uv puts itself in `~/.local/bin` and prebuilt Pythons in
-`~/.local/share/uv/python`. python.org itself documents only distro packages
-and source builds, both of which land outside home:
+`~/.local/share/uv/python`, and `--default` adds `python` and `python3`.
+python.org itself documents only distro packages and source builds, both of
+which land outside home:
 
 ```sh
 curl -LsSf https://astral.sh/uv/install.sh | sh
 . "$HOME/.local/bin/env"
-uv python install 3.13
+uv python install 3 --default
 ```
 
 Rust, with rustup, from the [install page](https://rustup.rs/). The toolchain
