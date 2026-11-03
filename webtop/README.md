@@ -51,6 +51,24 @@ Software installed with `apt` lives in the container and is lost when it is
 recreated. Anything that must survive goes under `/config`, through
 `proot-apps` or a user-level install.
 
+## Node.js and Python
+
+The mods reinstall Node.js and Python into each new container. For versions you
+choose yourself, which also survive a recreate, install fnm and uv under
+`/config`; `~/.zshenv` puts them ahead of the mods' copies:
+
+```sh
+curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
+echo 'export PATH="$HOME/.local/share/fnm/aliases/default/bin:$HOME/.local/share/fnm:$HOME/.local/bin:$PATH"' >> ~/.zshenv
+echo 'eval "$(fnm env --use-on-cd --shell zsh)"' >> ~/.zshrc
+. ~/.zshenv
+fnm install --lts
+fnm default lts-latest
+
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv python install 3 --default
+```
+
 ## Resources
 
 `shm_size: 1gb` is upstream's recommendation for every desktop image; browsers
