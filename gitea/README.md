@@ -32,6 +32,9 @@ itself.
   so every page, raw file and anonymous clone needs a login. AI crawlers
   walked every commit of every public mirror, and one public mirror held a
   private GitHub repo's content. Tools reach the API with a token as before.
+- **Every new repository is private.** `repository.FORCE_PRIVATE` is `true`, so
+  a mirror stays private even when its source is public or the tool creating it
+  asks for a public repository.
 - **One-hour clone timeout.** Gitea's defaults (600 s to migrate, 300 s to
   fetch) cut off multi-gigabyte repositories mid-clone, leaving empty mirrors
   that still hold gigabytes of unreachable packfiles. A client that calls the
