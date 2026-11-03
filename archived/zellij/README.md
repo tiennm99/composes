@@ -86,9 +86,12 @@ The image ships no browser: Ubuntu's `chromium` is a snap stub, and snaps do
 not run in containers. Playwright's Chromium works, including on arm64:
 
 ```sh
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.8/install.sh | bash
-. "$HOME/.nvm/nvm.sh"
-nvm install 24
+curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell
+echo 'export PATH="$HOME/.local/share/fnm/aliases/default/bin:$HOME/.local/share/fnm:$PATH"' >> ~/.zshenv
+echo 'eval "$(fnm env --use-on-cd --shell zsh)"' >> ~/.zshrc
+. ~/.zshenv
+fnm install --lts
+fnm default lts-latest
 
 npx -y playwright install --with-deps chromium
 ln -sf "$(ls -d ~/.cache/ms-playwright/chromium-*/chrome-linux*/chrome | sort -V | tail -1)" ~/.local/bin/chromium

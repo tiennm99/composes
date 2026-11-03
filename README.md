@@ -98,12 +98,9 @@ Each links to its own README for variables, ports, and storage.
 | [openclaw](openclaw/README.md) | OpenClaw AI agent gateway, with built-in browser automation |
 | [orca](orca/README.md) | Orca headless server (`orca serve`) for browser, desktop and mobile clients; not production ready |
 | [owncloud](owncloud/README.md) | ownCloud file sync and share, with MariaDB and Redis |
-| [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI |
 | [t3code](t3code/README.md) | T3 Code server for running coding agents from web, desktop and mobile apps, on a Tailscale tailnet |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
-| [ttyd](ttyd/README.md) | tmux terminals in the browser through ttyd, one URL per session |
 | [webtop](webtop/README.md) | Ubuntu XFCE desktop in the browser |
-| [zellij](zellij/README.md) | Zellij web terminals, one URL per session |
 
 Services I no longer run are kept as history in [archived/](archived/README.md).
 They are not deployed or maintained.

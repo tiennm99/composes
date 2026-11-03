@@ -23,8 +23,12 @@ redeploy nothing.
 | [opencode](opencode/README.md) | opencode served as a browser UI | 2026-10-05 |
 | [openhands](openhands/README.md) | OpenHands coding agent with a web UI | 2026-09-19 |
 | [openvpn-as](openvpn-as/README.md) | OpenVPN Access Server | 2026-09-16 |
+| [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI | 2026-11-03 |
 | [seafile](seafile/README.md) | Seafile Community Edition 13 | 2026-10-12 |
 | [selkies](selkies/README.md) | Selkies reference Ubuntu LXQt desktop in the browser | 2026-10-21 |
 | [tastyigniter](tastyigniter/README.md) | TastyIgniter restaurant ordering platform | 2026-09-16 |
+| [ttyd](ttyd/README.md) | tmux terminals in the browser through ttyd, one URL per session | 2026-11-03 |
+| [zellij](zellij/README.md) | Zellij web terminals, one URL per session | 2026-11-03 |
 
-The opencode notes that lived in `docs/` are in `docs/archived/opencode/`.
+The notes that lived in `docs/` for opencode, paseo and zellij are in
+`docs/archived/<service>/`.

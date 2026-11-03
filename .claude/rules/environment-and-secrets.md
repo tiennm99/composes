@@ -16,7 +16,7 @@ alphabetically, and not by when they were added:
 
 Grouping wins over the tiers. Variables that belong together stay on adjacent
 lines — `PUID`/`PGID`, `PASSWORD`/`SUDO_PASSWORD`, the four `GIT_*` entries,
-the `PASEO_*` daemon settings, `DOCKER_MODS` with the `INSTALL_PACKAGES` and
+`DOCKER_MODS` with the `INSTALL_PACKAGES` and
 `NODEJS_MOD_VERSION` that configure it — and the whole group sits at the tier
 of its most important member, even when a member on its own would rank lower.
 Within a group, the variable others configure comes first.
@@ -52,7 +52,7 @@ Compose interpolation reads the deploying shell's environment before the
 `.env` file, so a variable must not share a name with anything the shell
 already exports. `HOSTNAME` is the trap: it is set inside every container,
 including the one Coolify itself runs in, and would silently win. Hence
-`SERVICE_HOSTNAME` in `code-server` and `paseo`.
+`SERVICE_HOSTNAME` in `code-server`.
 
 A value stored in the Coolify app's environment, including its preview copy,
 beats the `${VAR:-default}` default in `compose.yml`. Changing a default in the
