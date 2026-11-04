@@ -40,13 +40,14 @@ is read through `ENV`, so quotes and `#{}` in it cannot break the config.
   otherwise serve 443 and request its own Let's Encrypt certificate, so nginx
   listens on plain port 80 and Let's Encrypt is off. GitLab still tells Rails
   the request was HTTPS.
+- **Sign-up off.** GitLab has no `gitlab.rb` key for this, so
+  `GITLAB_POST_RECONFIGURE_SCRIPT` sets it on every start, after migrations.
+  Turning sign-up on in the UI lasts only until the next start.
 - **Generated root password.** As in the guide, GitLab creates the password on
   first boot, so none sits in the app's environment.
 - **`gitlab/gitlab-ce:latest`.** Upstream publishes no major tag, only exact
   versions and `latest`, and its guide recommends an exact version in
-  production. GitLab must pass through its required upgrade stops,
-  so a deployment left many releases behind can fail its upgrade on a redeploy.
-  Redeploy regularly, and back up first.
+  production. Upgrades are triggered by hand, as described under **Upgrades**.
 - **`shm_size: 256m`.** The default 64 MB is too small for GitLab's metrics
   files.
 
@@ -63,12 +64,35 @@ grep 'Password:' /etc/gitlab/initial_root_password
 ```
 
 The file is deleted on the first restart after 24 hours, so change the password
-right away. Then, under **Admin > Settings > General**:
+right away. Then, under **Admin > Settings > General > Visibility and access
+controls**, set **Enabled Git access protocols** to **Only HTTP(S)**, so the UI
+stops offering SSH clone URLs.
 
-1. Under **Sign-up restrictions**, turn off sign-up. It is on by default, with
-   admin approval.
-2. Under **Visibility and access controls**, set **Enabled Git access protocols**
-   to **Only HTTP(S)**, so the UI stops offering SSH clone URLs.
+Admins create users under **Admin > Users**.
+
+## Upgrades
+
+A host reboot or container restart reuses the image already on the server, so it
+does not change the version. A Coolify **Restart** or **Redeploy** pulls `latest`,
+and so does a deploy from a push that changes this directory. On its first run,
+the new image reconfigures GitLab and runs its database migrations. It can also
+upgrade the bundled PostgreSQL.
+
+Nothing is backed up automatically, and there is no automatic rollback. Before a
+redeploy, in the container:
+
+1. Check that background migrations have finished:
+   `gitlab-rake gitlab:background_migrations:status`
+2. Create a backup: `gitlab-backup create`. It is written to `gitlab-data`.
+3. Copy `/etc/gitlab/gitlab-secrets.json` off the server. The backup does not
+   include it, and a restore needs it.
+
+GitLab must not skip a
+[required upgrade stop](https://docs.gitlab.com/update/upgrade_paths/). They come
+at x.2, x.5, x.8 and x.11, and `latest` does not step through them. If a redeploy
+would cross one, first deploy that stop's exact tag, such as `19.8.x-ce.0` with
+its real patch number, and let its background migrations finish before going back
+to `latest`.
 
 ## Storage
 

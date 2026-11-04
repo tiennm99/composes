@@ -3,6 +3,8 @@ services:
     image: gitlab/gitlab-ce:latest
     restart: unless-stopped
     environment:
+      # Turns off sign-up on every start.
+      GITLAB_POST_RECONFIGURE_SCRIPT: "gitlab-rails runner 'ApplicationSetting.current.update!(signup_enabled: false)'"
       # Omnibus settings, evaluated as Ruby on every start.
       GITLAB_OMNIBUS_CONFIG: |
         external_url '${GITLAB_EXTERNAL_URL:?required}'
