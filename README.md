@@ -91,6 +91,7 @@ Each links to its own README for variables, ports, and storage.
 | [diun](diun/README.md) | Image-update notifier, reading the Docker API through a read-only proxy |
 | [gitea](gitea/README.md) | Gitea backed by PostgreSQL |
 | [gitea-mirror](gitea-mirror/README.md) | gitea-mirror, mirroring GitHub repos into Gitea |
+| [gitlab](gitlab/README.md) | GitLab Community Edition from the official all-in-one image |
 | [hermes](hermes/README.md) | Hermes Agent with its built-in web dashboard |
 | [litellm](litellm/README.md) | LiteLLM proxy in front of many LLM providers, with PostgreSQL and Redis |
 | [nextcloud](nextcloud/README.md) | Nextcloud file sync and share, with PostgreSQL, Redis and a cron container |
