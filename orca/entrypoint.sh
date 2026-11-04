@@ -1,6 +1,22 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Add ubuntu to the group that owns the mounted Docker socket, then restart
+# under that group.
+if [[ -S /var/run/docker.sock ]]; then
+  gid=$(stat -c %g /var/run/docker.sock)
+  if ! id -G | tr ' ' '\n' | grep -qx "$gid"; then
+    group=$(getent group "$gid" | cut -d: -f1 || true)
+    if [[ -z "$group" ]]; then
+      group=docker-host
+      sudo groupadd -g "$gid" "$group"
+    fi
+    sudo usermod -aG "$group" ubuntu
+    exec sudo -E setpriv --reuid=ubuntu --regid=ubuntu --init-groups \
+      env PATH="$PATH" HOME="$HOME" USER=ubuntu "$0" "$@"
+  fi
+fi
+
 # Download the Orca AppImage into ~/.local/bin when missing.
 app="$HOME/.local/bin/orca-ide"
 mkdir -p "$HOME/.local/bin"

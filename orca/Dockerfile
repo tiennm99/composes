@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 # System packages: shell and editors, build tools, git, and the libraries and
 # virtual display the Orca app needs to run headless.
@@ -6,11 +6,56 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends \
     ca-certificates curl git openssh-client \
     sudo zsh nano less procps util-linux \
-    build-essential unzip \
-    libatk-bridge2.0-0 libatspi2.0-0 libasound2t64 libdrm2 libgbm1 \
-    libgtk-3-0 libnss3 libxcomposite1 libxdamage1 libxfixes3 \
+    build-essential bubblewrap unzip zip \
+    libatk-bridge2.0-0t64 libatspi2.0-0t64 libasound2t64 libdrm2 libgbm1 \
+    libgtk-3-0t64 libnss3 libxcomposite1 libxdamage1 libxfixes3 \
     libxkbcommon0 libxrandr2 libxss1 \
     xvfb xauth dbus-x11 \
+  && rm -rf /var/lib/apt/lists/*
+
+# Command-line utilities: network and DNS, search and review, lint,
+# database clients, and backup and maintenance.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    iproute2 lsof bind9-dnsutils netcat-openbsd socat mtr-tiny whois \
+    tree fd-find fzf git-delta bat ripgrep jq \
+    shellcheck shfmt yamllint \
+    postgresql-client sqlite3 redis-tools \
+    ncdu tmux restic rclone age hyperfine entr 7zip \
+  && rm -rf /var/lib/apt/lists/*
+
+# GitHub CLI and Docker CLI with its Compose and Buildx plugins, from their apt
+# repositories.
+RUN . /etc/os-release \
+  && arch=$(dpkg --print-architecture) \
+  && install -d -m 0755 /etc/apt/keyrings \
+  && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o /etc/apt/keyrings/githubcli.gpg \
+  && curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc \
+  && chmod a+r /etc/apt/keyrings/githubcli.gpg /etc/apt/keyrings/docker.asc \
+  && echo "deb [arch=$arch signed-by=/etc/apt/keyrings/githubcli.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list \
+  && echo "deb [arch=$arch signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $VERSION_CODENAME stable" > /etc/apt/sources.list.d/docker.list \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends \
+    gh docker-ce-cli docker-compose-plugin docker-buildx-plugin \
+  && rm -rf /var/lib/apt/lists/*
+
+# GitLab CLI, Gitea CLI and SOPS, from the .deb in each project's latest release.
+RUN arch=$(dpkg --print-architecture) \
+  && v=$(curl -fsSL https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases/permalink/latest | jq -r .tag_name | sed 's/^v//') \
+  && curl -fsSL -o /tmp/glab.deb "https://gitlab.com/gitlab-org/cli/-/releases/v${v}/downloads/glab_${v}_linux_${arch}.deb" \
+  && v=$(curl -fsSL https://gitea.com/api/v1/repos/gitea/cli/releases/latest | jq -r .tag_name | sed 's/^v//') \
+  && curl -fsSL -o /tmp/gt.deb "https://gitea.com/gitea/cli/releases/download/v${v}/gitea-cli_${v}_${arch}.deb" \
+  && v=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/getsops/sops/releases/latest | sed 's|.*/v||') \
+  && curl -fsSL -o /tmp/sops.deb "https://github.com/getsops/sops/releases/download/v${v}/sops_${v}_${arch}.deb" \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends /tmp/glab.deb /tmp/gt.deb /tmp/sops.deb \
+  && rm -rf /tmp/glab.deb /tmp/gt.deb /tmp/sops.deb /var/lib/apt/lists/*
+
+# Desktop GUI build libraries: GTK, WebKitGTK, tray and image loaders.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    pkg-config libwebkit2gtk-4.1-dev libssl-dev \
+    libayatana-appindicator3-dev librsvg2-dev libxdo-dev \
   && rm -rf /var/lib/apt/lists/*
 
 # The image's ubuntu user (uid 1000): zsh, passwordless sudo, owns /workspace.
