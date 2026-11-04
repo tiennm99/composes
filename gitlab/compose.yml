@@ -3,12 +3,11 @@ services:
     image: gitlab/gitlab-ce:latest
     restart: unless-stopped
     environment:
-      GITLAB_ROOT_PASSWORD: ${GITLAB_ROOT_PASSWORD:?required}
       # Omnibus settings, evaluated as Ruby on every start.
       GITLAB_OMNIBUS_CONFIG: |
         external_url '${GITLAB_EXTERNAL_URL:?required}'
-        nginx['listen_port'] = 80
-        nginx['listen_https'] = false
+        gitlab_rails['nginx']['listen_port'] = 80
+        gitlab_rails['nginx']['listen_https'] = false
         letsencrypt['enable'] = false
         gitlab_rails['time_zone'] = '${TZ:-UTC}'
         gitlab_rails['smtp_enable'] = ${GITLAB_SMTP_ENABLE:-false}
