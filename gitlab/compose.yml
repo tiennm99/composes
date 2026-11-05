@@ -12,6 +12,7 @@ services:
         gitlab_rails['nginx']['listen_https'] = false
         letsencrypt['enable'] = false
         gitlab_rails['time_zone'] = '${TZ:-UTC}'
+        gitlab_rails['gitlab_default_projects_features_builds'] = false
         gitlab_rails['smtp_enable'] = ${GITLAB_SMTP_ENABLE:-false}
         gitlab_rails['smtp_address'] = '${GITLAB_SMTP_ADDRESS:-}'
         gitlab_rails['smtp_port'] = ${GITLAB_SMTP_PORT:-587}

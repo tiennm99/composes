@@ -43,6 +43,9 @@ is read through `ENV`, so quotes and `#{}` in it cannot break the config.
 - **Sign-up off.** GitLab has no `gitlab.rb` key for this, so
   `GITLAB_POST_RECONFIGURE_SCRIPT` sets it on every start, after migrations.
   Turning sign-up on in the UI lasts only until the next start.
+- **CI/CD off in new projects.** This instance hosts code only, and no runner is
+  deployed. The setting changes only the default, so a project owner can turn
+  CI/CD back on in that project's settings, and existing projects are unchanged.
 - **Generated root password.** As in the guide, GitLab creates the password on
   first boot, so none sits in the app's environment.
 - **`gitlab/gitlab-ce:latest`.** Upstream publishes no major tag, only exact
