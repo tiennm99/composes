@@ -3,6 +3,7 @@ services:
     build: .
     restart: unless-stopped
     init: true
+    shm_size: 256m
     hostname: ${SERVICE_HOSTNAME}
     expose:
       - '3773'

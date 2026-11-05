@@ -205,6 +205,9 @@ too.
   the home volume, so an update survives a redeploy. To update, run `t3 update`
   in a shell, then restart the app. The running server keeps the old version
   until it restarts.
+- `shm_size: 256m` replaces Docker's 64 MB default, which is too small for a
+  browser installed into home. The image carries fonts for its screenshots, but
+  not Chromium's own libraries, so such a browser needs those added first.
 - `init: true` reaps the agent and terminal processes the server leaves behind,
   since the server would otherwise be PID 1.
 - The `ubuntu` user has passwordless `sudo`. Anyone who pairs already has a shell
@@ -223,6 +226,7 @@ as a baseline every fresh deploy has without a setup step:
 | Lint | `shellcheck`, `shfmt`, `yamllint` |
 | Database clients | `postgresql-client` (`psql`), `sqlite3`, `redis-tools` (`redis-cli`) |
 | Maintenance | `ncdu`, `tmux`, `restic`, `rclone`, `age`, `hyperfine`, `entr`, `7zip` (`7z`) |
+| Media and fonts | `ffmpeg`, `fonts-liberation`, `fonts-noto-color-emoji`, `fonts-noto-cjk` |
 | Desktop app builds | `pkg-config`, `libwebkit2gtk-4.1-dev`, `libssl-dev`, `libayatana-appindicator3-dev`, `librsvg2-dev`, `libxdo-dev` |
 
 Ubuntu installs `fd` as `fdfind` and `bat` as `batcat`. These track Ubuntu 26.04's
