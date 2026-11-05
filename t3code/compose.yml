@@ -4,6 +4,8 @@ services:
     restart: unless-stopped
     init: true
     hostname: ${SERVICE_HOSTNAME}
+    expose:
+      - '3773'
     environment:
       - TZ=Asia/Ho_Chi_Minh
       - GIT_AUTHOR_NAME=${GIT_NAME}
@@ -15,35 +17,8 @@ services:
     volumes:
       - 't3code-home:/home/ubuntu'
       - 't3code-workspace:/workspace'
-
-  # Tailscale node that serves T3 Code over HTTPS on the tailnet.
-  tunnel:
-    image: tailscale/tailscale:latest
-    restart: unless-stopped
-    environment:
-      - TS_AUTHKEY=${TS_AUTHKEY:?required}
-      - TS_AUTH_ONCE=true
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_HOSTNAME=${TS_HOSTNAME:-t3code}
-      - TS_SERVE_CONFIG=/config/serve.json
-    volumes:
-      - 'tunnel-state:/var/lib/tailscale'
-    configs:
-      - { source: tunnel_serve, target: /config/serve.json }
+      - '/var/run/docker.sock:/var/run/docker.sock:ro'
 
 volumes:
   t3code-home:
   t3code-workspace:
-  tunnel-state:
-
-configs:
-  tunnel_serve:
-    content: |
-      {
-        "TCP": { "443": { "HTTPS": true } },
-        "Web": {
-          "$${TS_CERT_DOMAIN}:443": {
-            "Handlers": { "/": { "Proxy": "http://t3code:3773" } }
-          }
-        }
-      }

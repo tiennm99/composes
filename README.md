@@ -99,7 +99,7 @@ Each links to its own README for variables, ports, and storage.
 | [openclaw](openclaw/README.md) | OpenClaw AI agent gateway, with built-in browser automation |
 | [orca](orca/README.md) | Orca headless server (`orca serve`) for browser, desktop and mobile clients; not production ready |
 | [owncloud](owncloud/README.md) | ownCloud file sync and share, with MariaDB and Redis |
-| [t3code](t3code/README.md) | T3 Code server for running coding agents from web, desktop and mobile apps, on a Tailscale tailnet |
+| [t3code](t3code/README.md) | T3 Code server for running coding agents from web, desktop and mobile apps |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
 | [webtop](webtop/README.md) | Ubuntu XFCE desktop in the browser |
 
