@@ -5,7 +5,7 @@ official `codercom/code-server` image.
 
 The image ships code-server on Debian with `git`, `zsh`, `curl`, `sudo` and a
 few editors. The `Dockerfile` adds `build-essential`, `bubblewrap`, `zip`,
-`unzip`, a set of command-line utilities, the `gh`, `glab`, `gt`, `sops` and
+`unzip`, a set of command-line utilities, the `gh`, `glab`, `sops` and
 `docker` CLIs and Chromium, and wraps the entrypoint so it starts in `/workspace` and
 `coder` can use the Docker socket. Language toolchains are installed into home,
 below.
@@ -209,10 +209,10 @@ versions, which lag upstream: `rclone` is 1.60, and `postgresql-client` is 17,
 whose `pg_dump` refuses to dump a newer server. Install a newer copy into home
 when one of these falls short.
 
-`gh`, `glab`, `gt`, `sops` and the Docker client with its Compose and Buildx plugins are
+`gh`, `glab`, `sops` and the Docker client with its Compose and Buildx plugins are
 in the image too, so every deploy can reach the git hosts and the socket before
 any setup. Each project publishes a Debian package: `gh` and Docker from their
-apt repositories, `glab`, `gt` and `sops` as a `.deb` on their latest release, because
+apt repositories, `glab` and `sops` as a `.deb` on their latest release, because
 Debian's own are behind or missing. A rebuild without the layer cache picks up
 new versions.
 

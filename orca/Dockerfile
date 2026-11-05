@@ -39,17 +39,15 @@ RUN . /etc/os-release \
     gh docker-ce-cli docker-compose-plugin docker-buildx-plugin \
   && rm -rf /var/lib/apt/lists/*
 
-# GitLab CLI, Gitea CLI and SOPS, from the .deb in each project's latest release.
+# GitLab CLI and SOPS, from the .deb in each project's latest release.
 RUN arch=$(dpkg --print-architecture) \
   && v=$(curl -fsSL https://gitlab.com/api/v4/projects/gitlab-org%2Fcli/releases/permalink/latest | jq -r .tag_name | sed 's/^v//') \
   && curl -fsSL -o /tmp/glab.deb "https://gitlab.com/gitlab-org/cli/-/releases/v${v}/downloads/glab_${v}_linux_${arch}.deb" \
-  && v=$(curl -fsSL https://gitea.com/api/v1/repos/gitea/cli/releases/latest | jq -r .tag_name | sed 's/^v//') \
-  && curl -fsSL -o /tmp/gt.deb "https://gitea.com/gitea/cli/releases/download/v${v}/gitea-cli_${v}_${arch}.deb" \
   && v=$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/getsops/sops/releases/latest | sed 's|.*/v||') \
   && curl -fsSL -o /tmp/sops.deb "https://github.com/getsops/sops/releases/download/v${v}/sops_${v}_${arch}.deb" \
   && apt-get update \
-  && apt-get install -y --no-install-recommends /tmp/glab.deb /tmp/gt.deb /tmp/sops.deb \
-  && rm -rf /tmp/glab.deb /tmp/gt.deb /tmp/sops.deb /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends /tmp/glab.deb /tmp/sops.deb \
+  && rm -rf /tmp/glab.deb /tmp/sops.deb /var/lib/apt/lists/*
 
 # Desktop GUI build libraries: GTK, WebKitGTK, tray and image loaders.
 RUN apt-get update \

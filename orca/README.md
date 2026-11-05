@@ -8,7 +8,7 @@ builds one from `ubuntu:26.04`, and `entrypoint.sh` downloads the Orca AppImage
 into `$HOME` on first start.
 
 The container is a workspace: code lives in `/workspace`, and the image carries
-build tools, command-line utilities, the `gh`, `glab`, `gt`, `sops` and `docker`
+build tools, command-line utilities, the `gh`, `glab`, `sops` and `docker`
 CLIs. Language toolchains are installed into home, below.
 
 Orca is reached through a public domain, so a client needs no VPN. See
@@ -256,7 +256,7 @@ versions, which can lag upstream. Install a newer copy into home when one falls
 short.
 
 `gh` and the Docker client with its Compose and Buildx plugins come from their
-apt repositories, and `glab`, `gt` and `sops` from the `.deb` on their latest
+apt repositories, and `glab` and `sops` from the `.deb` on their latest
 release, because Ubuntu's own are behind or missing. A rebuild without the layer
 cache picks up new versions.
 
