@@ -45,6 +45,7 @@ services:
     mem_limit: 64m
     pids_limit: 64
     environment:
+      LOG_LEVEL: warning
       CONTAINERS: 1
       NETWORKS: 1
       IMAGES: 1

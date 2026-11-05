@@ -124,6 +124,10 @@ the two components actually call:
 | `IMAGES`, `INFO`, `VERSION` | cadvisor |
 | `EVENTS` | cadvisor container watch (granted by default) |
 
+`LOG_LEVEL: warning` turns off the proxy's access log. It logs every request at
+`info`, and Alloy's own polling produced about 0.9 GB a day across two hosts, the
+largest share of the Grafana Cloud free log allowance.
+
 What this does not do: `GET /containers/{id}/json` still returns every
 container's environment variables. The proxy closes the escalation path, not
 the disclosure one.
