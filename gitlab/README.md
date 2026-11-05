@@ -46,6 +46,13 @@ is read through `ENV`, so quotes and `#{}` in it cannot break the config.
 - **CI/CD off in new projects.** This instance hosts code only, and no runner is
   deployed. The setting changes only the default, so a project owner can turn
   CI/CD back on in that project's settings, and existing projects are unchanged.
+- **Logs at warning level.** The image prints all its logs to stdout, and at the
+  default level Sidekiq's routine job lines alone reach about 9 MB an hour. The
+  level also applies to the files in `gitlab-logs`, so request logs, job start
+  and finish lines and `INFO` events such as project deletion are not recorded.
+  `ERROR` would be too strict, because failed Sidekiq jobs log at warning. To
+  debug, change the level and redeploy. Nginx, Workhorse and the exporter have
+  no level setting and keep logging.
 - **Generated root password.** As in the guide, GitLab creates the password on
   first boot, so none sits in the app's environment.
 - **`gitlab/gitlab-ce:latest`.** Upstream publishes no major tag, only exact
