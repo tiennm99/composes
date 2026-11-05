@@ -249,6 +249,7 @@ as a baseline every fresh deploy has without a setup step:
 | Lint | `shellcheck`, `shfmt`, `yamllint` |
 | Database clients | `postgresql-client` (`psql`), `sqlite3`, `redis-tools` (`redis-cli`) |
 | Maintenance | `ncdu`, `tmux`, `restic`, `rclone`, `age`, `hyperfine`, `entr`, `7zip` (`7z`) |
+| Media and fonts | `ffmpeg`, `fonts-liberation`, `fonts-noto-color-emoji`, `fonts-noto-cjk` |
 | Desktop app builds | `pkg-config`, `libwebkit2gtk-4.1-dev`, `libssl-dev`, `libayatana-appindicator3-dev`, `librsvg2-dev`, `libxdo-dev` |
 
 Ubuntu installs `fd` as `fdfind` and `bat` as `batcat`. These track Ubuntu 26.04's
@@ -262,3 +263,7 @@ cache picks up new versions.
 
 The desktop app libraries let GTK and WebKitGTK apps, such as Tauri apps, compile
 and run their tests. The container has no display for opening a window.
+
+The image has no browser for agents to drive, because Ubuntu 26.04 only ships
+Chromium as a snap. The fonts are there so that a browser installed into home
+renders CJK and emoji in screenshots.

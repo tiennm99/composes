@@ -24,6 +24,12 @@ RUN apt-get update \
     ncdu tmux restic rclone age hyperfine entr 7zip \
   && rm -rf /var/lib/apt/lists/*
 
+# Fonts for browser screenshots, and ffmpeg.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends \
+    fonts-liberation fonts-noto-color-emoji fonts-noto-cjk ffmpeg \
+  && rm -rf /var/lib/apt/lists/*
+
 # GitHub CLI and Docker CLI with its Compose and Buildx plugins, from their apt
 # repositories.
 RUN . /etc/os-release \
