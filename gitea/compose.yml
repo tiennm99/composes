@@ -33,6 +33,7 @@ services:
       GITEA__repository__FORCE_PRIVATE: "true"
       GITEA__git_0X2E_timeout__MIGRATE: ${GITEA_CLONE_TIMEOUT:-3600}
       GITEA__git_0X2E_timeout__MIRROR: ${GITEA_CLONE_TIMEOUT:-3600}
+      GITEA__queue_0X2E_repo_stats_update__MAX_WORKERS: "1"
     volumes:
       - gitea-data:/data
     healthcheck:

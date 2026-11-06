@@ -40,6 +40,11 @@ itself.
   that still hold gigabytes of unreachable packfiles. A client that calls the
   migrate API gets no response until the clone ends, so it must wait at least
   this long.
+- **One repository-stats worker.** The `repo_stats_update` queue defaults to
+  half the CPU count. Its unique queue only drops a repository that is still
+  waiting, so a mirror synced again while its stats run gets a second worker,
+  and the two update the same `language_stat` rows and deadlock in
+  PostgreSQL. One worker processes them in turn.
 - **`gitea/gitea:28`.** Gitea publishes major tags; the major pin takes
   updates without a surprise major upgrade.
 - **`postgres:18-alpine`**, the newest Postgres major; Gitea needs 12 or
