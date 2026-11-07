@@ -29,6 +29,7 @@ keeps its command and only slows how often it runs.
 | `SCHEDULE_ENABLED`, `SCHEDULE_INTERVAL`, `SCHEDULE_TIMEZONE`, `SCHEDULE_BATCH_SIZE` | gitea-mirror | Sync schedule. Defaults to on, hourly (`0 * * * *`), `Asia/Saigon`, 5 repositories at a time. |
 | `AUTO_MIRROR_REPOS` | gitea-mirror | Mirror newly imported repositories on scheduled syncs. Defaults to `true`. |
 | `CLEANUP_ENABLED`, `CLEANUP_DELETE_IF_NOT_IN_GITHUB` | gitea-mirror | Handle repositories gone from GitHub, by archiving them. Both default to `true`. |
+| `PRE_SYNC_BACKUP_STRATEGY` | gitea-mirror | Backup before each sync: `disabled`, `always`, `on-force-push` or `block-on-force-push`. Defaults to `disabled`. |
 | `HTTP_IDLE_TIMEOUT` | `BUN_CONFIG_HTTP_IDLE_TIMEOUT` | Seconds an outgoing HTTP request may sit idle before Bun drops it. Set it to at least the target Gitea's clone timeout. Defaults to `3600`; at most `14340`. |
 
 Behind a reverse proxy, gitea-mirror rejects sign-in with "invalid origin"
@@ -72,8 +73,10 @@ is unreadable under another.
 ## Usage
 
 Sign up at `GITEA_MIRROR_URL`; the settings load onto the first account. In the
-UI, set **Backup strategy** to disabled, because no environment variable can
-change it once settings are stored.
+UI, set **Backup strategy** to disabled. The entrypoint stores
+`on-force-push` on first boot, and a stored strategy wins over
+`PRE_SYNC_BACKUP_STRATEGY`, so the variable takes effect only once upstream
+stops storing that default.
 
 ## Storage
 
