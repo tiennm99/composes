@@ -17,8 +17,7 @@ keeps its command and only slows how often it runs.
 
 | Variable | Feeds | Notes |
 | --- | --- | --- |
-| `BETTER_AUTH_SECRET` | gitea-mirror | Signs sessions and encrypts its login keys. Generate with `openssl rand -base64 32`. |
-| `ENCRYPTION_SECRET` | gitea-mirror | Encrypts the stored GitHub and Gitea tokens. Generate with `openssl rand -base64 48`. |
+| `BETTER_AUTH_SECRET`, `ENCRYPTION_SECRET` | gitea-mirror | Sign sessions and encrypt the stored tokens. Leave empty to let the image generate them. |
 | `GITEA_MIRROR_URL` | `BETTER_AUTH_URL`, `PUBLIC_BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS` | Public URL of the mirror UI, no trailing slash. |
 | `GITHUB_USERNAME`, `GITHUB_TOKEN` | gitea-mirror | Account to mirror from and its token, with the `repo` and `admin:org` scopes. |
 | `GITEA_URL`, `GITEA_USERNAME`, `GITEA_TOKEN` | gitea-mirror | Gitea instance as this container reaches it, the account mirrors belong to, and its token. |
@@ -36,11 +35,11 @@ Behind a reverse proxy, gitea-mirror rejects sign-in with "invalid origin"
 unless all three Better Auth variables hold the external URL, so one variable
 feeds them all.
 
-Both secrets are set explicitly rather than left to the image, which would
-otherwise generate its own into `gitea-mirror-data`. Data encrypted under one
-secret is unreadable under another, so moving the data to a new deployment
-means carrying the secrets with it. Never change either on an existing
-install.
+When `BETTER_AUTH_SECRET` and `ENCRYPTION_SECRET` are empty, the image
+generates them on first start into `gitea-mirror-data` and reuses them after,
+so the secrets travel with the data they encrypt. An install that already
+sets them must keep setting the same values: data encrypted under one secret
+is unreadable under another.
 
 ## Choices
 
