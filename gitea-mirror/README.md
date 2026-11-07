@@ -20,6 +20,16 @@ keeps its command and only slows how often it runs.
 | `BETTER_AUTH_SECRET` | gitea-mirror | Signs sessions and encrypts its login keys. Generate with `openssl rand -base64 32`. |
 | `ENCRYPTION_SECRET` | gitea-mirror | Encrypts the stored GitHub and Gitea tokens. Generate with `openssl rand -base64 48`. |
 | `GITEA_MIRROR_URL` | `BETTER_AUTH_URL`, `PUBLIC_BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS` | Public URL of the mirror UI, no trailing slash. |
+| `GITHUB_USERNAME`, `GITHUB_TOKEN` | gitea-mirror | Account to mirror from and its token, with the `repo` and `admin:org` scopes. |
+| `GITEA_URL`, `GITEA_USERNAME`, `GITEA_TOKEN` | gitea-mirror | Gitea instance as this container reaches it, the account mirrors belong to, and its token. |
+| `PRIVATE_REPOSITORIES`, `PUBLIC_REPOSITORIES` | gitea-mirror | Which of the account's repositories to import. Both default to `true`. |
+| `MIRROR_STARRED`, `AUTO_MIRROR_STARRED` | gitea-mirror | Import starred repositories and mirror them on scheduled syncs. Both default to `true`. |
+| `STARRED_REPOS_MODE` | gitea-mirror | Defaults to `preserve-owner`: a starred repository stays under its original owner's name. |
+| `GITEA_ORG_VISIBILITY` | gitea-mirror | Visibility of the organizations it creates. Defaults to `private`. |
+| `GITEA_CREATE_ORG`, `GITEA_ADD_TOPICS` | gitea-mirror | Create missing organizations and copy repository topics. Both default to `true`. |
+| `SCHEDULE_ENABLED`, `SCHEDULE_INTERVAL`, `SCHEDULE_TIMEZONE`, `SCHEDULE_BATCH_SIZE` | gitea-mirror | Sync schedule. Defaults to on, hourly (`0 * * * *`), `Asia/Saigon`, 5 repositories at a time. |
+| `AUTO_MIRROR_REPOS` | gitea-mirror | Mirror newly imported repositories on scheduled syncs. Defaults to `true`. |
+| `CLEANUP_ENABLED`, `CLEANUP_DELETE_IF_NOT_IN_GITHUB` | gitea-mirror | Handle repositories gone from GitHub, by archiving them. Both default to `true`. |
 | `HTTP_IDLE_TIMEOUT` | `BUN_CONFIG_HTTP_IDLE_TIMEOUT` | Seconds an outgoing HTTP request may sit idle before Bun drops it. Set it to at least the target Gitea's clone timeout. Defaults to `3600`; at most `14340`. |
 
 Behind a reverse proxy, gitea-mirror rejects sign-in with "invalid origin"
@@ -34,6 +44,13 @@ install.
 
 ## Choices
 
+- **Settings live in the environment.** Whenever a connection variable is set,
+  the entrypoint rewrites the stored settings from the environment on every
+  boot, so a change made in the UI lasts only until the next restart unless the
+  variable changes too. A boolean left unset counts as `false`, whatever
+  upstream documents as its default, so `PUBLIC_REPOSITORIES`,
+  `GITEA_CREATE_ORG`, `GITEA_ADD_TOPICS` and
+  `CLEANUP_DELETE_IF_NOT_IN_GITHUB` are set explicitly.
 - **Waits as long as Gitea clones.** Gitea's migrate API sends nothing until
   the clone ends, and Bun's `fetch` drops a connection idle for 5 minutes.
   gitea-mirror then marks the repository failed while Gitea keeps cloning; on
@@ -55,9 +72,9 @@ install.
 
 ## Usage
 
-Sign up at `GITEA_MIRROR_URL`, then in its settings enter the Gitea instance's
-public URL and an access token, plus the GitHub token to mirror from. These
-are stored in `gitea-mirror-data`, not in the environment.
+Sign up at `GITEA_MIRROR_URL`; the settings load onto the first account. In the
+UI, set **Backup strategy** to disabled, because no environment variable can
+change it once settings are stored.
 
 ## Storage
 
