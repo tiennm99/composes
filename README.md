@@ -97,7 +97,7 @@ Each links to its own README for variables, ports, and storage.
 | [nextcloud](nextcloud/README.md) | Nextcloud file sync and share, with PostgreSQL, Redis and a cron container |
 | [open-webui](open-webui/README.md) | Open WebUI chat interface for OpenAI-compatible and Ollama providers |
 | [openclaw](openclaw/README.md) | OpenClaw AI agent gateway, with built-in browser automation |
-| [openmausbot](openmausbot/README.md) | OpenMausBot team of AI bots, with a Caddy edge in front |
+| [openmausbot](openmausbot/README.md) | OpenMausBot team of AI bots, reached over Tailscale |
 | [orca](orca/README.md) | Orca headless server (`orca serve`) for browser, desktop and mobile clients; not production ready |
 | [owncloud](owncloud/README.md) | ownCloud file sync and share, with MariaDB and Redis |
 | [t3code](t3code/README.md) | T3 Code server for running coding agents from web, desktop and mobile apps |

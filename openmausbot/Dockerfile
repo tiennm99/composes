@@ -1,6 +1,7 @@
-# Caddy in front of the server, sharing its network namespace.
-FROM caddy:2 AS proxy
-COPY Caddyfile /etc/caddy/Caddyfile
+# Tailscale in front of the server, sharing its network namespace, with the
+# Serve config that forwards HTTPS on the tailnet to the server.
+FROM tailscale/tailscale:latest AS tunnel
+COPY serve.json /config/serve.json
 
 # The official server image with the engine CLIs installed globally.
 FROM ghcr.io/milind-soni/openmausbot:latest AS server

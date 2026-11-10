@@ -8,11 +8,9 @@ services:
     restart: unless-stopped
     init: true
     shm_size: 512m
-    expose:
-      - "80"
     environment:
-      - OMB_PUBLIC_URL=${OMB_PUBLIC_URL:?required}
-      - OMB_WEBHOOK_PUBLIC_URL=${OMB_PUBLIC_URL:?required}
+      - OMB_PUBLIC_URL=https://${TS_HOSTNAME:-openmausbot}.${TAILNET_DOMAIN:?required}
+      - OMB_WEBHOOK_PUBLIC_URL=https://${TS_HOSTNAME:-openmausbot}.${TAILNET_DOMAIN:?required}
       - OMB_PORT=8799
       - OMB_WEBHOOK_PORT=8800
       # - OMB_SIGNIN_EMAILS=${OMB_SIGNIN_EMAILS:-}
@@ -23,15 +21,24 @@ services:
     volumes:
       - openmausbot-data:/data
 
-  proxy:
+  tunnel:
     build:
       context: .
-      target: proxy
+      target: tunnel
     restart: unless-stopped
     network_mode: service:openmausbot
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY:?required}
+      - TS_HOSTNAME=${TS_HOSTNAME:-openmausbot}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_AUTH_ONCE=true
+      - TS_SERVE_CONFIG=/config/serve.json
+    volumes:
+      - tunnel-state:/var/lib/tailscale
     depends_on:
       openmausbot:
         condition: service_healthy
 
 volumes:
   openmausbot-data:
+  tunnel-state:
