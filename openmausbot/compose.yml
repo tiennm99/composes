@@ -1,0 +1,37 @@
+services:
+  openmausbot:
+    build:
+      context: .
+      target: server
+      args:
+        ENGINES: ${ENGINES:-@anthropic-ai/claude-code @openai/codex}
+    restart: unless-stopped
+    init: true
+    shm_size: 512m
+    expose:
+      - "80"
+    environment:
+      - OMB_PUBLIC_URL=${OMB_PUBLIC_URL:?required}
+      - OMB_WEBHOOK_PUBLIC_URL=${OMB_PUBLIC_URL:?required}
+      - OMB_PORT=8799
+      - OMB_WEBHOOK_PORT=8800
+      # - OMB_SIGNIN_EMAILS=${OMB_SIGNIN_EMAILS:-}
+      # - OMB_SIGNIN_MEMBER_EMAILS=${OMB_SIGNIN_MEMBER_EMAILS:-}
+      # - OMB_SIGNIN_SMTP_URL=${OMB_SIGNIN_SMTP_URL:-}
+      # - OMB_SIGNIN_SMTP_FROM=${OMB_SIGNIN_SMTP_FROM:-}
+      # - OMB_SERVER_NAME=${OMB_SERVER_NAME:-openmausbot}
+    volumes:
+      - openmausbot-data:/data
+
+  proxy:
+    build:
+      context: .
+      target: proxy
+    restart: unless-stopped
+    network_mode: service:openmausbot
+    depends_on:
+      openmausbot:
+        condition: service_healthy
+
+volumes:
+  openmausbot-data:
