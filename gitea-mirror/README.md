@@ -72,11 +72,9 @@ is unreadable under another.
 
 ## Usage
 
-Sign up at `GITEA_MIRROR_URL`; the settings load onto the first account. In the
-UI, set **Backup strategy** to disabled. The entrypoint stores
-`on-force-push` on first boot, and a stored strategy wins over
-`PRE_SYNC_BACKUP_STRATEGY`, so the variable takes effect only once upstream
-stops storing that default.
+Sign up at `GITEA_MIRROR_URL`; the settings load onto the first account. A
+stored backup strategy wins over `PRE_SYNC_BACKUP_STRATEGY`, so changing the
+variable later does not change an existing account; change it in the UI.
 
 ## Storage
 
