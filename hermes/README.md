@@ -87,6 +87,16 @@ one conversation with the bot, overriding `group_sessions_per_user`; every
 message lands in `state.db`, and each reply carries the observed backlog to the
 model provider.
 
+## Busy input
+
+A message that arrives while the agent is still working waits for the current
+turn to finish and then runs as the next turn: `display.busy_input_mode` is
+`queue` in `/opt/data/config.yaml`, set with
+`/opt/hermes/.venv/bin/hermes config set display.busy_input_mode queue`
+followed by a gateway restart. Upstream defaults it to `interrupt`, where the
+new message cancels the running turn. `steer` would instead inject the message
+into the running turn. `/busy <mode>` in chat changes it too.
+
 ## Model fallback
 
 When the primary provider fails, Hermes falls back to Claude through the
