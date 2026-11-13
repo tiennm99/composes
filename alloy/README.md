@@ -5,8 +5,8 @@ container telemetry to Grafana Cloud, with remote config from Grafana Fleet
 Management.
 
 One container runs both the `node_exporter` (host) and `cadvisor` (container)
-collectors. A second, tiny container proxies a read-only slice of the Docker
-API to it. The Alloy config is embedded inline via Compose `configs:`, so
+collectors. Two tiny containers proxy read-only slices of the Docker and
+containerd APIs to it. The Alloy config is embedded inline via Compose `configs:`, so
 there is no `config.alloy` on disk.
 
 `dockerproxy` publishes
@@ -132,6 +132,40 @@ What this does not do: `GET /containers/{id}/json` still returns every
 container's environment variables. The proxy closes the escalation path, not
 the disclosure one.
 
+## containerd API access
+
+On a host whose Docker uses the containerd image store (`docker info` shows
+driver `overlayfs`, the default on fresh Docker 29+ installs), cadvisor's Docker
+collector also needs containerd to find each container's root filesystem.
+Without it the collector fails to register and only the host's root cgroup is
+reported, with no per-container series. On `overlay2` hosts containerd is never
+called, and the proxy sits idle.
+
+containerd has no access control of its own: its socket grants full control of
+every container. `containerdproxy` runs [Envoy](https://www.envoyproxy.io/)
+with the socket mounted, and serves a filtered copy on a unix socket in the
+`containerdproxy-socket` volume, which Alloy mounts read-only and reaches
+through `containerd_host` (cadvisor only dials unix sockets). An RBAC filter
+on the gRPC method path allows exactly the two read calls cadvisor makes and
+answers everything else with `403`:
+
+| Method | Called by |
+| --- | --- |
+| `containerd.services.containers.v1.Containers/Get` | cadvisor Docker collector, for the container's rootfs path |
+| `containerd.services.version.v1.Version/Version` | cadvisor containerd collector registration |
+
+`Containers/Get` returns the container's OCI spec, environment included, which
+is the same disclosure the Docker proxy already allows. List, create, delete,
+task exec and kill, image pulls and every other call are refused.
+
+It runs as root (`user: "0:0"`) because the host socket is `root:root 0660`;
+it needs no capabilities beyond that, and has no network (`network_mode:
+none`). The distroless image has no shell.
+
+Per-container filesystem usage (`container_fs_usage_bytes`) stays empty on
+containerd-store hosts: cadvisor would read it from containerd's snapshot
+directories, which are not mounted.
+
 ## Mounts
 
 | Mount | Why |
@@ -147,11 +181,18 @@ the disclosure one.
 | `alloy-data` | WAL and remotecfg cache — the only writable path |
 
 `dockerproxy` mounts `/var/run/docker.sock:ro` and nothing else.
+`containerdproxy` mounts `/run/containerd/containerd.sock:ro` and its
+`containerdproxy-socket` volume, which Alloy mounts at `/run/containerdproxy:ro`.
 
 
 ## Version pinning
 
-Both images use `latest`. Neither project publishes a moving major tag:
-`grafana/alloy` ships only exact `v1.x.y` tags, and `tecnativa/docker-socket-proxy`
-only exact `v0.x.y` tags (its bare `0` tag is a stale leftover). `latest` is the
-closest equivalent, so new releases arrive on the next redeploy.
+`grafana/alloy` and `tecnativa/docker-socket-proxy` use `latest`. Neither
+publishes a moving major tag: `grafana/alloy` ships only exact `v1.x.y` tags,
+and `tecnativa/docker-socket-proxy` only exact `v0.x.y` tags (its bare `0` tag
+is a stale leftover). `latest` is the closest equivalent, so new releases
+arrive on the next redeploy.
+
+`envoyproxy/envoy` publishes neither `latest` nor a major tag, only
+`distroless-v1.N-latest` per minor line. The proxy uses the newest of those,
+which brings patch releases; moving to the next minor line is a manual bump.
