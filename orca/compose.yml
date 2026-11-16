@@ -18,7 +18,7 @@ services:
       - HOST=${SERVICE_HOSTNAME}
     volumes:
       - 'orca-home:/home/ubuntu'
-      - 'orca-workspace:/workspace'
+      - 'orca-workspace:/home/ubuntu/workspace'
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
 
 volumes:

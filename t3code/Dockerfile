@@ -57,11 +57,11 @@ RUN apt-get update \
     libayatana-appindicator3-dev librsvg2-dev libxdo-dev \
   && rm -rf /var/lib/apt/lists/*
 
-# The image's ubuntu user (uid 1000): zsh, passwordless sudo, owns /workspace.
+# The image's ubuntu user (uid 1000): zsh, passwordless sudo, owns ~/workspace.
 RUN chsh -s /bin/zsh ubuntu \
   && echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu \
   && chmod 0440 /etc/sudoers.d/ubuntu \
-  && mkdir -p /workspace && chown ubuntu:ubuntu /workspace
+  && mkdir -p /home/ubuntu/workspace && chown ubuntu:ubuntu /home/ubuntu/workspace
 
 ENV LANG=C.UTF-8 \
     SHELL=/bin/zsh \
@@ -69,6 +69,6 @@ ENV LANG=C.UTF-8 \
 
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/entrypoint.sh
 USER ubuntu
-WORKDIR /workspace
+WORKDIR /home/ubuntu/workspace
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

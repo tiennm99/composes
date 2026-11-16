@@ -7,7 +7,7 @@ services:
     environment:
       - PASSWORD=${PASSWORD:?required}
       - TZ=Asia/Ho_Chi_Minh
-      - DEFAULT_WORKSPACE=/workspace
+      - DEFAULT_WORKSPACE=/home/coder/workspace
       - SHELL=/bin/zsh
       - GIT_AUTHOR_NAME=${GIT_NAME}
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
@@ -17,7 +17,7 @@ services:
       # - CODE_SERVER_APP_NAME=${CODE_SERVER_APP_NAME:-code-server}
     volumes:
       - 'code-server-home:/home/coder'
-      - 'code-server-workspace:/workspace'
+      - 'code-server-workspace:/home/coder/workspace'
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
 volumes:
   code-server-home:

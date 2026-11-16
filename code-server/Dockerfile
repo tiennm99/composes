@@ -58,7 +58,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/*
 
 # Workspace directory, owned by the container user.
-RUN mkdir -p /workspace && chown 1000:1000 /workspace
+RUN mkdir -p /home/coder/workspace && chown 1000:1000 /home/coder/workspace
 
 # Startup wrapper: enters DEFAULT_WORKSPACE, joins the Docker socket's group,
 # then runs the image's entrypoint.

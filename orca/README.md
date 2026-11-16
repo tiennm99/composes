@@ -7,7 +7,7 @@ and is only the UI. Upstream ships no Docker image, so a local `Dockerfile`
 builds one from `ubuntu:26.04`, and `entrypoint.sh` downloads the Orca AppImage
 into `$HOME` on first start.
 
-The container is a workspace: code lives in `/workspace`, and the image carries
+The container is a workspace: code lives in `/home/ubuntu/workspace`, and the image carries
 build tools, command-line utilities, the `gh`, `glab`, `sops` and `docker`
 CLIs. Language toolchains are installed into home, below.
 
@@ -43,7 +43,7 @@ Orca Servers → Shared Server Access**, so a redeploy does not disconnect them.
 
 ## Toolchains
 
-Only `/home/ubuntu` and `/workspace` survive a redeploy, so install toolchains
+Only `/home/ubuntu` and `/home/ubuntu/workspace` survive a redeploy, so install toolchains
 into home from a terminal inside Orca. Each command below was tested in
 the image, in this order. Open a new terminal afterwards so the `PATH` changes
 apply.
@@ -206,7 +206,7 @@ too.
 | Volume | Mount | Holds |
 | --- | --- | --- |
 | `orca-home` | `/home/ubuntu` | The Orca AppImage and its extracted cache, Orca's state and paired devices, agent CLIs and their logins |
-| `orca-workspace` | `/workspace` | Repositories the agents work on |
+| `orca-workspace` | `/home/ubuntu/workspace` | Repositories the agents work on |
 
 The first start downloads the AppImage (about 250 MB) and Orca extracts it
 into `~/.cache` (about 700 MB), so it takes a minute or more before the server

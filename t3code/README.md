@@ -5,7 +5,7 @@ and is controlled from its web, desktop and mobile apps. Upstream ships no
 Docker image, so a local `Dockerfile` builds one from `ubuntu:26.04`, and
 `entrypoint.sh` runs upstream's installer into `$HOME` on first start.
 
-The container is a workspace: code lives in `/workspace`, and the image carries
+The container is a workspace: code lives in `/home/ubuntu/workspace`, and the image carries
 build tools, command-line utilities, and the `gh`, `glab`, `sops` and `docker`
 CLIs. Language toolchains are installed into home, below.
 
@@ -34,11 +34,11 @@ T3 Code is reached through a public domain, so a client needs no VPN. See
 5. Set **Settings → Threads → New threads → Permissions**. New threads default
    to **Full access**.
 
-Add repositories under `/workspace`.
+Add repositories under `/home/ubuntu/workspace`.
 
 ## Toolchains
 
-Only `/home/ubuntu` and `/workspace` survive a redeploy, so install toolchains
+Only `/home/ubuntu` and `/home/ubuntu/workspace` survive a redeploy, so install toolchains
 into home from a terminal in the container. Each command below was tested in the
 image, in this order. Open a new terminal afterwards so the `PATH` changes apply.
 
@@ -197,7 +197,7 @@ too.
 | Volume | Mount | Holds |
 | --- | --- | --- |
 | `t3code-home` | `/home/ubuntu` | The `t3` CLI and its downloaded versions, T3 Code's state and paired devices, agent CLIs and their logins |
-| `t3code-workspace` | `/workspace` | Repositories the agents work on |
+| `t3code-workspace` | `/home/ubuntu/workspace` | Repositories the agents work on |
 
 ## Image
 
