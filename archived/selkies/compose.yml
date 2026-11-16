@@ -1,6 +1,6 @@
 services:
   selkies:
-    build: .
+    image: ghcr.io/selkies-project/selkies/desktop:latest-ubuntu26.04
     restart: unless-stopped
     shm_size: 2gb
     environment:
@@ -9,8 +9,6 @@ services:
       - TZ=${TZ:-Asia/Ho_Chi_Minh}
     volumes:
       - selkies-home:/home/ubuntu
-      - selkies-workspace:/workspace
 
 volumes:
   selkies-home:
-  selkies-workspace:

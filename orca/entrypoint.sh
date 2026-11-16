@@ -17,6 +17,10 @@ if [[ -S /var/run/docker.sock ]]; then
   fi
 fi
 
+# Create and enter ~/workspace, the default folder for new terminals.
+mkdir -p ~/workspace
+cd ~/workspace
+
 # Download the Orca AppImage into ~/.local/bin when missing.
 app="$HOME/.local/bin/orca-ide"
 mkdir -p "$HOME/.local/bin"

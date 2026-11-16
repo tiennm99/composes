@@ -16,6 +16,10 @@ if [[ -S /var/run/docker.sock ]]; then
   fi
 fi
 
+# Create and enter ~/workspace, where sessions start.
+mkdir -p ~/workspace
+cd ~/workspace
+
 # Install ttyd into ~/.local/bin when missing.
 mkdir -p ~/.local/bin
 if ! command -v ttyd >/dev/null; then

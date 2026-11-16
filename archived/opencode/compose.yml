@@ -19,7 +19,5 @@ services:
       - GIT_COMMITTER_EMAIL=${GIT_EMAIL}
     volumes:
       - 'opencode-home:/root'
-      - 'opencode-workspace:/workspace'
 volumes:
   opencode-home:
-  opencode-workspace:

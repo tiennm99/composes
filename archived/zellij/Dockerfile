@@ -13,11 +13,10 @@ RUN apt-get update \
     sqlite3 socat \
   && rm -rf /var/lib/apt/lists/*
 
-# The image's ubuntu user (uid 1000): zsh, passwordless sudo, owns /workspace.
+# The image's ubuntu user (uid 1000): zsh, passwordless sudo.
 RUN chsh -s /bin/zsh ubuntu \
   && echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu \
-  && chmod 0440 /etc/sudoers.d/ubuntu \
-  && mkdir -p /workspace && chown ubuntu:ubuntu /workspace
+  && chmod 0440 /etc/sudoers.d/ubuntu
 
 ENV LANG=C.UTF-8 \
     TERM=xterm-256color \
@@ -26,6 +25,6 @@ ENV LANG=C.UTF-8 \
 
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 USER ubuntu
-WORKDIR /workspace
+WORKDIR /home/ubuntu
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

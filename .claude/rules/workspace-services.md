@@ -10,10 +10,10 @@ whatever variable selects the working directory at it. `code-server`, `orca`,
 A service with no human inside it does not — an agent such as `hermes` or
 `openclaw` keeps the volume layout of its official Docker guide.
 
-Make sure `~/workspace` comes out owned by the container user. A `WORKDIR`
-set after `USER` in the image creates it with that owner, and Docker seeds an
-empty home volume from the image. A home volume that already has content is
-not seeded, so a service that must have the folder creates it at startup as
-that user (`mkdir -p` in the entrypoint); a service with neither, such as
-`webtop` on its stock image, leaves it to the user to create. No image needs a
+Make sure `~/workspace` comes out owned by the container user. Create it at
+startup as that user (`mkdir -p` in the entrypoint, then `cd` into it), and
+keep the image's `WORKDIR` at home, not `~/workspace`: on a home volume that
+already has content, Docker creates a missing `WORKDIR` as root before the
+entrypoint runs. A service on a stock image with no entrypoint of its own,
+such as `webtop`, leaves the folder to the user to create. No image needs a
 build step only to fix its ownership.

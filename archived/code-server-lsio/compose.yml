@@ -1,6 +1,6 @@
 services:
   code-server:
-    build: .
+    image: lscr.io/linuxserver/code-server:latest
     restart: unless-stopped
     hostname: ${SERVICE_HOSTNAME}
     environment:
@@ -12,7 +12,7 @@ services:
       - INSTALL_PACKAGES=bubblewrap|gh|git|glab|unzip|zip
       - NODEJS_MOD_VERSION=24
       - TZ=Asia/Ho_Chi_Minh
-      - DEFAULT_WORKSPACE=/workspace
+      - DEFAULT_WORKSPACE=/config/workspace
       - GIT_AUTHOR_NAME=${GIT_NAME}
       - GIT_AUTHOR_EMAIL=${GIT_EMAIL}
       - GIT_COMMITTER_NAME=${GIT_NAME}
@@ -21,8 +21,6 @@ services:
       # - PWA_APPNAME=${PWA_APPNAME:-code-server}
     volumes:
       - 'code-server-config:/config'
-      - 'code-server-workspace:/workspace'
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
 volumes:
   code-server-config:
-  code-server-workspace:

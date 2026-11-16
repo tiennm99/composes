@@ -64,8 +64,7 @@ skip zsh's first-run wizard. Both are yours to edit.
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `zellij-home` | `/home/ubuntu` | Zellij and your tools, logins, tokens, config |
-| `zellij-workspace` | `/workspace` | Code; sessions start here |
+| `zellij-home` | `/home/ubuntu` | Zellij and your tools, logins, tokens, config, and code in `~/workspace`, where sessions start |
 
 The user is the image's own `ubuntu` (UID 1000). Running sessions end when the
 container restarts; Zellij can resurrect their layout, with commands to

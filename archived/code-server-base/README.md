@@ -6,12 +6,10 @@ from the LinuxServer image, stock.
 The starting point for a new code-server instance: the image as it ships, with
 no mods and no extra packages. Only a password, a timezone, and a workspace
 path are set. Copy the directory and add `DOCKER_MODS` / `INSTALL_PACKAGES` to
-build a kitted-out box — [code-server](../code-server/README.md) is that same
-image with Go, Node.js, Python, and a pile of CLI tools layered on.
+build a kitted-out box.
 
-Both use a volume named `code-server-config`, but Compose namespaces volumes by
-project and the project is named after the directory, so the two instances stay
-independent.
+Compose namespaces volumes by project, and the project is named after the
+directory, so a copy gets its own `code-server-config` volume.
 
 ## Environment
 
@@ -33,10 +31,13 @@ Dokploy terminate the domain at their own proxy.
 ## Networking
 
 Listens on `8443`. No ports are published — point the domain at that port in
-Coolify or Dokploy. See the [root README](../README.md) for why.
+Coolify or Dokploy.
 
 ## Storage
 
-Everything lives in the `code-server-config` named volume mounted at `/config`;
-the default workspace is `/config/workspace`. Removing the volume wipes your
-files, settings, and extensions.
+| Volume | Mount | Holds |
+| --- | --- | --- |
+| `code-server-config` | `/config` | Home directory of the image's user `abc`: settings, extensions, and code in `~/workspace` |
+
+`DEFAULT_WORKSPACE` is `/config/workspace`, the folder code-server opens.
+Removing the volume wipes your files, settings, and extensions.

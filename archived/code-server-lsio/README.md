@@ -51,8 +51,8 @@ dot-separated field of `0.0.0.0`. code-server itself never reads `HOST` — it
 binds `[::]:8443` — so overriding it only affects the prompt. bash is
 unaffected; its `\h` uses the real hostname.
 
-`PUID`/`PGID` are pinned to `1000` in `compose.yml`; the `Dockerfile` depends
-on that (see [Storage](#storage)).
+`PUID`/`PGID` are pinned to `1000` in `compose.yml`, so files in `/config`,
+`~/workspace` included, keep the same owner across recreates.
 
 ## Networking
 
@@ -62,26 +62,7 @@ Listens on `8443`; point the domain at it.
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `code-server-config` | `/config` | Home directory: settings, extensions, shell history, CLI logins |
-| `code-server-workspace` | `/workspace` | Code you work on |
+| `code-server-config` | `/config` | Home directory: settings, extensions, shell history, CLI logins, and code in `~/workspace` |
 
-`DEFAULT_WORKSPACE` points at `/workspace`. It only chooses the folder
-code-server opens; it does not move anything.
-
-The `Dockerfile` exists only to make `/workspace` writable. The image
-hard-codes what it hands to the `abc` user — `init-adduser` takes `/app`,
-`/config` and `/defaults`, `init-code-server` takes `/config/workspace` by
-literal path — and reads `DEFAULT_WORKSPACE` only to decide which folder to
-open. A named volume on `/workspace` is therefore never chowned, comes up
-`root:root`, and the editor cannot write a single file into it.
-
-Creating the directory in the image, owned by `1000:1000`, fixes it without any
-runtime step: Docker seeds an empty named volume from the image directory,
-ownership included, so `/workspace` arrives owned by `abc`.
-
-The alternative was a `chown` script in `/custom-cont-init.d`, the image's own
-init hook. It was rejected because it needs a bind mount from the repository
-into the container, and because the hook silently skips any script that has
-lost its executable bit — a read-only workspace with nothing obvious to blame.
-Baking `1000:1000` into the image costs the ability to change `PUID` at
-runtime, which is free here because `compose.yml` pins it.
+`DEFAULT_WORKSPACE` points at `/config/workspace`, the folder code-server
+opens. The image's init creates that folder and hands it to the `abc` user.

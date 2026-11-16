@@ -17,7 +17,5 @@ services:
       - HOST=${SERVICE_HOSTNAME}
     volumes:
       - 'paseo-home:/home/paseo'
-      - 'paseo-workspace:/workspace'
 volumes:
   paseo-home:
-  paseo-workspace:

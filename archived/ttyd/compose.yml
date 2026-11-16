@@ -15,8 +15,6 @@ services:
       - HOST=${SERVICE_HOSTNAME}
     volumes:
       - 'ttyd-home:/home/ubuntu'
-      - 'ttyd-workspace:/workspace'
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
 volumes:
   ttyd-home:
-  ttyd-workspace:

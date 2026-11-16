@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Runs as root ahead of the image's own entrypoint: sets the paseo user's
-# login password, then installs any agent CLI named in AGENTS whose command
-# does not already run. See README.md.
+# login password, creates ~/workspace and starts there, then installs any
+# agent CLI named in AGENTS whose command does not already run. See README.md.
 set -euo pipefail
 
 if [[ "$(id -u)" != "0" ]]; then
@@ -12,6 +12,9 @@ if [[ -n "${PASEO_PASSWORD:-}" ]]; then
   printf 'paseo:%s\n' "$PASEO_PASSWORD" | /usr/sbin/chpasswd \
     || echo "entrypoint: could not set the paseo password, continuing" >&2
 fi
+
+/usr/sbin/gosu paseo mkdir -p /home/paseo/workspace
+cd /home/paseo/workspace
 
 agent_installer() {
   case "$1" in

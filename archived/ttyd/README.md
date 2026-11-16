@@ -57,8 +57,7 @@ inside panes. tmux reads `~/.tmux.conf` if you create one, for example
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `ttyd-home` | `/home/ubuntu` | ttyd and your tools, logins, config |
-| `ttyd-workspace` | `/workspace` | Code; sessions start here |
+| `ttyd-home` | `/home/ubuntu` | ttyd and your tools, logins, config, and code in `~/workspace`, where sessions start |
 
 The user is the image's own `ubuntu` (UID 1000). tmux sessions end when the
 container restarts.

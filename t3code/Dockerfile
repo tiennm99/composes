@@ -68,6 +68,6 @@ ENV LANG=C.UTF-8 \
 
 COPY --chmod=0755 entrypoint.sh /usr/local/bin/entrypoint.sh
 USER ubuntu
-WORKDIR /home/ubuntu/workspace
+WORKDIR /home/ubuntu
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

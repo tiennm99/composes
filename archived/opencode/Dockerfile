@@ -7,4 +7,4 @@ RUN apk add --no-cache \
       git \
       openssh-client
 
-WORKDIR /workspace
+WORKDIR /root/workspace

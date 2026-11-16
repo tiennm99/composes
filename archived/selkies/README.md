@@ -11,6 +11,7 @@ installed later from the sidebar's Apps panel or with `proot-apps install
 1. Set `PASSWD`.
 2. Map the domain to port `8080` and deploy.
 3. Open the domain and log in as `ubuntu` / `PASSWD`.
+4. Create `~/workspace` from the desktop's terminal for your code.
 
 ## Environment
 
@@ -30,14 +31,7 @@ so the container serves plain HTTP behind it.
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `selkies-home` | `/home/ubuntu` | Home directory: desktop settings, browser profiles, CLI logins, apps installed through the Apps panel or `proot-apps` |
-| `selkies-workspace` | `/workspace` | Code and files you work on |
-
-The `Dockerfile` exists only to make `/workspace` writable. The image runs as
-uid 1000 and does not ship `/workspace`, so a named volume there would come up
-`root:root`. Creating the directory in the image, owned by `1000:1000`, fixes
-that: Docker seeds an empty named volume from the image directory, ownership
-included.
+| `selkies-home` | `/home/ubuntu` | Home directory: desktop settings, browser profiles, CLI logins, apps installed through the Apps panel or `proot-apps`, and code in `~/workspace` |
 
 Software installed with `apt` (or `sudo`) lives in the container and is lost
 when it is recreated. Apps from the Apps panel or `proot-apps` live under

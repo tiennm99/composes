@@ -17,6 +17,10 @@ if [[ -S /var/run/docker.sock ]]; then
   fi
 fi
 
+# Create and enter ~/workspace, the default folder for new terminals.
+mkdir -p ~/workspace
+cd ~/workspace
+
 # Install the t3 CLI into ~/.local/bin when missing.
 if ! command -v t3 >/dev/null 2>&1; then
   curl -fsSL https://t3.codes/install.sh | sh

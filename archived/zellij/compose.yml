@@ -15,8 +15,6 @@ services:
       - HOST=${SERVICE_HOSTNAME}
     volumes:
       - 'zellij-home:/home/ubuntu'
-      - 'zellij-workspace:/workspace'
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
 volumes:
   zellij-home:
-  zellij-workspace:

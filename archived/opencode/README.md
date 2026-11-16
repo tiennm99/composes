@@ -54,8 +54,7 @@ Other model provider credentials are not variables — see [Setup](#setup).
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `opencode-home` | `/root` | Provider credentials, config, session database, caches |
-| `opencode-workspace` | `/workspace` | Code the agent works on |
+| `opencode-home` | `/root` | Provider credentials, config, session database, caches, and the code in `~/workspace` |
 
 The whole home directory is one volume because opencode spreads its state over
 four places under it — `.config/opencode`, `.local/share/opencode` (the SQLite
@@ -66,8 +65,8 @@ anything else installed into `$HOME` persist as a side effect.
 The container runs as root, which is what the upstream image does; `$HOME` is
 `/root` because of it.
 
-`WORKDIR /workspace` in the `Dockerfile` is what makes the agent start in the
-workspace volume.
+`WORKDIR /root/workspace` in the `Dockerfile` makes the agent start in
+`~/workspace`, a plain folder in the home volume.
 
 ## Networking
 

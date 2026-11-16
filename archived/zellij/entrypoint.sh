@@ -16,6 +16,10 @@ if [[ -S /var/run/docker.sock ]]; then
   fi
 fi
 
+# Create and enter ~/workspace, where sessions start.
+mkdir -p ~/workspace
+cd ~/workspace
+
 # Install Zellij into ~/.local/bin when missing.
 mkdir -p ~/.local/bin ~/.config/zellij
 if ! command -v zellij >/dev/null; then

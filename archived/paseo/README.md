@@ -126,14 +126,13 @@ fresh volume, and the agents update themselves in place afterwards.
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `paseo-home` | `/home/paseo` | Daemon state, agent CLIs and their configs and credentials (`.claude`, `.codex`, `.config/*`) |
-| `paseo-workspace` | `/workspace` | Code the agents work on |
+| `paseo-home` | `/home/paseo` | Daemon state, agent CLIs and their configs and credentials (`.claude`, `.codex`, `.config/*`), and the code the agents work on in `~/workspace` |
 
 The agent CLIs, `gh` and `glab` all keep their config under `/home/paseo` — the
 base image points `CLAUDE_CONFIG_DIR`, `CODEX_HOME` and the `XDG_*` variables
-into it — so every login survives a redeploy, as do dotfiles such as a `.zshrc`
-or an oh-my-zsh install. Anything written outside `$HOME` (`chsh`,
-`apt install`) is lost on rebuild.
+into it — so every login survives a redeploy, as do the code in
+`~/workspace` and dotfiles such as a `.zshrc` or an oh-my-zsh install.
+Anything written outside `$HOME` (`chsh`, `apt install`) is lost on rebuild.
 
 ## Tools
 
@@ -195,7 +194,11 @@ reasoning:
   `/usr/local/bin/entrypoint`, runs *before* the base image's
   `paseo-docker-entrypoint` and then hands over to it: that one ends in
   `exec gosu paseo` and never returns, and every job here — `chpasswd`, and
-  `gosu paseo` for the agent installs — needs root.
+  `gosu paseo` for `~/workspace` and the agent installs — needs root.
+- `~/workspace` is created as `paseo` and entered on every start, and the
+  daemon inherits it as its working directory. Docker seeds only a fresh
+  `paseo-home` volume from the image, so a folder made at build time would
+  never reach an existing one.
 - The `paseo` password is set on every start rather than at build, so it never
   lands in an image layer, and because `/etc/shadow` is in the image rather
   than on a volume and reverts on each recreate. It is piped, not passed as an
@@ -216,7 +219,7 @@ reasoning:
   a file planted there under one of those names would otherwise run as root on
   the next start.
 - Globbing is off (`set -f`) around the `AGENTS` loop. The list is split
-  unquoted, so a `*` in it would otherwise expand against `/workspace`, the
+  unquoted, so a `*` in it would otherwise expand against `~/workspace`, the
   working directory, and report every file in it as an unknown agent.
 - The agent `PATH` entries are `ENV` in the image, not a shell rc entry: the
   daemon probes for each provider's binary with `which` in its own environment,
