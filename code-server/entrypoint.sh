@@ -1,8 +1,9 @@
 #!/bin/sh
 set -eu
 
-# Start in DEFAULT_WORKSPACE, the folder code-server opens.
+# Create and enter DEFAULT_WORKSPACE, the folder code-server opens.
 if [ -n "${DEFAULT_WORKSPACE:-}" ]; then
+  mkdir -p "$DEFAULT_WORKSPACE"
   cd "$DEFAULT_WORKSPACE"
 fi
 

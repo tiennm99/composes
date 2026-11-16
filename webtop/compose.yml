@@ -1,6 +1,6 @@
 services:
   webtop:
-    build: .
+    image: lscr.io/linuxserver/webtop:ubuntu-xfce
     restart: unless-stopped
     shm_size: 1gb
     environment:
@@ -15,8 +15,6 @@ services:
       # - TITLE=${TITLE:-Webtop}
     volumes:
       - webtop-config:/config
-      - webtop-workspace:/workspace
 
 volumes:
   webtop-config:
-  webtop-workspace:

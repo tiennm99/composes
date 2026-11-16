@@ -17,8 +17,6 @@ services:
       # - CODE_SERVER_APP_NAME=${CODE_SERVER_APP_NAME:-code-server}
     volumes:
       - 'code-server-home:/home/coder'
-      - 'code-server-workspace:/home/coder/workspace'
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
 volumes:
   code-server-home:
-  code-server-workspace:

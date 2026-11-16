@@ -13,7 +13,7 @@ Topic rules live in `.claude/rules/` and load with this file:
   example role names for supporting containers.
 - `images-and-comments.md` — where and how software is installed, and what
   comments in compose files, Dockerfiles and scripts may say.
-- `workspace-services.md` — the home and `/workspace` volume split for services
+- `workspace-services.md` — the single home volume, with code in `~/workspace`, for services
   someone works inside.
 - `environment-and-secrets.md` — `environment:` order, `.env.example`, and
   secrets.
@@ -33,8 +33,8 @@ compatibility, and do not block on Dokploy-only issues.
 This rule has high priority: editing one service must never redeploy another.
 A service's `README.md` describes that service and nothing else. It does not
 name, link to, or compare itself with another service, and it does not link up
-to the root README, CLAUDE.md or `.claude/rules/`. Shared conventions — the workspace volume
-split, no published ports, the restart policy, secrets, variable order — are
+to the root README, CLAUDE.md or `.claude/rules/`. Shared conventions — the single home volume,
+no published ports, the restart policy, secrets, variable order — are
 written once at the root and are not restated or "see the root for why"-linked
 from a service. A service README says what the service is, its variables,
 storage and wiring, and the reasons behind choices specific to that service.

@@ -12,7 +12,7 @@ below.
 
 ## Toolchains
 
-Only `/home/coder` and `/home/coder/workspace` survive a redeploy, so install toolchains
+Only `/home/coder`, code in `~/workspace` included, survives a redeploy, so install toolchains
 into home from the editor's terminal. Each command below was tested in
 the image, in this order. Open a new terminal afterwards so the `PATH` changes
 apply.
@@ -168,23 +168,14 @@ Listens on `8080`; point the domain at it.
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `code-server-home` | `/home/coder` | Home directory: settings, extensions, shell history, CLI logins |
-| `code-server-workspace` | `/home/coder/workspace` | Code you work on |
+| `code-server-home` | `/home/coder` | Home directory: settings, extensions, shell history, CLI logins, and code in `~/workspace` |
 
 The image's entrypoint opens `.`, its working directory. `entrypoint.sh`
-changes into `DEFAULT_WORKSPACE`, set to `/home/coder/workspace` in `compose.yml`, before
+creates and changes into `DEFAULT_WORKSPACE`, set to `/home/coder/workspace` in `compose.yml`, before
 starting it, so that is the folder code-server opens and where new terminals
 start. Changing the variable moves both without editing the compose file's
 structure. `docker exec` shells are not affected and start in the image's
 `/home/coder`.
-
-The `Dockerfile` also makes `/home/coder/workspace` writable. The image does not
-ship that directory, so a named volume mounted there comes up `root:root`,
-and `coder` (uid `1000`) cannot write to it. Creating the directory in the
-image, owned by `1000:1000`, fixes that without a runtime step, because Docker
-seeds an empty named volume from the image's directory, ownership included.
-The home volume needs no such step, because the image already ships
-`/home/coder` owned by `coder`.
 
 `build-essential`, `bubblewrap`, `zip` and `unzip` are in the `Dockerfile`
 rather than home because their projects publish no standalone binaries;

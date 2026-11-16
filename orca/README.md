@@ -43,7 +43,7 @@ Orca Servers → Shared Server Access**, so a redeploy does not disconnect them.
 
 ## Toolchains
 
-Only `/home/ubuntu` and `/home/ubuntu/workspace` survive a redeploy, so install toolchains
+Only `/home/ubuntu`, repositories in `~/workspace` included, survives a redeploy, so install toolchains
 into home from a terminal inside Orca. Each command below was tested in
 the image, in this order. Open a new terminal afterwards so the `PATH` changes
 apply.
@@ -205,8 +205,7 @@ too.
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `orca-home` | `/home/ubuntu` | The Orca AppImage and its extracted cache, Orca's state and paired devices, agent CLIs and their logins |
-| `orca-workspace` | `/home/ubuntu/workspace` | Repositories the agents work on |
+| `orca-home` | `/home/ubuntu` | The Orca AppImage and its extracted cache, Orca's state and paired devices, agent CLIs and their logins, and the repositories the agents work on in `~/workspace` |
 
 The first start downloads the AppImage (about 250 MB) and Orca extracts it
 into `~/.cache` (about 700 MB), so it takes a minute or more before the server

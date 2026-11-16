@@ -38,7 +38,7 @@ Add repositories under `/home/ubuntu/workspace`.
 
 ## Toolchains
 
-Only `/home/ubuntu` and `/home/ubuntu/workspace` survive a redeploy, so install toolchains
+Only `/home/ubuntu`, repositories in `~/workspace` included, survives a redeploy, so install toolchains
 into home from a terminal in the container. Each command below was tested in the
 image, in this order. Open a new terminal afterwards so the `PATH` changes apply.
 
@@ -196,8 +196,7 @@ too.
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `t3code-home` | `/home/ubuntu` | The `t3` CLI and its downloaded versions, T3 Code's state and paired devices, agent CLIs and their logins |
-| `t3code-workspace` | `/home/ubuntu/workspace` | Repositories the agents work on |
+| `t3code-home` | `/home/ubuntu` | The `t3` CLI and its downloaded versions, T3 Code's state and paired devices, agent CLIs and their logins, and the repositories the agents work on in `~/workspace` |
 
 ## Image
 

@@ -53,7 +53,7 @@ the container does is fine, and this list does not limit the choice:
 | `backup` | A database dump or volume backup running alongside |
 
 A volume is named `<service>-<what it holds>`, after the service that mounts it
-and its mount point or meaning — `code-server-home`, `code-server-workspace`,
+and its mount point or meaning — `code-server-home`, `openclaw-workspace`,
 `db-data`, `cache-data`.
 
 Services declare no networks. Coolify creates one per app and attaches every

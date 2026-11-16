@@ -16,6 +16,7 @@ takes a few minutes longer before the desktop answers.
 1. Set `CUSTOM_USER` and `PASSWORD`.
 2. Map the domain to port `3000` and deploy.
 3. Open the domain and log in with `CUSTOM_USER` / `PASSWORD`.
+4. Create `~/workspace` from the desktop's terminal for your code.
 
 Port `3000` serves plain HTTP and must sit behind the proxy, which adds HTTPS.
 The image's own HTTPS port `3001`, with a self-signed certificate, is unused.
@@ -31,21 +32,14 @@ The image's own HTTPS port `3001`, with a self-signed certificate, is unused.
 `CUSTOM_USER` and `PASSWORD` are required. Without `PASSWORD` the image serves the desktop, with a
 shell and `sudo`, to anyone who opens the domain.
 
-`PUID`/`PGID` are pinned to `1000` in `compose.yml`; the `Dockerfile` depends
-on that (see Storage).
+`PUID`/`PGID` are pinned to `1000` in `compose.yml`, so files in `/config`,
+`~/workspace` included, keep the same owner across recreates.
 
 ## Storage
 
 | Volume | Mount | Holds |
 | --- | --- | --- |
-| `webtop-config` | `/config` | Home directory: desktop settings, browser profiles, CLI logins, apps installed with `proot-apps` |
-| `webtop-workspace` | `/workspace` | Code and files you work on |
-
-The `Dockerfile` exists only to make `/workspace` writable. The image's init
-chowns `/config` to the `abc` user but not other paths, so a named volume on
-`/workspace` would come up `root:root`. Creating the directory in the image,
-owned by `1000:1000`, fixes that: Docker seeds an empty named volume from the
-image directory, ownership included.
+| `webtop-config` | `/config` | Home directory: desktop settings, browser profiles, CLI logins, apps installed with `proot-apps`, and code in `~/workspace` |
 
 Software installed with `apt` lives in the container and is lost when it is
 recreated. Anything that must survive goes under `/config`, through

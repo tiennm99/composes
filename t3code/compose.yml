@@ -17,9 +17,7 @@ services:
       # - T3CODE_TELEMETRY_ENABLED=${T3CODE_TELEMETRY_ENABLED:-true}
     volumes:
       - 't3code-home:/home/ubuntu'
-      - 't3code-workspace:/home/ubuntu/workspace'
       - '/var/run/docker.sock:/var/run/docker.sock:ro'
 
 volumes:
   t3code-home:
-  t3code-workspace:

@@ -62,11 +62,10 @@ RUN apt-get update \
     libayatana-appindicator3-dev librsvg2-dev libxdo-dev \
   && rm -rf /var/lib/apt/lists/*
 
-# The image's ubuntu user (uid 1000): zsh, passwordless sudo, owns ~/workspace.
+# The image's ubuntu user (uid 1000): zsh, passwordless sudo.
 RUN chsh -s /bin/zsh ubuntu \
   && echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu \
-  && chmod 0440 /etc/sudoers.d/ubuntu \
-  && mkdir -p /home/ubuntu/workspace && chown ubuntu:ubuntu /home/ubuntu/workspace
+  && chmod 0440 /etc/sudoers.d/ubuntu
 
 # Runs the AppImage without FUSE.
 ENV LANG=C.UTF-8 \
