@@ -45,6 +45,12 @@ itself.
   waiting, so a mirror synced again while its stats run gets a second worker,
   and the two update the same `language_stat` rows and deadlock in
   PostgreSQL. One worker processes them in turn.
+- **Automatic git cleanup runs in the foreground.** `git.config`
+  `gc.autoDetach` is `false`. A mirror fetch may start git's automatic
+  cleanup, which by default runs in the background and deletes pack files.
+  Gitea writes the commit graph right after the fetch, so it read packs being
+  deleted, failed the sync and printed one error per object. With the cleanup
+  in the foreground, the fetch returns only after it ends.
 - **`gitea/gitea:28`.** Gitea publishes major tags; the major pin takes
   updates without a surprise major upgrade.
 - **`postgres:18-alpine`**, the newest Postgres major; Gitea needs 12 or
