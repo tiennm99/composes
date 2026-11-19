@@ -18,13 +18,7 @@ Caddy, which asks for a username and password and then forwards to `web`.
    `binder_linux` in `/etc/modules-load.d/redroid.conf` and
    `options binder_linux devices=binder,hwbinder,vndbinder` in
    `/etc/modprobe.d/redroid.conf`.
-2. Create the password hash; the password prompt does not echo:
-
-   ```sh
-   docker run --rm -it caddy:2-alpine caddy hash-password | tail -n 1 | tr -d '\r' | base64 -w0
-   ```
-
-3. Set the variables, then point the domain at the `proxy` service on port
+2. Set the variables, then point the domain at the `proxy` service on port
    `80` and deploy.
 
 ## Variables
@@ -32,7 +26,7 @@ Caddy, which asks for a username and password and then forwards to `web`.
 | Variable | Meaning |
 | --- | --- |
 | `BASIC_AUTH_USERNAME` | Login name for the page |
-| `BASIC_AUTH_HASH` | The password's bcrypt hash, base64-encoded, from step 2 |
+| `BASIC_AUTH_PASSWORD` | Login password, in plain text; avoid `$` in it |
 
 ## Use
 
@@ -54,8 +48,10 @@ settings.
 - **Caddy for the login:** ws-scrcpy has no login of its own, and Coolify's
   HTTP basic auth setting does not apply to compose apps. The `Caddyfile` is
   baked into a small image so the proxy does not depend on a bind mount.
-- **Base64 hash:** a raw bcrypt hash is full of `$`, which compose would read
-  as variables; Caddy accepts the base64-encoded form as well.
+- **Plain password, hashed at start:** Caddy only accepts a password hash, so
+  `proxy-entrypoint.sh` hashes `BASIC_AUTH_PASSWORD` when the container starts.
+  Changing the password is then a variable edit and a redeploy. A `$` in the
+  password would be read by compose as a variable.
 - **Android 15:** Android 16 requires the `ashmem` driver, which recent kernels
   no longer have. Android 15 runs with `androidboot.use_memfd=true` instead.
 - **Software rendering:** `androidboot.redroid_gpu_mode=guest` draws on the

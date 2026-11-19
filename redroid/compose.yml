@@ -27,7 +27,7 @@ services:
       - '80'
     environment:
       - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME:?required}
-      - BASIC_AUTH_HASH=${BASIC_AUTH_HASH:?required}
+      - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD:?required}
     depends_on:
       - web
 
