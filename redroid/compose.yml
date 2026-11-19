@@ -1,0 +1,24 @@
+services:
+  redroid:
+    image: redroid/redroid:15.0.0-latest
+    restart: unless-stopped
+    privileged: true
+    command:
+      - androidboot.use_memfd=true
+      - androidboot.redroid_gpu_mode=guest
+    volumes:
+      - 'redroid-data:/data'
+
+  web:
+    build: .
+    restart: unless-stopped
+    init: true
+    expose:
+      - '8000'
+    environment:
+      - ADB_DEVICE=redroid:5555
+    depends_on:
+      - redroid
+
+volumes:
+  redroid-data:
