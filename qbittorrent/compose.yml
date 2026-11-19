@@ -1,8 +1,10 @@
 services:
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
+    build: .
     restart: unless-stopped
     environment:
+      - WEBUI_USERNAME=${WEBUI_USERNAME:?required}
+      - WEBUI_PASSWORD=${WEBUI_PASSWORD:?required}
       - PUID=1000
       - PGID=1000
       - DOCKER_MODS=ghcr.io/vuetorrent/vuetorrent-lsio-mod:latest
