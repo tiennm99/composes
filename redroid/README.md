@@ -3,7 +3,8 @@
 [Redroid](https://github.com/remote-android/redroid-doc) runs Android in a
 container, and [ws-scrcpy](https://github.com/NetrisTV/ws-scrcpy) shows and
 controls it in a browser. The `redroid` container is Android; `web` is
-ws-scrcpy, which reaches Android over adb on the app network.
+ws-scrcpy, which reaches Android over adb on the app network; `proxy` is
+Caddy, which asks for a username and password and then forwards to `web`.
 
 ## Setup
 
@@ -17,9 +18,21 @@ ws-scrcpy, which reaches Android over adb on the app network.
    `binder_linux` in `/etc/modules-load.d/redroid.conf` and
    `options binder_linux devices=binder,hwbinder,vndbinder` in
    `/etc/modprobe.d/redroid.conf`.
-2. Point the domain at the `web` service on port `8000`.
-3. Turn on HTTP basic auth for the app in Coolify. ws-scrcpy has no login of
-   its own.
+2. Create the password hash; the password prompt does not echo:
+
+   ```sh
+   docker run --rm -it caddy:2-alpine caddy hash-password | tail -n 1 | tr -d '\r' | base64 -w0
+   ```
+
+3. Set the variables, then point the domain at the `proxy` service on port
+   `80` and deploy.
+
+## Variables
+
+| Variable | Meaning |
+| --- | --- |
+| `BASIC_AUTH_USERNAME` | Login name for the page |
+| `BASIC_AUTH_HASH` | The password's bcrypt hash, base64-encoded, from step 2 |
 
 ## Use
 
@@ -38,6 +51,11 @@ settings.
 - **Privileged:** Redroid needs it to mount binderfs and run Android's init.
   Root inside Android can therefore reach the host, which is why the page must
   stay behind authentication.
+- **Caddy for the login:** ws-scrcpy has no login of its own, and Coolify's
+  HTTP basic auth setting does not apply to compose apps. The `Caddyfile` is
+  baked into a small image so the proxy does not depend on a bind mount.
+- **Base64 hash:** a raw bcrypt hash is full of `$`, which compose would read
+  as variables; Caddy accepts the base64-encoded form as well.
 - **Android 15:** Android 16 requires the `ashmem` driver, which recent kernels
   no longer have. Android 15 runs with `androidboot.use_memfd=true` instead.
 - **Software rendering:** `androidboot.redroid_gpu_mode=guest` draws on the

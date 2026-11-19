@@ -13,12 +13,23 @@ services:
     build: .
     restart: unless-stopped
     init: true
-    expose:
-      - '8000'
     environment:
       - ADB_DEVICE=redroid:5555
     depends_on:
       - redroid
+
+  proxy:
+    build:
+      context: .
+      dockerfile: proxy.Dockerfile
+    restart: unless-stopped
+    expose:
+      - '80'
+    environment:
+      - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME:?required}
+      - BASIC_AUTH_HASH=${BASIC_AUTH_HASH:?required}
+    depends_on:
+      - web
 
 volumes:
   redroid-data:
