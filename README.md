@@ -100,6 +100,7 @@ Each links to its own README for variables, ports, and storage.
 | [openmausbot](openmausbot/README.md) | OpenMausBot team of AI bots, reached over Tailscale |
 | [orca](orca/README.md) | Orca headless server (`orca serve`) for browser, desktop and mobile clients; not production ready |
 | [owncloud](owncloud/README.md) | ownCloud file sync and share, with MariaDB and Redis |
+| [qbittorrent](qbittorrent/README.md) | qBittorrent with the VueTorrent web UI, from the LinuxServer image |
 | [redroid](redroid/README.md) | Android in a container (Redroid), controlled from the browser through ws-scrcpy |
 | [t3code](t3code/README.md) | T3 Code server for running coding agents from web, desktop and mobile apps |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
