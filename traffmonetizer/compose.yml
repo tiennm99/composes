@@ -1,6 +1,6 @@
 services:
   traffmonetizer:
-    image: 'traffmonetizer/cli_v2:arm64v8'
+    image: 'traffmonetizer/cli_v2:${IMAGE_TAG:-latest}'
     restart: always
     command: 'start accept --token ${TOKEN}'
     environment:
