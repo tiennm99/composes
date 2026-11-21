@@ -33,6 +33,10 @@ Health check: `GET /api/health`, built into the image.
 | `INFERENCE_TEXT_MODEL` / `INFERENCE_IMAGE_MODEL` | `gpt-6-luna` / `gpt-4o-mini` | Models for text and image tagging |
 | `INFERENCE_MAX_OUTPUT_TOKENS` | `2048` | Output token cap per inference call |
 | `INFERENCE_JOB_TIMEOUT_SEC` | `30` | Time limit for one tagging job |
+| `EMBEDDING_ENABLE_AUTO_INDEXING` | `false` | Embed every bookmark for semantic search and tag suggestions |
+| `EMBEDDING_TEXT_MODEL` | `text-embedding-3-small` | Embedding model |
+| `EMBEDDING_DIMENSIONS` | `1536` | Vector size the model returns |
+| `EMBEDDING_CONTEXT_LENGTH` | `8000` | Characters of each bookmark sent for embedding |
 | `NODE_OPTIONS` | empty | Extra Node.js flags, such as `--max-old-space-size` |
 | `INFERENCE_LANG` | `english` | Language of the generated tags |
 | `INFERENCE_ENABLE_AUTO_SUMMARIZATION` | `false` | Summarize every saved link |
@@ -56,6 +60,16 @@ providers can run past 30 seconds; raise both for those. With OpenRouter's
 limit among its free models. A job that keeps failing is retried and can
 exhaust Node's default heap, which `NODE_OPTIONS=--max-old-space-size=<MB>`
 raises.
+
+`EMBEDDING_ENABLE_AUTO_INDEXING` is passed as `false` because Karakeep rejects
+an empty value; unset, upstream turns embeddings on only for OpenAI's own
+endpoint. While it is off the vector index stays empty and every tagging job
+logs a failed similar-bookmark lookup; set it to `true` and pick an embedding
+model the provider serves. Embeddings use
+the same key and endpoint as inference. `EMBEDDING_DIMENSIONS` must equal the
+model's vector size, or every embedding is rejected; Karakeep resizes the
+Meilisearch index to it at startup. `EMBEDDING_CONTEXT_LENGTH` counts
+characters, so keep it under the model's token limit.
 
 ## Storage
 
