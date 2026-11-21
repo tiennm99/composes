@@ -31,6 +31,9 @@ Health check: `GET /api/health`, built into the image.
 | `OPENAI_API_KEY` | empty | Provider key; empty turns AI tagging off |
 | `OPENAI_BASE_URL` | `https://api.openai.com/v1` | OpenAI-compatible endpoint |
 | `INFERENCE_TEXT_MODEL` / `INFERENCE_IMAGE_MODEL` | `gpt-6-luna` / `gpt-4o-mini` | Models for text and image tagging |
+| `INFERENCE_MAX_OUTPUT_TOKENS` | `2048` | Output token cap per inference call |
+| `INFERENCE_JOB_TIMEOUT_SEC` | `30` | Time limit for one tagging job |
+| `NODE_OPTIONS` | empty | Extra Node.js flags, such as `--max-old-space-size` |
 | `INFERENCE_LANG` | `english` | Language of the generated tags |
 | `INFERENCE_ENABLE_AUTO_SUMMARIZATION` | `false` | Summarize every saved link |
 | `CRAWLER_FULL_PAGE_ARCHIVE` | `false` | Store a full offline copy of every page |
@@ -45,6 +48,14 @@ as-is. Their defaults are OpenAI's endpoint and upstream's default models.
 Another provider needs all three changed to its endpoint and model names.
 With an explicit base URL, Karakeep does not turn on embedding-based search
 by itself.
+
+The token, timeout and Node defaults are upstream's. A reasoning model can
+spend the whole 2048-token cap thinking and return nothing, and free or slow
+providers can run past 30 seconds; raise both for those. With OpenRouter's
+`openrouter/free` router, keep the token cap at or below the smallest output
+limit among its free models. A job that keeps failing is retried and can
+exhaust Node's default heap, which `NODE_OPTIONS=--max-old-space-size=<MB>`
+raises.
 
 ## Storage
 
