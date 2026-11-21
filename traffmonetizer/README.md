@@ -20,3 +20,14 @@ The image tag is `arm64v8`. Change it to match the host architecture.
 ## Storage
 
 None — the client keeps no state worth persisting.
+
+## Aiven Runtime
+
+Aiven Runtime builds apps from source and refuses a Compose service that only
+has `image:`. Pick `traffmonetizer/compose.aiven.yaml` as the manifest: it
+builds `Dockerfile`, which wraps the upstream image and adds a static busybox
+shell so `TOKEN` is read at start-up rather than baked into the image. Add
+`TOKEN` as a secret in the app's settings and leave ports empty.
+
+The Dockerfile uses the `latest` tag, which is amd64 only; use `arm64v8` if
+the Runtime builder is ARM.

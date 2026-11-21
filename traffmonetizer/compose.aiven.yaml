@@ -1,0 +1,7 @@
+# Aiven Runtime manifest: builds from ./Dockerfile. No ports: the client
+# only makes outbound connections. Set TOKEN as a secret in Runtime.
+services:
+  traffmonetizer:
+    build:
+      context: .
+      dockerfile: Dockerfile
