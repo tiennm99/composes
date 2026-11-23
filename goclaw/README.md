@@ -62,6 +62,7 @@ start.
 | `GOCLAW_ENCRYPTION_KEY` | — | AES-256-GCM key for stored provider keys |
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | `goclaw` | Database credentials, read by both containers |
 | `GOCLAW_AUTO_UPGRADE` | `true` | Apply schema migrations and data hooks on startup |
+| `GOCLAW_OWNER_IDS` | empty | Comma-separated user IDs given the owner role |
 | `GOCLAW_MINIMAX_API_KEY` | optional | MiniMax LLM provider key |
 | `GOCLAW_TTS_MINIMAX_API_KEY` / `GOCLAW_TTS_MINIMAX_GROUP_ID` | optional | MiniMax text-to-speech credentials |
 | `GOCLAW_TRACE_VERBOSE` | optional | Set to `1` to log full LLM request and response bodies |
@@ -70,6 +71,13 @@ start.
 Docker. The image entrypoint already runs `goclaw upgrade` before `serve`, but
 it only logs a warning when that fails. With the variable set, `serve` applies
 any pending migrations itself rather than stopping on a schema check.
+
+`GOCLAW_OWNER_IDS` lists the user IDs that become owner when they log in with
+the gateway token and that ID; any other user ID gets admin. GoClaw has no
+passwords: an owner shares the gateway token, and a separate per-person login
+is an API key from the dashboard, which tops out at admin. Use the same ID the
+person has on their chat channel, so their chats and the dashboard belong to
+one user. When set, it replaces `gateway.owner_ids` from `config.json`.
 
 The MiniMax variables are the one case where a provider key comes from the
 environment rather than the dashboard: GoClaw reads them directly for the
