@@ -33,6 +33,7 @@ on upstream's compose timings.
 | `OPENCLAW_PUBLIC_ORIGIN` | — | Public origin, e.g. `https://openclaw.example.com` |
 | `OPENCLAW_TRUSTED_PROXIES` | `10.0.0.0/16` | Range the reverse proxy connects from |
 | `OPENROUTER_API_KEY` | empty | Model provider |
+| `ANTHROPIC_API_KEY` | empty | Model provider |
 | `TZ` | `Asia/Ho_Chi_Minh` | Timezone for logs and schedules |
 | Other provider keys, `AWS_*` | optional | Additional model providers |
 | `TELEGRAM_BOT_TOKEN`, `DISCORD_BOT_TOKEN`, `SLACK_*` | optional | Chat channels |
