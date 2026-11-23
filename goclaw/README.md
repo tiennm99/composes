@@ -39,6 +39,21 @@ keys are stored — every one of them becomes unreadable.
 Both are the two values upstream's `prepare-env.sh` generates; the script
 itself is not used here.
 
+## Upstream layout
+
+Upstream splits its Docker setup into a base `docker-compose.yml` and
+overlays (`docker-compose.postgres.yml`, `.upgrade.yml`, `.browser.yml`,
+`.selfservice.yml` and more). Its `Makefile` (`make up`, with `WITH_*` flags)
+and `prepare-compose.sh` (which writes `COMPOSE_FILE` into `.env` from
+`compose.d/`) choose which ones to merge. `make up` merges the base and the
+PostgreSQL overlay, then runs the one-shot `upgrade` service.
+
+`compose.yml` here is that default merge, flattened into one file: Coolify
+deploys a single compose file and has no step to run the scripts. Left out:
+`build:`, `ports:`, `env_file:`, the `goclaw-net` network, the Bitrix24 debug
+variables, and the `upgrade` service, whose job `GOCLAW_AUTO_UPGRADE` does on
+start.
+
 ## Environment
 
 | Variable | Default | Purpose |
@@ -74,10 +89,13 @@ and stored encrypted in PostgreSQL.
 | Volume | Mount | Holds |
 | --- | --- | --- |
 | `goclaw-data` | `/app/data` | `config.json`, skills, Claude CLI credentials, runtime packages |
-| `goclaw-workspace` | `/app/workspace` | Files the agents work on |
+| `goclaw-workspace` | `/app/workspace` and `/app/.goclaw` | Files the agents work on, and the `goclaw` user's `~/.goclaw` (global skills, CLI config) |
 | `db-data` | `/var/lib/postgresql` | The database |
 
-Upstream's PostgreSQL overlay adds a third `goclaw-skills` volume at
+Mounting `goclaw-workspace` at both paths is what upstream's PostgreSQL
+overlay does; without the second mount, `~/.goclaw` is lost on redeploy.
+
+The same overlay also adds a `goclaw-skills` volume at
 `/app/skills`; it is not here, because `GOCLAW_SKILLS_DIR` points at
 `/app/data/skills` and the volume would mount empty over a path nothing reads.
 Skills persist in `goclaw-data` instead.
@@ -106,9 +124,11 @@ The plain tag ships Python only and installs the rest on demand into
 install and a wiped data volume repeats it. Paying for the size once is the
 better trade here.
 
-The tag is moving, tracking the newest full build. The variant tags are only
-published as `full` and `<major>.<minor>-full` — there is no `<major>-full` —
-so `full` is the moving tag to follow.
+The tag is moving and follows the newest stable full build, published for
+amd64 and arm64. The variant tags are published as `full` and
+`v<version>-full`; the `latest-full` that upstream's README lists does not
+exist. Plain `latest` is not used either: upstream's dev branch pushes over
+it, and those builds are amd64 only.
 
 ## Hardening
 

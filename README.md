@@ -92,6 +92,7 @@ Each links to its own README for variables, ports, and storage.
 | [gitea](gitea/README.md) | Gitea backed by PostgreSQL |
 | [gitea-mirror](gitea-mirror/README.md) | gitea-mirror, mirroring GitHub repos into Gitea |
 | [gitlab](gitlab/README.md) | GitLab Community Edition from the official all-in-one image |
+| [goclaw](goclaw/README.md) | GoClaw multi-tenant AI agent gateway, with PostgreSQL and pgvector |
 | [hermes](hermes/README.md) | Hermes Agent with its built-in web dashboard |
 | [karakeep](karakeep/README.md) | Karakeep bookmark manager with AI tagging, Meilisearch and headless Chrome |
 | [litellm](litellm/README.md) | LiteLLM proxy in front of many LLM providers, with PostgreSQL and Redis |

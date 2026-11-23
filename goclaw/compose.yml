@@ -18,6 +18,7 @@ services:
     volumes:
       - goclaw-data:/app/data
       - goclaw-workspace:/app/workspace
+      - goclaw-workspace:/app/.goclaw
     depends_on:
       db:
         condition: service_healthy
