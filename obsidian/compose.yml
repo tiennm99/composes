@@ -1,0 +1,19 @@
+services:
+  obsidian:
+    image: lscr.io/linuxserver/obsidian:latest
+    restart: unless-stopped
+    shm_size: 1gb
+    environment:
+      - CUSTOM_USER=${CUSTOM_USER:?required}
+      - PASSWORD=${PASSWORD:?required}
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-Asia/Ho_Chi_Minh}
+      # - TITLE=${TITLE:-Obsidian}
+    expose:
+      - '3000'
+    volumes:
+      - obsidian-config:/config
+
+volumes:
+  obsidian-config:

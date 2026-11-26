@@ -88,6 +88,7 @@ Each links to its own README for variables, ports, and storage.
 | [alloy](alloy/README.md) | Grafana Alloy shipping host and Docker telemetry to Grafana Cloud |
 | [cloudflared](cloudflared/README.md) | Cloudflare Tunnel connector, for reaching a host service such as SSH without an inbound port |
 | [code-server](code-server/README.md) | VS Code in the browser from the official image |
+| [couchdb](couchdb/README.md) | CouchDB from the official image, set up as the Self-hosted LiveSync server for Obsidian |
 | [diun](diun/README.md) | Image-update notifier, reading the Docker API through a read-only proxy |
 | [gitea](gitea/README.md) | Gitea backed by PostgreSQL |
 | [gitea-mirror](gitea-mirror/README.md) | gitea-mirror, mirroring GitHub repos into Gitea |
@@ -97,6 +98,7 @@ Each links to its own README for variables, ports, and storage.
 | [karakeep](karakeep/README.md) | Karakeep bookmark manager with AI tagging, Meilisearch and headless Chrome |
 | [litellm](litellm/README.md) | LiteLLM proxy in front of many LLM providers, with PostgreSQL and Redis |
 | [nextcloud](nextcloud/README.md) | Nextcloud file sync and share, with PostgreSQL, Redis and a cron container |
+| [obsidian](obsidian/README.md) | Obsidian desktop in the browser, from the LinuxServer image |
 | [open-webui](open-webui/README.md) | Open WebUI chat interface for OpenAI-compatible and Ollama providers |
 | [openclaw](openclaw/README.md) | OpenClaw AI agent gateway, with built-in browser automation |
 | [openmausbot](openmausbot/README.md) | OpenMausBot team of AI bots, reached over Tailscale |
