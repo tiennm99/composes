@@ -23,6 +23,7 @@ redeploy nothing.
 | [openhands](openhands/README.md) | OpenHands coding agent with a web UI | 2026-09-19 |
 | [openvpn-as](openvpn-as/README.md) | OpenVPN Access Server | 2026-09-16 |
 | [paseo](paseo/README.md) | Paseo coding-agent daemon and web UI | 2026-11-03 |
+| [redroid](redroid/README.md) | Android in a container (Redroid), controlled from the browser through ws-scrcpy | 2026-11-27 |
 | [seafile](seafile/README.md) | Seafile Community Edition 13 | 2026-10-12 |
 | [selkies](selkies/README.md) | Selkies reference Ubuntu LXQt desktop in the browser | 2026-10-21 |
 | [tastyigniter](tastyigniter/README.md) | TastyIgniter restaurant ordering platform | 2026-09-16 |
