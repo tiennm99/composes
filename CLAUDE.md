@@ -118,6 +118,12 @@ dropped from a Coolify host, leave its directory and its root README row as
 they are: the template may still be deployed on another machine. Retire or
 delete a service directory only when the user asks for that service by name.
 
+## Plans and reports
+
+This repo is public, so agent plans and reports are not kept in it: they live
+in the maintainer's private notes. Do not create `plans/` here; `/plans/` is
+gitignored as a safety net.
+
 ## Upstream sources
 
 `.sources/` is for upstream source checkouts used while debugging, cloned as
