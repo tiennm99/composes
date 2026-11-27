@@ -108,6 +108,7 @@ Each links to its own README for variables, ports, and storage.
 | [t3code](t3code/README.md) | T3 Code server for running coding agents from web, desktop and mobile apps |
 | [traffmonetizer](traffmonetizer/README.md) | TraffMonetizer bandwidth-sharing client |
 | [webtop](webtop/README.md) | Ubuntu XFCE desktop in the browser |
+| [wg-easy](wg-easy/README.md) | WireGuard VPN server with a web UI for managing clients |
 
 Services I no longer run are kept as history in [archived/](archived/README.md).
 They are not deployed or maintained.
