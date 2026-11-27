@@ -13,7 +13,11 @@ codes.
   that port; the proxy serves it over HTTPS, so `INSECURE` stays unset and
   session cookies stay `Secure`. Access is guarded by wg-easy's own login.
 - `/lib/modules` is mounted read-only and `SYS_MODULE` is granted so the
-  container can load the host's `wireguard` kernel module.
+  container can load the host's `wireguard` kernel module. Where the host's
+  modules are compressed (`.ko.zst`, as on Ubuntu), the container cannot load
+  them: load `wireguard`, `iptable_nat` and `iptable_filter` on the host and
+  list them in `/etc/modules-load.d/` so they load at boot. The last two serve
+  the legacy iptables rules wg-easy adds inside its own network namespace.
 
 ## Variables
 
